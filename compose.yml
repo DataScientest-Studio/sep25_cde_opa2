@@ -1,4 +1,5 @@
 services:
+  # Mongo containers
   mongo:
     image: mongo:7
     container_name: mongo
@@ -13,6 +14,17 @@ services:
     volumes:
       - mongo_data:/data/db
 
+  mongo-init:
+    build:
+      context: .
+      dockerfile: docker/python/Dockerfile
+    command: python -m src.init.init_mongo
+    env_file:
+      - .env
+    depends_on:
+      - mongo
+    restart: "no"
+
   mongo-express:
     image: mongo-express
     env_file:
@@ -25,20 +37,54 @@ services:
       ME_CONFIG_BASICAUTH_USERNAME: $DB_BOT_USER
       ME_CONFIG_BASICAUTH_PASSWORD: $DB_BOT_PASSWORD
     depends_on:
-      - mongo
+      mongo:
+        condition: service_started
+      mongo-init:
+        condition: service_completed_successfully
     restart: unless-stopped
 
-  mongo-init:
-    build:
-      context: .
-      dockerfile: docker/python/Dockerfile
-    command: python -m src.init.init_mongo
+  # PostgreSQL containers
+  postgres:
+    image: postgres:18.1
+    container_name: postgres
+    volumes:
+      - postgresql_data:/var/lib/postgresql
     env_file:
-      - .env
+      - .env    
+    environment:
+      POSTGRES_DB: $DB_NAME
+      POSTGRES_USER: $DB_ROOT_USER
+      POSTGRES_PASSWORD: $DB_ROOT_PASSWORD
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $DB_ROOT_USER"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: pgadmin
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    env_file:
+      - .env    
+    environment:
+      PGADMIN_DEFAULT_EMAIL: $DB_ROOT_EMAIL
+      PGADMIN_DEFAULT_PASSWORD: $DB_ROOT_PASSWORD
+      PGADMIN_CONFIG_SERVER_MODE: "False"
+      PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: "False"
     depends_on:
-      - mongo
-    restart: "no"    
+      postgres:
+        condition: service_healthy
+    ports:
+      - "8080:80"
+    restart: unless-stopped
 
 volumes:
   mongo_data:
+  postgresql_data:
+  pgadmin_data:
   
