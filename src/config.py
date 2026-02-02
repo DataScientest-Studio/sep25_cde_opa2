@@ -14,3 +14,6 @@ DB_BOT_PASSWORD=os.getenv('DB_BOT_PASSWORD')
 
 # Mongo
 MONGO_DB_PORT=os.getenv('MONGO_DB_PORT')
+
+# PostgresSQL
+PG_DB_PORT=os.getenv('PG_DB_PORT')
