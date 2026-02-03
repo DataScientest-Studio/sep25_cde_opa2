@@ -1,18 +1,26 @@
-Project Name
+Crypto Bot Projet
+DATA Engineer training
+==============================
+@TODO: Develop here the goal of this project and how to install it.
 ==============================
 
-This project is a starting Pack for MLOps projects based on the subject "movie_recommandation". It's not perfect so feel free to make some modifications on it.
-
 Project Organization
-------------
+--------------------
 
     ├── LICENSE
     ├── README.md          <- The top-level README for developers using this project.
+    ├── .env.sample        <- To rename .env, contains the environment variables for this project.
     ├── data
     │   ├── external       <- Data from third party sources.
     │   ├── interim        <- Intermediate data that has been transformed.
     │   ├── processed      <- The final, canonical data sets for modeling.
     │   └── raw            <- The original, immutable data dump.
+    │
+    ├── docker             <- Docker configuration
+    │   ├── pgadmin        <- Contains the servers.json file to configure ther servers
+    │   │   └── .servers.sample    <- To rename servers.json, remplace 'xxxxxxx' with the right values, same as in .env
+    │   │
+    │   └── python         <- Contains the DockerFile to prepare the pyhton container
     │
     ├── logs               <- Logs from training and predicting
     │
@@ -39,6 +47,10 @@ Project Organization
     │   ├── features       <- Scripts to turn raw data into features for modeling
     │   │   └── build_features.py
     │   │
+    │   ├── init           <- Scripts to init the data bases.
+    │   │   ├── init_mongo.py
+    │   │   └── init_postgresql.py
+    │   │
     │   ├── models         <- Scripts to train models and then use trained models to make
     │   │   │                 predictions
     │   │   ├── predict_model.py
@@ -46,6 +58,7 @@ Project Organization
     │   │
     │   ├── visualization  <- Scripts to create exploratory and results oriented visualizations
     │   │   └── visualize.py
+    │   ├── config.py      <- Expose the environement variables, to be imported by other scripts.
     │   └── config         <- Describe the parameters used in train_model.py and predict_model.py
 
 --------
