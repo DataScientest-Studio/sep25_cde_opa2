@@ -21,6 +21,8 @@ services:
     command: python -m src.init.init_mongo
     env_file:
       - .env
+    environment:
+      ENV: docker
     depends_on:
       - mongo
     restart: "no"
@@ -64,11 +66,26 @@ services:
       timeout: 5s
       retries: 5
 
+  postgres-init:
+    build:
+      context: .
+      dockerfile: docker/python/Dockerfile
+    command: python -m src.init.init_postgresql
+    env_file:
+      - .env
+    environment:
+      ENV: docker
+    depends_on:
+      postgres:
+        condition: service_healthy      
+    restart: "no"
+
   pgadmin:
     image: dpage/pgadmin4:latest
     container_name: pgadmin
     volumes:
       - pgadmin_data:/var/lib/pgadmin
+      - ./docker/pgadmin/servers.json:/pgadmin4/servers.json:ro
     env_file:
       - .env    
     environment:
@@ -79,6 +96,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      postgres-init:
+        condition: service_completed_successfully          
     ports:
       - "8080:80"
     restart: unless-stopped

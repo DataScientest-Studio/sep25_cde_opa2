@@ -1,0 +1,22 @@
+{
+    "Servers": {
+        "1": {
+            "Name": "User root server",
+            "Group": "Servers",
+            "Port": 5432,
+            "Username": "xxxxxx", // Indiquer le meme username que le DB_ROOT_USER présent dans le fichier .env
+            "Host": "postgres",
+            "SSLMode": "prefer",
+            "MaintenanceDB": "postgres"
+        },
+        "2": {
+            "Name": "User BOT server",
+            "Group": "Servers",
+            "Port": 5432,
+            "Username": "xxxxxxx", // Indiquer le meme username que le DB_BOT_USER présent dans le fichier .env
+            "Host": "postgres",
+            "SSLMode": "prefer",
+            "MaintenanceDB": "xxxxxx" // Indiquer le meme nom de bdd que le DB_NAME présent dans le fichier .env
+        }
+    }
+}

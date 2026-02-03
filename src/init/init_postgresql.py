@@ -1,8 +1,6 @@
 import os
-from src.config import DB_NAME, DB_ROOT_USER, DB_ROOT_PASSWORD, DB_BOT_USER, DB_BOT_PASSWORD, PG_DB_PORT
+from src.config import DB_NAME, DB_ROOT_USER, DB_ROOT_PASSWORD, DB_BOT_USER, DB_BOT_PASSWORD, PG_DB_PORT, PG_HOST
 import psycopg
-
-PG_HOST=os.getenv('PG_HOST', 'localhost')
 
 with psycopg.connect(
             dbname='postgres',
@@ -43,3 +41,5 @@ with psycopg.connect(
             print(f"L'utilisateur {DB_BOT_USER} créé.")
         else:
             print(f"L'utilisateur {DB_BOT_USER} existe déjà.")
+
+# @TODO Se connecter avec le user BOT pour créer les tables.

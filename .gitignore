@@ -57,6 +57,9 @@ docs/_build/
 # PyBuilder
 target/
 
+# Docker
+docker/pgadmin/servers.json
+
 # DotEnv configuration
 .env
 

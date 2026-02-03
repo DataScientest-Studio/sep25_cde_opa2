@@ -14,6 +14,14 @@ DB_BOT_PASSWORD=os.getenv('DB_BOT_PASSWORD')
 
 # Mongo
 MONGO_DB_PORT=os.getenv('MONGO_DB_PORT')
+MONGO_HOST='localhost'
+if os.getenv('ENV') == 'docker':
+    MONGO_HOST=os.getenv('MONGO_HOST', 'mongo')
+
+
 
 # PostgresSQL
 PG_DB_PORT=os.getenv('PG_DB_PORT')
+PG_HOST='localhost'
+if os.getenv('ENV') == 'docker':
+    PG_HOST=os.getenv('PG_HOST', 'docker')
