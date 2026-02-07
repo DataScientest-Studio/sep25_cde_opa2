@@ -9,8 +9,17 @@ with psycopg.connect(
             host=PG_HOST,
             port=PG_DB_PORT
         ) as conn:
-    
+    conn.autocommit = True # Nécessaire pour la commande CREATE DATABASE
     with conn.cursor() as cur:
+        # Creation de la base de données DB_NAME si elle n'existe pas déjà
+        cur.execute(f"SELECT 1 FROM pg_database WHERE datname='{DB_NAME}';")
+        existing_db=cur.fetchone()
+        if not existing_db:
+            cur.execute(f"CREATE DATABASE {DB_NAME};")
+            print(f"La base de données '{DB_NAME}' est créée.")
+        else:
+            print(f"La base de données '{DB_NAME}' existe déjà.")
+
         cur.execute(f"SELECT 1 FROM pg_roles WHERE rolname='{DB_BOT_USER}';")
         existing_user=cur.fetchone()
         if not existing_user:
