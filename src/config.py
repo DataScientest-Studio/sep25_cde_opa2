@@ -24,4 +24,4 @@ if os.getenv('ENV') == 'docker':
 PG_DB_PORT=os.getenv('PG_DB_PORT')
 PG_HOST='localhost'
 if os.getenv('ENV') == 'docker':
-    PG_HOST=os.getenv('PG_HOST', 'postgres') # J'ai du mettre le nom du service 'postgres' dans le compose.yml pour que ça fonctionne, au lieu de 'docker'
+    PG_HOST=os.getenv('PG_HOST', 'postgres')

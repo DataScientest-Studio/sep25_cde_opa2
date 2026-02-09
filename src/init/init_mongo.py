@@ -1,4 +1,3 @@
-import os
 import time
 from src.config import DB_NAME, DB_ROOT_USER, DB_ROOT_PASSWORD,MONGO_DB_PORT, DB_BOT_USER, DB_BOT_PASSWORD, MONGO_HOST
 from pymongo import MongoClient, errors

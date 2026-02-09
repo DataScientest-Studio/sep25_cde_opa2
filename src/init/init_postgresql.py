@@ -1,4 +1,3 @@
-import os
 from src.config import DB_NAME, DB_ROOT_USER, DB_ROOT_PASSWORD, DB_BOT_USER, DB_BOT_PASSWORD, PG_DB_PORT, PG_HOST
 import psycopg
 
@@ -9,8 +8,10 @@ with psycopg.connect(
             host=PG_HOST,
             port=PG_DB_PORT
         ) as conn:
+    
     conn.autocommit = True # Nécessaire pour la commande CREATE DATABASE
     with conn.cursor() as cur:
+
         # Creation de la base de données DB_NAME si elle n'existe pas déjà
         cur.execute(f"SELECT 1 FROM pg_database WHERE datname='{DB_NAME}';")
         existing_db=cur.fetchone()
@@ -20,11 +21,27 @@ with psycopg.connect(
         else:
             print(f"La base de données '{DB_NAME}' existe déjà.")
 
+        # Creation du user DB_BOT_USER pour manipulation de DB_NAME
         cur.execute(f"SELECT 1 FROM pg_roles WHERE rolname='{DB_BOT_USER}';")
         existing_user=cur.fetchone()
         if not existing_user:
             # Creation du user DB_BOT_USER
             cur.execute(f"CREATE USER {DB_BOT_USER} WITH PASSWORD '{DB_BOT_PASSWORD}';")
+            print(f"L'utilisateur {DB_BOT_USER} créé.")
+        else:
+            print(f"L'utilisateur {DB_BOT_USER} existe déjà.")
+
+
+with psycopg.connect(
+            dbname=DB_NAME,
+            user=DB_ROOT_USER,
+            password=DB_ROOT_PASSWORD,
+            host=PG_HOST,
+            port=PG_DB_PORT
+        ) as conn:
+
+        conn.autocommit = True
+        with conn.cursor() as cur:
 
             # Attribue les droits au user DB_BOT_USER
             cur.execute(f"""
@@ -47,8 +64,4 @@ with psycopg.connect(
                 GRANT ALL ON FUNCTIONS TO {DB_BOT_USER};
             """)
 
-            print(f"L'utilisateur {DB_BOT_USER} créé.")
-        else:
-            print(f"L'utilisateur {DB_BOT_USER} existe déjà.")
-
-# @TODO Se connecter avec le user BOT pour créer les tables.
+            print(f"Permissions accordées au user {DB_BOT_USER} sur la base {DB_NAME}")
