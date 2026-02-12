@@ -1,0 +1,122 @@
+services:
+  # Mongo containers
+  mongo:
+    image: mongo:7
+    container_name: mongo
+    env_file:
+      - .env
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: $DB_ROOT_USER
+      MONGO_INITDB_ROOT_PASSWORD: $DB_ROOT_PASSWORD
+    ports:
+      - "27017:27017"
+    restart: unless-stopped
+    volumes:
+      - ~/DATAS/datascientest/projet/mongo_data:/data/db # Voir les commentaires à la fin du fichier compose.yml
+
+  mongo-init:
+    build:
+      context: .
+      dockerfile: docker/python/Dockerfile
+    command: python -m src.init.init_mongo
+    env_file:
+      - .env
+    environment:
+      ENV: docker
+    depends_on:
+      - mongo
+    restart: "no"
+
+  mongo-express:
+    image: mongo-express
+    env_file:
+      - .env
+    ports:
+      - "8081:8081"
+    environment:
+      ME_CONFIG_MONGODB_URL: mongodb://$DB_ROOT_USER:$DB_ROOT_PASSWORD@mongo:27017/
+      ME_CONFIG_BASICAUTH_ENABLED: true
+      ME_CONFIG_BASICAUTH_USERNAME: $DB_BOT_USER
+      ME_CONFIG_BASICAUTH_PASSWORD: $DB_BOT_PASSWORD
+    depends_on:
+      mongo:
+        condition: service_started
+      mongo-init:
+        condition: service_completed_successfully
+    restart: unless-stopped
+
+  # PostgreSQL containers
+  postgres:
+    image: postgres:18.1
+    container_name: postgres
+    volumes:
+      - ~/DATAS/datascientest/projet/postgresql_data:/var/lib/postgresql # Voir les commentaires à la fin du fichier compose.yml
+    env_file:
+      - .env
+    environment:
+      # POSTGRES_DB: $DB_NAME   # J'ai du commenter cette ligne et créer notre base de données $DB_NAME dans le script d'initialisation init_postgresql.py
+                                # quand la ligne était présente, elle empêchait la création (par l'image postgres) d'une base portant le même nom que l'utilisateur (DB_ROOT_USER) 
+                                # et cela provoquait des messages d'erreur dans le conteneur PostgreSQL
+      POSTGRES_USER: $DB_ROOT_USER
+      POSTGRES_PASSWORD: $DB_ROOT_PASSWORD
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $DB_ROOT_USER"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  postgres-init:
+    build:
+      context: .
+      dockerfile: docker/python/Dockerfile
+    command: python -m src.init.init_postgresql
+    env_file:
+      - .env
+    environment:
+      ENV: docker
+    depends_on:
+      postgres:
+        condition: service_healthy      
+    restart: "no"
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: pgadmin
+    volumes:
+      - ~/DATAS/datascientest/projet/pgadmin_data:/var/lib/pgadmin # Voir les commentaires à la fin du fichier compose.yml
+      - ./docker/pgadmin/servers.json:/pgadmin4/servers.json:ro
+    env_file:
+      - .env
+    environment:
+      PGADMIN_DEFAULT_EMAIL: $DB_ROOT_EMAIL
+      PGADMIN_DEFAULT_PASSWORD: $DB_ROOT_PASSWORD
+      PGADMIN_CONFIG_SERVER_MODE: "False"
+      PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: "False"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      postgres-init:
+        condition: service_completed_successfully          
+    ports:
+      - "8080:80"
+    restart: unless-stopped
+
+volumes:
+  mongo_data:
+  postgresql_data:
+  pgadmin_data:
+  
+# Pour le montage des volumes locaux, on propose d'utiliser le chemin sur l'hôte : ~/DATAS/datascientest/projet/ (ou autre)
+# Dans lequel il faut créer les dossiers pour les données de MongoDB, PostgreSQL et pgAdmin, comme suit :
+# ~/DATAS/datascientest/projet/
+#                         ├──mongo_data
+#                         ├──postgresql_data
+#                         └──pgadmin_data
+
+# Pour le dossier pgadmin_data
+# Il est nécessaire de lui donner certaines permissions avec la commande : sudo chown -R 5050:5050 ~/DATAS/datascientest/projet/pgadmin_data
+# Voir article : https://www.pgadmin.org/docs/pgadmin4/latest/container_deployment.html#mapped-files-and-directories
+# En tout cas, moi j'ai du le faire pour que cela fonctionne

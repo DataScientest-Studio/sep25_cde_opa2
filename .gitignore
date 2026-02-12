@@ -19,6 +19,7 @@ lib64/
 parts/
 sdist/
 var/
+venv/
 *.egg-info/
 .installed.cfg
 *.egg
@@ -55,6 +56,9 @@ docs/_build/
 
 # PyBuilder
 target/
+
+# Docker
+docker/pgadmin/servers.json
 
 # DotEnv configuration
 .env
