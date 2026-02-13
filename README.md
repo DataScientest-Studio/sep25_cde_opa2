@@ -43,6 +43,8 @@ Project Organization
     │   │
     │   ├── data           <- Scripts to download or generate data
     │   │   └── make_dataset.py
+    │   │   └── BinanceDataCollector.py (class to collect data from Binance API and save it in MongoDB)
+    │   │   └── test_make_dataset.sh (script to test make_dataset.py)
     │   │
     │   ├── features       <- Scripts to turn raw data into features for modeling
     │   │   └── build_features.py
