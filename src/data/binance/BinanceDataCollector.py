@@ -87,7 +87,7 @@ class BinanceDataCollector:
         interval: str = '1h'
     ) -> List[Dict]:
         """
-        Récupère les données Kline depuis l'API Binance.
+        Récupère les données Klines depuis l'API Binance.
         
         Args:
             symbol: Symbole de trading (ex: BTCUSDT)
@@ -156,12 +156,29 @@ class BinanceDataCollector:
             logger.error(f"Erreur lors de la récupération des données Binance: {e}")
             return []
 
-    def save_to_mongodb(self, data: List[Dict], collection_name: str = 'klines') -> bool:
+
+    def get_exchange_info(self) -> Optional[Dict]:
         """
-        Sauvegarde les données dans MongoDB.
+        Récupère les informations exchange_info depuis l'API Binance.
+        
+        Returns:
+            Dict: Informations exchange_info ou None en cas d'erreur
+        """
+        try:
+            exchange_info = self.binance_client.get_exchange_info()
+            logger.info("Récupération des informations exchange_info réussie")
+            return exchange_info
+        except Exception as e:
+            logger.error(f"Erreur lors de la récupération des informations exchange_info: {e}")
+            return None
+
+
+    def save_klines_to_mongodb(self, data: List[Dict], collection_name: str = 'klines') -> bool:
+        """
+        Sauvegarde les données de klines dans MongoDB.
         
         Args:
-            data: Données à sauvegarder
+            data: Données klines à sauvegarder 
             collection_name: Nom de la collection MongoDB
             
         Returns:
@@ -176,9 +193,7 @@ class BinanceDataCollector:
             
             # Création d'un index unique pour éviter les doublons
             collection.create_index([
-                ('symbol', 1), 
-                ('open_time', 1), 
-                ('interval', 1)
+                ('open_time', 1)
             ], unique=True)
             
             # Insertion des données
@@ -202,6 +217,50 @@ class BinanceDataCollector:
             logger.error(f"Erreur lors de la sauvegarde MongoDB: {e}")
             return False
 
+    def save_exchange_info_to_mongodb(self, data: List[Dict], collection_name: str = 'exchange_info_symbols') -> bool:
+        """
+        Sauvegarde les données sur les symbols (contenu dans exchange_info) dans MongoDB.
+        
+        Args:
+            data: Données symbols à sauvegarder
+            collection_name: Nom de la collection MongoDB
+            
+        Returns:
+            bool: True si la sauvegarde est réussie
+        """
+        try:
+            if not data:
+                logger.warning("Aucune donnée à sauvegarder")
+                return False
+            
+            collection = self.db[collection_name]
+            
+            # Création d'un index unique pour éviter les doublons
+            collection.create_index([
+                ('symbol', 1)
+            ], unique=True)
+            
+            # Insertion des données
+            inserted_ids = []
+            skipped_count = 0
+            
+            for document in data:
+                try:
+                    result = collection.insert_one(document)
+                    inserted_ids.append(result.inserted_id)
+                except PyMongoError as e:
+                    if "duplicate key error" in str(e).lower():
+                        skipped_count += 1
+                    else:
+                        logger.warning(f"Erreur lors de l'insertion: {e}")
+            
+            logger.info(f"Sauvegarde terminée: {len(inserted_ids)} documents insérés, {skipped_count} doublons ignorés")
+            return True
+            
+        except PyMongoError as e:
+            logger.error(f"Erreur lors de la sauvegarde MongoDB: {e}")
+            return False
+        
     def close_connections(self):
         """Ferme la connexion à MongoDB."""
         if self.mongo_client:
