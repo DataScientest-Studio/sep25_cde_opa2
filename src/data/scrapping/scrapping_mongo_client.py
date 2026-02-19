@@ -1,6 +1,7 @@
 
 from src.data.scrapping.custom_logger import logger
 from typing import Dict, List
+from datetime import datetime
 
 from pymongo import MongoClient
 from pymongo.errors import PyMongoError
@@ -82,9 +83,29 @@ class ScrappingMongoClient:
             
             for document in data:
                 try:
+                    now = datetime.now().timestamp()
                     result=collection.update_one(
                         {"link_to_article": document["link_to_article"]},
-                        {"$set": document},
+                        {
+                            "$set": {
+                                "title": document["title"],
+                                "summary": document["summary"],
+                                "provider": document["provider"],
+                                "published_at": document["published_at"],
+                                "published_at_timestamp": document["published_at_timestamp"],
+                                "link_to_comments": document["link_to_comments"], 
+                                "last_seen": now
+                            },
+                            "$setOnInsert": {
+                                "scrapped_at": now,
+                                "first_seen": now,
+                                "raw_content": None,
+                                "text_content": None,
+                                "content_scraped": False,
+                                "comments": [],
+                                "comments_scraped": False
+                            }
+                        },
                         upsert=True
                     )
                     if result.upserted_id:
