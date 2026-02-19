@@ -1,9 +1,10 @@
 import argparse
 import sys
-import cloudscraper
 from bs4 import BeautifulSoup as bs
 from typing import Dict, List
 from datetime import datetime
+
+from src.data.scrapping.cloudflare_scraper import scraper
 from src.data.scrapping.scrapping_mongo_client import ScrappingMongoClient
 from src.data.scrapping.custom_logger import logger
 from src.config import DB_NAME, MONGO_DB_PORT, DB_BOT_USER, DB_BOT_PASSWORD, MONGO_HOST
@@ -32,15 +33,6 @@ def parse_arguments():
     return parser.parse_args()
 
 def scrap_pages():
-    # Used to bypass cloudflare protection of investing.com
-    scraper = cloudscraper.create_scraper(
-        browser={
-            "browser": "chrome",
-            "platform": "windows",
-            "mobile": False
-        }
-    )
-
     args = parse_arguments()
     if args.nb_page == 1:
         logger.info(f'{args.nb_page} page sera scrappée à partir de la page {args.page_number_start}')

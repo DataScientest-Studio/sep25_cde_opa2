@@ -5,6 +5,7 @@ from datetime import datetime
 
 from pymongo import MongoClient
 from pymongo.errors import PyMongoError
+from pymongo.cursor import Cursor
 
 class ScrappingMongoClient:
     """Classe pour la connection et le stockage dans MongoDB."""
@@ -51,6 +52,78 @@ class ScrappingMongoClient:
             
         except PyMongoError as e:
             logger.error(f"Erreur de connexion MongoDB: {e}")
+            return False
+        
+    def get_articles_to_complete(self, collection_name: str, limit: int = 1) -> Cursor:
+        """
+        Récupère les articles dont le contenu n'a pas encore été récupéré
+
+        Args:
+            collection_name: Nom de la collection MongoDB
+            limit: Nombre max d'articles retournés
+        """
+
+        try:
+            collection = self.db[collection_name]
+            articles_to_complete=collection.find(
+                {
+                    "content_scraped": False
+                },
+                limit=limit
+            )
+            return articles_to_complete
+        except PyMongoError as e:
+            logger.error(f"Erreur lors de la récupération des articles: {e}")
+            return False
+    
+    def update_articles(self, data:List[Dict], collection_name: str) -> bool:
+        """
+        Sauvegarde les nouvelles données d'un article.
+        
+        Args:
+            data: Données scrappées à sauvegarder 
+            collection_name: Nom de la collection MongoDB
+            
+        Returns:
+            bool: True si la sauvegarde est réussie
+        """
+        try:
+            if not data:
+                logger.warning("Aucune donnée à sauvegarder")
+                return False
+            
+            collection = self.db[collection_name]
+            
+            # Insertion des données
+            updated_count = 0
+            skipped_count  = 0
+            
+            for document in data:
+                update_fields = {k: v for k, v in document.items() if k != "_id"}
+                try:
+                    now = datetime.now().timestamp()
+                    result=collection.update_one(
+                            {'_id': document['_id']}, 
+                            {
+                                '$set': {
+                                    **update_fields,
+                                    'last_seen': now,
+                                    'content_scraped': True
+                                }
+                            }
+                        )
+                    if result.modified_count > 0:
+                        updated_count+=1
+                    else:
+                        skipped_count+=1
+                except PyMongoError as e:
+                        logger.warning(f"Erreur lors de la mise à jour des articles: {e}")
+                    
+            logger.info(f"Mise à jour terminée: {updated_count} documents mis à jour, {skipped_count} doublons ignorés")
+            return True
+            
+        except PyMongoError as e:
+            logger.error(f"Erreur lors de la sauvegarde MongoDB: {e}")
             return False
 
     def save_scrapping_to_mongodb(self, data: List[Dict], collection_name: str) -> bool:
