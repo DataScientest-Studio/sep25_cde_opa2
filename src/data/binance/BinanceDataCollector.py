@@ -4,6 +4,7 @@ from typing import Dict, List, Optional
 from datetime import datetime, timedelta
 
 from binance.client import Client
+from binance.exceptions import BinanceAPIException
 from pymongo import MongoClient
 from pymongo.errors import PyMongoError
 
@@ -14,6 +15,11 @@ logging.basicConfig(
     format='%(asctime)s - %(levelname)s - %(message)s'
 )
 logger = logging.getLogger(__name__)
+
+# Exception personnalisée pour le rate limiting
+class RateLimitExceededException(Exception):
+    """Exception levée quand le rate limit Binance (429) est atteint."""
+    pass
 
 # Mappage des intervalles
 interval_mapping = {
@@ -152,6 +158,13 @@ class BinanceDataCollector:
             logger.info(f"Récupération terminée: {len(formatted_data)} points de données")
             return formatted_data, not_formatted_data
             
+        except BinanceAPIException as e:
+            if e.status_code == 429 or e.code == -1003:
+                logger.error(f"RATE LIMIT ATTEINT (429) ! Arrêt immédiat pour éviter le blocage IP.")
+                raise RateLimitExceededException(f"Rate limit Binance atteint: {e.message}")
+            else:
+                logger.error(f"Erreur API Binance: {e.code} - {e.message}")
+                raise
         except Exception as e:
             logger.error(f"Erreur lors de la récupération des données Binance: {e}")
             return []
@@ -168,8 +181,66 @@ class BinanceDataCollector:
             exchange_info = self.binance_client.get_exchange_info()
             logger.info("Récupération des informations exchange_info réussie")
             return exchange_info
+        except BinanceAPIException as e:
+            if e.status_code == 429 or e.code == -1003:
+                logger.error(f"RATE LIMIT ATTEINT (429) ! Arrêt immédiat pour éviter le blocage IP.")
+                raise RateLimitExceededException(f"Rate limit Binance atteint: {e.message}")
+            else:
+                logger.error(f"Erreur API Binance: {e.code} - {e.message}")
+                raise
         except Exception as e:
             logger.error(f"Erreur lors de la récupération des informations exchange_info: {e}")
+            return None
+
+    def get_realtime_market_data(self, symbol: str) -> Optional[Dict]:
+        """
+        Récupère les données de marché en temps réel pour un symbole donné.
+        
+        Args:
+            symbol: Symbole de trading (ex: BTCUSDT)
+            
+        Returns:
+            Dict: Données de marché avec timestamp de collecte ou None en cas d'erreur
+        """
+        try:
+            collection_timestamp = datetime.now()
+            
+            # Order book (profondeur du marché)
+            order_book = self.binance_client.get_orderbook_tickers(symbol=symbol)
+            
+            # Prix moyen actuel
+            avg_price = self.binance_client.get_avg_price(symbol=symbol)
+            
+            # Dernier ticker price
+            ticker_24 = self.binance_client.get_ticker(symbol=symbol)
+            
+            # Aggregate trades (derniers trades agrégés), le paramètre limit=10 permet de récupérer les 10 derniers trades
+            # TODO: Besoin de plus d'infos sur ce qu'on a vraiment besoin de récupérer ici ?
+            # On va être limité en nombre de trades récupérables (limit), est-ce que ça pose un problème ?
+            # C'est quoi la période d'aggrégation : start_time et end_time ?
+            agg_trades = self.binance_client.get_aggregate_trades(symbol=symbol, limit=10)
+
+            market_data = {
+                'symbol': symbol,
+                'collection_timestamp': collection_timestamp,
+                'order_book': order_book,
+                'average_price': avg_price,
+                'ticker_24': ticker_24,
+                'aggregate_trades': agg_trades
+            }
+            
+            logger.info(f"Données de marché collectées pour {symbol} à {collection_timestamp}")
+            return market_data
+            
+        except BinanceAPIException as e:
+            if e.status_code == 429 or e.code == -1003:
+                logger.error(f"RATE LIMIT ATTEINT (429) ! Arrêt immédiat pour éviter le blocage IP.")
+                raise RateLimitExceededException(f"Rate limit Binance atteint: {e.message}")
+            else:
+                logger.error(f"Erreur API Binance: {e.code} - {e.message}")
+                raise
+        except Exception as e:
+            logger.error(f"Erreur lors de la récupération des données de marché pour {symbol}: {e}")
             return None
 
 
@@ -220,6 +291,9 @@ class BinanceDataCollector:
     def save_exchange_info_to_mongodb(self, data: List[Dict], collection_name: str = 'exchange_info_symbols') -> bool:
         """
         Sauvegarde les données sur les symbols (contenu dans exchange_info) dans MongoDB.
+        #TODO: Comment on fait la mise à jour des données ? 
+        # On peut faire un upsert pour éviter les doublons et garder les données à jour ? 
+        # A voir si on veut garder un historique ou juste les données les plus récentes
         
         Args:
             data: Données symbols à sauvegarder
@@ -235,30 +309,129 @@ class BinanceDataCollector:
             
             collection = self.db[collection_name]
             
-            # Création d'un index unique pour éviter les doublons
+            # Création d'un index unique pour optimiser les requêtes
             collection.create_index([
                 ('symbol', 1)
             ], unique=True)
             
-            # Insertion des données
-            inserted_ids = []
-            skipped_count = 0
+            # Upsert des données (insertion ou mise à jour)
+            inserted_count = 0
+            updated_count = 0
             
             for document in data:
                 try:
-                    result = collection.insert_one(document)
-                    inserted_ids.append(result.inserted_id)
+                    # Utilisation d'upsert pour insérer ou mettre à jour selon le symbol
+                    result = collection.replace_one(
+                        filter={'symbol': document['symbol']}, 
+                        replacement=document, 
+                        upsert=True
+                    )
+                    
+                    if result.upserted_id:
+                        inserted_count += 1
+                    elif result.modified_count > 0:
+                        updated_count += 1
+                        
                 except PyMongoError as e:
-                    if "duplicate key error" in str(e).lower():
-                        skipped_count += 1
-                    else:
-                        logger.warning(f"Erreur lors de l'insertion: {e}")
+                    logger.warning(f"Erreur lors de l'upsert pour {document.get('symbol', 'symbole inconnu')}: {e}")
             
-            logger.info(f"Sauvegarde terminée: {len(inserted_ids)} documents insérés, {skipped_count} doublons ignorés")
+            logger.info(f"Sauvegarde terminée: {inserted_count} documents insérés, {updated_count} documents mis à jour")
             return True
             
         except PyMongoError as e:
             logger.error(f"Erreur lors de la sauvegarde MongoDB: {e}")
+            return False
+
+    def save_realtime_data_to_mongodb(self, data: Dict, collection_prefix: str = 'realtime') -> bool:
+        """
+        Sauvegarde les données de marché temps réel dans MongoDB.
+        Chaque type de données est sauvegardé dans une collection séparée par symbole.
+        
+        Args:
+            data: Données de marché à sauvegarder
+            collection_prefix: Préfixe pour les noms des collections
+            
+        Returns:
+            bool: True si la sauvegarde est réussie
+        """
+        try:
+            if not data:
+                logger.warning("Aucune donnée à sauvegarder")
+                return False
+            
+            symbol = data.get('symbol')
+            collection_timestamp = data.get('collection_timestamp')
+            
+            if not symbol or not collection_timestamp:
+                logger.error("Données manquantes: symbol ou collection_timestamp")
+                return False
+            
+            # Métadonnées communes à toutes les collections (sans symbol)
+            common_meta = {
+                'collection_timestamp': collection_timestamp
+            }
+            
+            success_count = 0
+            total_collections = 4  # order_book, average_price, ticker_24, aggregate_trades
+            
+            # 1. Sauvegarde Order Book
+            if 'order_book' in data:
+                collection_name = f"{collection_prefix}_order_book_{symbol}"
+                collection = self.db[collection_name]
+                collection.create_index([('collection_timestamp', 1)])
+                
+                order_book_doc = {**common_meta, 'data': data['order_book']}
+                result = collection.insert_one(order_book_doc)
+                if result.inserted_id:
+                    success_count += 1
+                    logger.debug(f"Order book sauvegardé - ID: {result.inserted_id}")
+            
+            # 2. Sauvegarde Average Price
+            if 'average_price' in data:
+                collection_name = f"{collection_prefix}_avg_price_{symbol}"
+                collection = self.db[collection_name]
+                collection.create_index([('collection_timestamp', 1)])
+                
+                avg_price_doc = {**common_meta, 'data': data['average_price']}
+                result = collection.insert_one(avg_price_doc)
+                if result.inserted_id:
+                    success_count += 1
+                    logger.debug(f"Average price sauvegardé - ID: {result.inserted_id}")
+            
+            # 3. Sauvegarde Ticker 24h
+            if 'ticker_24' in data:
+                collection_name = f"{collection_prefix}_ticker_24_{symbol}"
+                collection = self.db[collection_name]
+                collection.create_index([('collection_timestamp', 1)])
+                
+                ticker_doc = {**common_meta, 'data': data['ticker_24']}
+                result = collection.insert_one(ticker_doc)
+                if result.inserted_id:
+                    success_count += 1
+                    logger.debug(f"Ticker 24h sauvegardé - ID: {result.inserted_id}")
+            
+            # 4. Sauvegarde Aggregate Trades
+            if 'aggregate_trades' in data:
+                collection_name = f"{collection_prefix}_agg_trades_{symbol}"
+                collection = self.db[collection_name]
+                collection.create_index([('collection_timestamp', 1)])
+                
+                agg_trades_doc = {**common_meta, 'data': data['aggregate_trades']}
+                result = collection.insert_one(agg_trades_doc)
+                if result.inserted_id:
+                    success_count += 1
+                    logger.debug(f"Aggregate trades sauvegardé - ID: {result.inserted_id}")
+            
+            # Vérification du succès global
+            if success_count > 0:
+                logger.info(f"Données temps réel sauvegardées pour {symbol}: {success_count}/{total_collections} collections")
+                return True
+            else:
+                logger.warning("Aucune donnée n'a pu être sauvegardée")
+                return False
+                
+        except PyMongoError as e:
+            logger.error(f"Erreur lors de la sauvegarde des données temps réel: {e}")
             return False
         
     def close_connections(self):
