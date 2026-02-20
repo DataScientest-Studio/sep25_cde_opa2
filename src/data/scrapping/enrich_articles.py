@@ -4,7 +4,7 @@ import argparse
 from pymongo.cursor import Cursor
 from bs4 import BeautifulSoup as bs
 
-from src.data.scrapping.cloudflare_scraper import scraper
+from src.data.scrapping.playwright_detection import get_html_with_playwright
 from src.data.scrapping.scrapping_mongo_client import ScrappingMongoClient
 from src.data.scrapping.custom_logger import logger
 from src.config import DB_NAME, MONGO_DB_PORT, DB_BOT_USER, DB_BOT_PASSWORD, MONGO_HOST
@@ -50,15 +50,20 @@ def complete_articles(articles_to_complete: Cursor):
         article_data=dict()
 
         # Get the complete article
-        article_complete_html = scraper.get(article['link_to_article']).text
-        article_complete_soup=bs(article_complete_html, 'lxml')
-        article_complete_content=article_complete_soup.find(id='article')
-        if article_complete_content:
-             article_data['_id']=article['_id']
-             article_data['raw_content']=str(article_complete_content)
-             article_data['text_content']=article_complete_content.text
-        
-        articles_completed.append(article_data)
+        article_complete_html=get_html_with_playwright(url=article['link_to_article'], selector='[id="article"]')
+        if not article_complete_html:
+            logger.error("Aucun contenu html trouvé!")
+        else:
+            logger.info(f'Page scrappée: {article['link_to_article']}')       
+
+            article_complete_soup=bs(article_complete_html, 'lxml')
+            article_complete_content=article_complete_soup.find(id='article')
+            if article_complete_content:
+                article_data['_id']=article['_id']
+                article_data['raw_content']=str(article_complete_content)
+                article_data['text_content']=article_complete_content.text
+            
+            articles_completed.append(article_data)
    
     return articles_completed
 

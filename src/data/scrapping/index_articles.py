@@ -4,10 +4,10 @@ from bs4 import BeautifulSoup as bs
 from typing import Dict, List
 from datetime import datetime
 
-from src.data.scrapping.cloudflare_scraper import scraper
 from src.data.scrapping.scrapping_mongo_client import ScrappingMongoClient
 from src.data.scrapping.custom_logger import logger
 from src.config import DB_NAME, MONGO_DB_PORT, DB_BOT_USER, DB_BOT_PASSWORD, MONGO_HOST
+from src.data.scrapping.playwright_detection import get_html_with_playwright
 
 
 def parse_arguments():
@@ -34,6 +34,7 @@ def parse_arguments():
 
 def scrap_pages():
     args = parse_arguments()
+
     if args.nb_page == 1:
         logger.info(f'{args.nb_page} page sera scrappée à partir de la page {args.page_number_start}')
     else:
@@ -48,73 +49,76 @@ def scrap_pages():
         if page_to_scrap > 1:
             base_url=f'https://www.investing.com/news/cryptocurrency-news/{page_to_scrap}'
 
-        logger.info(f'Page scrappée: {base_url}')
-
-        list_page_html = scraper.get(base_url).text
-
-        list_page_soup=bs(list_page_html, 'lxml')
-
-        container=list_page_soup.find('ul', {
-            'data-test': 'news-list'
-        })
-
-        if not container:
-            logger.error("Container news-list introuvable")
-            articles = []
+        # Used to bypass cloudflare protection of investing.com
+        list_page_html=get_html_with_playwright(url=base_url, selector='[data-test="news-list"]')
+        if not list_page_html:
+            logger.error("Aucun contenu html trouvé!")
         else:
-            logger.info(f"Container news-liste trouvé, début de la récupération")
-            articles=container.find_all('article')
+            logger.info(f'Page scrappée: {base_url}')
 
-            for article in articles:
-                article_data=dict({
-                    'title': None,
-                    'link_to_article':None,
-                    'summary':None,
-                    'published_at':None,
-                    'published_at_timestamp':None,
-                    'provider':None,
-                    'link_to_comments':None,
-                })
+            list_page_soup=bs(list_page_html, 'lxml')
 
-                # Get the title and the complete article link
-                title_elm=article.find('a', {
-                        'data-test': 'article-title-link'
+            container=list_page_soup.find('ul', {
+                'data-test': 'news-list'
+            })
+
+            if not container:
+                logger.error("Container news-list introuvable")
+                articles = []
+            else:
+                logger.info(f"Container news-liste trouvé, début de la récupération")
+                articles=container.find_all('article')
+
+                for article in articles:
+                    article_data=dict({
+                        'title': None,
+                        'link_to_article':None,
+                        'summary':None,
+                        'published_at':None,
+                        'published_at_timestamp':None,
+                        'provider':None,
+                        'link_to_comments':None,
                     })
-                if title_elm:
-                    article_data['title']=title_elm.text
-                    article_data['link_to_article']=title_elm.get('href')
+
+                    # Get the title and the complete article link
+                    title_elm=article.find('a', {
+                            'data-test': 'article-title-link'
+                        })
+                    if title_elm:
+                        article_data['title']=title_elm.text
+                        article_data['link_to_article']=title_elm.get('href')
+                        
+                    # Get the summary
+                    summary=article.find('p', {
+                        'data-test': 'article-description'
+                    })
+                    if summary:
+                        article_data['summary']=summary.text
+
+                    # Get the published at date
+                    published_at=article.find('time')
+                    if published_at:
+                        article_data['published_at']=published_at.get('datetime')
+                        iso_clean=article_data['published_at'].replace("Z", "+00:00")
+                        article_data['published_at_timestamp']=datetime.fromisoformat(iso_clean).timestamp()
+
+                    # Get the provider name
+                    provider=article.find('span', {
+                        'data-test': 'news-provider-name'
+                    })
+                    if provider:
+                        article_data['provider']=provider.text
+
+                    # Get comments page link
+                    footer_ul=article.find('ul')
+                    if footer_ul:
+                        summary_footer_elm=footer_ul.find_all('li')
+                        if len(summary_footer_elm) > 1:
+                            comments_link=summary_footer_elm[1]
+                            if comments_link.find('a') and comments_link.find('a').get('href'):
+                                article_data['link_to_comments']=comments_link.find('a').get('href')
                     
-                # Get the summary
-                summary=article.find('p', {
-                    'data-test': 'article-description'
-                })
-                if summary:
-                    article_data['summary']=summary.text
-
-                # Get the published at date
-                published_at=article.find('time')
-                if published_at:
-                    article_data['published_at']=published_at.get('datetime')
-                    iso_clean=article_data['published_at'].replace("Z", "+00:00")
-                    article_data['published_at_timestamp']=datetime.fromisoformat(iso_clean).timestamp()
-
-                # Get the provider name
-                provider=article.find('span', {
-                    'data-test': 'news-provider-name'
-                })
-                if provider:
-                    article_data['provider']=provider.text
-
-                # Get comments page link
-                footer_ul=article.find('ul')
-                if footer_ul:
-                    summary_footer_elm=footer_ul.find_all('li')
-                    if len(summary_footer_elm) > 1:
-                        comments_link=summary_footer_elm[1]
-                        if comments_link.find('a') and comments_link.find('a').get('href'):
-                            article_data['link_to_comments']=comments_link.find('a').get('href')
-                
-                articles_data.append(article_data)
+                    articles_data.append(article_data)
             
     
     logger.info(f"Récupération de la liste d'articles terminées, {len(articles_data)} trouvés.")
@@ -154,10 +158,8 @@ def connect_to_mongo_and_save_data(data: List[Dict]):
             sys.exit(1)
 
 def main():
-
     articles_data=scrap_pages()
     connect_to_mongo_and_save_data(articles_data)
-
 
 if __name__ == "__main__":
     main()
