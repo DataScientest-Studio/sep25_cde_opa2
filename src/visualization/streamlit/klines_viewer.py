@@ -56,7 +56,7 @@ def get_mongodb_connection():
         return None
 
 
-@st.cache_data(ttl=2)
+@st.cache_data(ttl=1)
 def load_klines_data(collection_name: str, start_date=None, end_date=None, limit=1000):
     
     st.session_state.loading_data = True
@@ -89,7 +89,7 @@ def load_klines_data(collection_name: str, start_date=None, end_date=None, limit
         if 'open_time' in df.columns:
             df['open_time'] = pd.to_datetime(df['open_time'], unit='ms')
 
-        numeric_columns = ['open_price', 'high_price', 'low_price', 'close_price', 'volume']
+        numeric_columns = ['open_price', 'high_price', 'low_price', 'close_price', 'volume', 'trades_count']
         for col in numeric_columns:
             if col in df.columns:
                 df[col] = pd.to_numeric(df[col], errors='coerce')
@@ -153,7 +153,7 @@ def create_candlestick_chart(df):
     
     # Mise en forme
     fig.update_layout(
-        title="Graphique BTCUSDT (1 minute)",
+        title=f"Graphique BTCUSDT (1 minute) - current trades count : {df['trades_count'].iloc[0] if 'trades_count' in df.columns else ''}",
         yaxis_title="Prix (USDT)",
         yaxis2_title="Volume",
         template="plotly_dark",
@@ -171,11 +171,11 @@ def create_candlestick_chart(df):
 # Initialisation de la connexion MongoDB : 1 seule connexion partagée
 client = get_mongodb_connection()
 # Paramètrage de l'auto-refresh
-count = st_autorefresh(interval=10000, limit=100, key="fizzbuzzcounter")
+count = st_autorefresh(interval=3000, limit=500, key="fizzbuzzcounter")
 
 def main():
     """Fonction principale de l'application Streamlit."""
-    collection_name_default = "klines_BTCUSDT_1h"
+    collection_name_default = "klines_BTCUSDT_1m_ws"
 
     # Titre principal
     st.title("Visualisation Klines BTCUSDT")

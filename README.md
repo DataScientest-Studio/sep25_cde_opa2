@@ -38,14 +38,24 @@ Project Organization
     ├── requirements.txt   <- The requirements file for reproducing the analysis environment, e.g.
     │                         generated with `pip freeze > requirements.txt`
     │
+    ├── compose.yaml       <- Docker compose file to run the different containers of the project
+    │
+    ├── Makefile           <- Makefile to automate the different steps of the project
+    │
     ├── src                <- Source code for use in this project.
     │   ├── __init__.py    <- Makes src a Python module
     │   │
     │   ├── data           <- Scripts to download or generate data
-    │   │   └── make_dataset.py
-    │   │   └── BinanceDataCollector.py (class to collect data from Binance API and save it in MongoDB)
-    │   │   └── test_make_dataset.sh (script to test make_dataset.py)
-    │   │
+    │   │   └── make_dataset.py
+    │   │   └── binance
+    │   │       └── BinanceDataCollector.py (class to collect data from Binance API and save it in MongoDB)
+    │   │       └── extract_exchange_info.py
+    │   │       └── extract_klines_data.py
+    │   │       └── extract_realtime_data.py
+    │   │       └── extract_kline_data_ws.py
+    │   │       └── test_extract_binance_data.sh (script to test extraction of Binance data)
+    │   │       └── run_kline_extraction_ws.sh (script to run the kline data extraction using WebSocket)
+    │   │
     │   ├── features       <- Scripts to turn raw data into features for modeling
     │   │   └── build_features.py
     │   │
@@ -60,6 +70,9 @@ Project Organization
     │   │
     │   ├── visualization  <- Scripts to create exploratory and results oriented visualizations
     │   │   └── visualize.py
+    │   │   └── streamlit
+    │   │       └── klines_viewer.py
+    │   │       └── run_klines_app.sh
     │   ├── config.py      <- Expose the environement variables, to be imported by other scripts.
     │   └── config         <- Describe the parameters used in train_model.py and predict_model.py
 

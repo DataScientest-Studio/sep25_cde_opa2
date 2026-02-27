@@ -12,3 +12,6 @@ python3 extract_exchange_info_data.py
 
 # Extraction de données de marché en temps réel pour BTCUSDT
 python3 extract_realtime_data.py --symbol BTCUSDT --duration 120 --interval 10
+
+# Extraction de kline data en temps réel pour BTCUSDT avec un intervalle de 1 minute
+python3 extract_kline_data_ws.py --symbol BTCUSDT --interval 1m
