@@ -103,6 +103,23 @@ services:
     ports:
       - "8080:80"
     restart: unless-stopped
+  
+  # Scraper container
+  scraper:
+      build:
+        context: .
+        dockerfile: docker/scraper/Dockerfile
+      container_name: scraper
+      env_file:
+        - .env
+      environment:
+        ENV: docker
+      depends_on:
+        mongo:
+          condition: service_started
+        mongo-init:
+          condition: service_completed_successfully
+      restart: "no"
 
 volumes:
   mongo_data:

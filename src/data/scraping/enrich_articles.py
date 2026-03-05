@@ -4,9 +4,9 @@ import argparse
 from pymongo.cursor import Cursor
 from bs4 import BeautifulSoup as bs
 
-from src.data.scrapping.playwright_detection import get_html_with_playwright
-from src.data.scrapping.scrapping_mongo_client import ScrappingMongoClient
-from src.data.scrapping.custom_logger import logger
+from src.data.scraping.playwright_detection import get_html_with_playwright
+from src.data.scraping.scraping_mongo_client import ScrappingMongoClient
+from src.data.scraping.custom_logger import logger
 from src.config import DB_NAME, MONGO_DB_PORT, DB_BOT_USER, DB_BOT_PASSWORD, MONGO_HOST
 
 def parse_arguments():
