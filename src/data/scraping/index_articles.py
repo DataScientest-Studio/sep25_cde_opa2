@@ -8,7 +8,7 @@ import random
 from src.data.scraping.scraping_mongo_client import ScrappingMongoClient
 from src.data.scraping.custom_logger import logger
 from src.config import DB_NAME, MONGO_DB_PORT, DB_BOT_USER, DB_BOT_PASSWORD, MONGO_HOST, ENV
-from src.data.scraping.playwright_detection import close_playwright, get_html_with_playwright, human_sleep, init_playwright
+from src.data.scraping.playwright_detection import close_cookie_modal, close_playwright, close_signup_modal, get_html_with_playwright, human_sleep, init_playwright, start_playwright_session
 
 
 def parse_arguments():
@@ -48,14 +48,14 @@ def scrap_pages():
     articles_data=list()
 
     # Playwright is used to bypass cloudflare protection of investing.com
-    p, browser, context = init_playwright()
-    page = context.new_page()
+    p, browser, page = start_playwright_session()
 
+    # Init session lifecycle and error variables
     session_page_limit = 1 if ENV == "docker" else random.randint(3, 6)  
     pages_scraped = 0
     consecutive_403 = 0
 
-    for page_to_scrap in pages_to_scrap:
+    for index, page_to_scrap in enumerate(pages_to_scrap):
         url = base_url if page_to_scrap == 1 else f"{base_url}/{page_to_scrap}"
 
         # Session lifecycle control
@@ -63,15 +63,16 @@ def scrap_pages():
 
             logger.warning("Redémarrage de la session du browser")
 
+            # Close page and playwright session
             page.close()
-            browser.close()
-            p.stop()
+            close_playwright(p, browser)
 
             human_sleep(sleep=random.uniform(60, 180), msg="Attente humaine après limit de page dans la session ou 403")
 
-            p, browser, context = init_playwright()
-            page = context.new_page()
+            # Start a new playwright session
+            p, browser, page = start_playwright_session()
 
+            # Reset session lifecycle and error variables
             session_page_limit = 1 if ENV == "docker" else random.randint(3, 6)
             pages_scraped = 0
             consecutive_403 = 0
@@ -87,19 +88,11 @@ def scrap_pages():
         consecutive_403 = 0
         pages_scraped += 1        
 
+        # As a human, close cookie and signup modals
+        close_cookie_modal(page)
+        close_signup_modal(page)
+
         list_page_soup=bs(list_page_html, 'lxml')
-
-        reject_cookie_btn = page.locator("#onetrust-reject-all-handler")
-        if reject_cookie_btn.count() > 0 and reject_cookie_btn.first.is_visible():
-            logger.info('Click sur reject cookie button')
-            reject_cookie_btn.first.click()
-            human_sleep(sleep=random.uniform(0.5, 1.5), msg="Attente humaine après fermeture de la popup cookies")
-
-        signup_close_btn = page.locator('[data-test="sign-up-dialog-close-button"]')
-        if signup_close_btn.count() > 0:
-            logger.info('Click sur signup close button')
-            signup_close_btn.click(force=True)
-            human_sleep(sleep=random.uniform(0.5, 1.5), msg="Attente humaine après fermeture de la popup singup")
 
         container=list_page_soup.find('ul', {
             'data-test': 'news-list'
@@ -164,7 +157,7 @@ def scrap_pages():
             articles_data.append(article_data)
         
         logger.info(f'Récupération des articles de la page {page_to_scrap} terminée.')
-        if session_page_limit != 1 and len(pages_to_scrap) > 1 and page_to_scrap < len(pages_to_scrap):
+        if session_page_limit != 1 and len(pages_to_scrap) > 1 and index < len(pages_to_scrap)-1:
             human_sleep(sleep=random.uniform(40, 120), msg="Attente humaine entre 2 pages")  
             
     

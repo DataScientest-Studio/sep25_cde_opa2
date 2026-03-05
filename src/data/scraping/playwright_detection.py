@@ -6,7 +6,21 @@ from src.config import ENV
 
 def human_sleep(sleep: int, msg: str):
     logger.info(f'{msg}: {sleep}')
-    time.sleep(sleep) 
+    time.sleep(sleep)
+
+def close_cookie_modal(page: Page):
+    reject_cookie_btn = page.locator("#onetrust-reject-all-handler")
+    if reject_cookie_btn.count() > 0 and reject_cookie_btn.first.is_visible():
+        logger.info('Click sur reject cookie button')
+        reject_cookie_btn.first.click()
+        human_sleep(sleep=random.uniform(0.5, 1.5), msg="Attente humaine après fermeture de la popup cookies")   
+
+def close_signup_modal(page: Page):
+    signup_close_btn = page.locator('[data-test="sign-up-dialog-close-button"]')
+    if signup_close_btn.count() > 0:
+        logger.info('Click sur signup close button')
+        signup_close_btn.click(force=True)
+        human_sleep(sleep=random.uniform(0.5, 1.5), msg="Attente humaine après fermeture de la popup singup")
 
 def init_playwright() -> tuple[Playwright, Browser, BrowserContext]:
     headless = True if ENV == "docker" else False  
@@ -47,6 +61,12 @@ def close_playwright(p: Playwright, browser: Browser):
         return None 
     browser.close()
     p.stop()
+
+def start_playwright_session() -> tuple[Playwright, Browser, Page]:
+    p, browser, context = init_playwright()
+    page = context.new_page()
+    return p, browser, page
+
 
 def get_html_with_playwright(page: Page, url: str, selector: str):
 
