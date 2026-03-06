@@ -1,6 +1,7 @@
 
 from pymongo import MongoClient
 from pymongo.errors import PyMongoError
+import psycopg
 import pandas as pd
 from datetime import datetime, timedelta
 import logging
@@ -10,7 +11,7 @@ from streamlit_autorefresh import st_autorefresh
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
-from src.config import DB_NAME, MONGO_DB_PORT, DB_BOT_USER, DB_BOT_PASSWORD, MONGO_HOST
+from src.config import DB_NAME, MONGO_DB_PORT, DB_BOT_USER, DB_BOT_PASSWORD, MONGO_HOST, PG_HOST, PG_DB_PORT
 
 # Configuration de la page
 st.set_page_config(
@@ -29,7 +30,6 @@ logger = logging.getLogger(__name__)
 
 @st.cache_resource
 def get_mongodb_connection():
-
     try:
         connection_string = f"mongodb://{DB_BOT_USER}:{DB_BOT_PASSWORD}@{MONGO_HOST}:{MONGO_DB_PORT}/{DB_NAME}"
         client = MongoClient(connection_string, serverSelectionTimeoutMS=5000)
@@ -42,12 +42,28 @@ def get_mongodb_connection():
         return None
 
 
+@st.cache_resource
+def get_postgresql_connection():
+    try:
+        conn = psycopg.connect(
+            dbname=DB_NAME,
+            user=DB_BOT_USER,
+            password=DB_BOT_PASSWORD,
+            host=PG_HOST,
+            port=PG_DB_PORT
+        )
+        return conn
+    except Exception as e:
+        st.error(f"Erreur de connexion PostgreSQL: {e}")
+        return None
+
+
 @st.cache_data(ttl=1)
-def load_klines_data(collection_name: str, start_date=None, end_date=None, limit=1000):
-    
+def load_klines_data_mongodb(collection_name: str, start_date=None, end_date=None, limit=1000):
     st.session_state.loading_data = True
     
     try:
+        client = get_mongodb_connection()
         if client is None:
             return pd.DataFrame()
         
@@ -84,10 +100,66 @@ def load_klines_data(collection_name: str, start_date=None, end_date=None, limit
         return df
         
     except PyMongoError as e:
-        st.error(f"Erreur lors de la récupération des données: {e}")
+        st.error(f"Erreur lors de la récupération des données MongoDB: {e}")
         return pd.DataFrame()
     except Exception as e:
         st.error(f"Erreur inattendue: {e}")
+        return pd.DataFrame()
+    finally:
+        st.session_state.loading_data = False
+
+
+@st.cache_data(ttl=1)
+def load_klines_data_postgresql(table_name="klines", start_date=None, end_date=None, limit=1000):
+    st.session_state.loading_data = True
+    
+    try:
+        conn = get_postgresql_connection()
+        if conn is None:
+            return pd.DataFrame()
+        
+        # Construction de la requête SQL
+        base_query = f"""
+            SELECT open_time, close_time, open_price, high_price, low_price, 
+                   close_price, volume, quote_volume, trades_count,
+                   taker_buy_base_volume, taker_buy_quote_volume
+            FROM {table_name}
+        """
+        
+        conditions = []
+        params = []
+        
+        if start_date and end_date:
+            conditions.append("open_time >= %s AND open_time <= %s")
+            params.extend([start_date, end_date])
+        
+        if conditions:
+            base_query += " WHERE " + " AND ".join(conditions)
+        
+        base_query += " ORDER BY open_time DESC LIMIT %s"
+        params.append(limit)
+        
+        # Exécution de la requête
+        df = pd.read_sql_query(base_query, conn, params=params)
+        
+        if df.empty:
+            logger.warning(f"No data found in PostgreSQL table '{table_name}'.")
+            return pd.DataFrame()
+        
+        # S'assurer que open_time est en datetime
+        if 'open_time' in df.columns:
+            df['open_time'] = pd.to_datetime(df['open_time'])
+        
+        # Conversion des colonnes numériques
+        numeric_columns = ['open_price', 'high_price', 'low_price', 'close_price', 'volume', 'trades_count']
+        for col in numeric_columns:
+            if col in df.columns:
+                df[col] = pd.to_numeric(df[col], errors='coerce')
+        
+        return df[numeric_columns + ['open_time']]
+        
+    except Exception as e:
+        st.error(f"Erreur lors de la récupération des données PostgreSQL (table '{table_name}'): {e}")
         return pd.DataFrame()
     finally:
         st.session_state.loading_data = False
@@ -154,14 +226,13 @@ def create_candlestick_chart(df):
 
 
 
-# Initialisation de la connexion MongoDB : 1 seule connexion partagée
-client = get_mongodb_connection()
 # Paramètrage de l'auto-refresh
 count = st_autorefresh(interval=3000, limit=500, key="fizzbuzzcounter")
 
 def main():
     """Fonction principale de l'application Streamlit."""
     collection_name_default = "klines_BTCUSDT_1m_ws"
+    table_name_default = "klines"
 
     # Titre principal
     st.title("Visualisation Klines BTCUSDT")
@@ -170,12 +241,28 @@ def main():
     # Sidebar pour les contrôles
     st.sidebar.title("Paramètres")
     
-    # Sélection de la collection
-    collection_name = st.sidebar.text_input(
-        "Collection MongoDB", 
-        value=collection_name_default,
-        help="Nom de la collection MongoDB contenant les données klines"
+    # Sélection de la source de données
+    data_source = st.sidebar.selectbox(
+        "Source de données",
+        ["PostgreSQL", "MongoDB"],
+        index=0,
+        help="Choisir entre la base PostgreSQL ou MongoDB"
     )
+    
+    # Configuration selon la source
+    table_or_collection_name = None
+    if data_source == "PostgreSQL":
+        table_or_collection_name = st.sidebar.text_input(
+            "Nom de la table PostgreSQL", 
+            value=table_name_default,
+            help="Nom de la table PostgreSQL contenant les données klines"
+        )
+    else:  # MongoDB
+        table_or_collection_name = st.sidebar.text_input(
+            "Nom de la collection MongoDB", 
+            value=collection_name_default,
+            help="Nom de la collection MongoDB contenant les données klines"
+        )
     
     # Limite du nombre de points
     max_points = st.sidebar.slider(
@@ -214,17 +301,21 @@ def main():
     
     with st.spinner("Chargement des données..."):
         try:
-            
-            df = load_klines_data(collection_name, start_date, end_date, max_points)
+            if data_source == "PostgreSQL":
+                df = load_klines_data_postgresql(table_or_collection_name, start_date, end_date, max_points)
+            else:  # MongoDB
+                df = load_klines_data_mongodb(table_or_collection_name, start_date, end_date, max_points)
         except Exception as e:
             st.error(f"Erreur lors du chargement: {e}")
             df = pd.DataFrame()
       
     if df.empty:
-        st.warning("Aucune donnée trouvée dans la collection ou erreur de connexion.")
+        st.warning(f"Aucune donnée trouvée dans la source {data_source} ou erreur de connexion.")
         
 
-    st.subheader(f"Données de la collection: {collection_name}")
+    source_info = f"table PostgreSQL: {table_or_collection_name}" if data_source == "PostgreSQL" else f"collection MongoDB: {table_or_collection_name}"
+    st.subheader(f"Données de la {source_info}")
+    st.info(f"Source active: **{data_source}** | Nom: **{table_or_collection_name}** | Nombre de points chargés: **{len(df)}**")
     st.subheader("Graphique Candlestick")
     
     fig = create_candlestick_chart(df)

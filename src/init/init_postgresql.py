@@ -65,3 +65,64 @@ with psycopg.connect(
             """)
 
             print(f"Permissions accordées au user {DB_BOT_USER} sur la base {DB_NAME}")
+
+
+# Création de la table klines si elle n'existe pas
+with psycopg.connect(
+            dbname=DB_NAME,
+            user=DB_ROOT_USER,
+            password=DB_ROOT_PASSWORD,
+            host=PG_HOST,
+            port=PG_DB_PORT
+        ) as conn:
+
+        conn.autocommit = True
+        with conn.cursor() as cur:
+
+            # Vérifier si la table klines existe
+            cur.execute("""
+                SELECT EXISTS (
+                    SELECT FROM information_schema.tables 
+                    WHERE table_schema = 'public' 
+                    AND table_name = 'klines'
+                );
+            """)
+            
+            table_exists = cur.fetchone()[0]
+            
+            if not table_exists:
+                # Création de la table klines
+                cur.execute("""
+                    CREATE TABLE klines (
+                        id SERIAL PRIMARY KEY,
+                        open_time TIMESTAMP WITH TIME ZONE NOT NULL,
+                        close_time TIMESTAMP WITH TIME ZONE NOT NULL,
+                        open_price DECIMAL(18, 8) NOT NULL,
+                        high_price DECIMAL(18, 8) NOT NULL,
+                        low_price DECIMAL(18, 8) NOT NULL,
+                        close_price DECIMAL(18, 8) NOT NULL,
+                        volume DECIMAL(18, 8) NOT NULL,
+                        quote_volume DECIMAL(18, 8) NOT NULL,
+                        trades_count INTEGER NOT NULL,
+                        taker_buy_base_volume DECIMAL(18, 8) NOT NULL,
+                        taker_buy_quote_volume DECIMAL(18, 8) NOT NULL,
+                        ignore VARCHAR(10) DEFAULT '0',
+                        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+                        UNIQUE(open_time, close_time)
+                    );
+                """)
+                
+                # Créer un index sur open_time pour optimiser les requêtes temporelles
+                cur.execute("""
+                    CREATE INDEX idx_klines_open_time ON klines(open_time);
+                """)
+                
+                # Accorder les permissions sur la nouvelle table au user bot
+                cur.execute(f"""
+                    GRANT SELECT, INSERT, UPDATE, DELETE ON klines TO {DB_BOT_USER};
+                    GRANT USAGE, SELECT ON SEQUENCE klines_id_seq TO {DB_BOT_USER};
+                """)
+                
+                print("Table 'klines' créée avec succès.")
+            else:
+                print("La table 'klines' existe déjà.")
