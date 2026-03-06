@@ -35,6 +35,7 @@ def init_playwright() -> tuple[Playwright, Browser, BrowserContext]:
             "--disable-dev-shm-usage",
             "--no-sandbox",
             "--disable-setuid-sandbox",
+            "--no-proxy-server"
         ]
     )
 
