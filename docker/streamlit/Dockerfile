@@ -1,4 +1,6 @@
 FROM python:3.11-slim
+ARG PYTHONPATH="."
+ENV PYTHONPATH=$PYTHONPATH
 
 # Installer les dépendances système nécessaires
 # RUN apt-get update && apt-get install -y \
@@ -23,7 +25,7 @@ COPY docker/streamlit/config.toml /app/.streamlit/config.toml
 EXPOSE 8501
 
 # Définir le répertoire de travail pour Streamlit
-WORKDIR /app/src/visualization/streamlit
+WORKDIR /app
 
 # Commande par défaut pour lancer Streamlit
-CMD ["streamlit", "run", "klines_viewer.py", "--server.port=8501", "--server.address=0.0.0.0", "--server.headless=true", "--server.enableCORS=false", "--server.enableXsrfProtection=false"]
+CMD ["streamlit", "run", "src/visualization/streamlit/klines_viewer.py", "--server.port=8501", "--server.address=0.0.0.0", "--server.headless=true", "--server.enableCORS=false", "--server.enableXsrfProtection=false"]

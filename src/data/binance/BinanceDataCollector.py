@@ -1,5 +1,4 @@
 
-import logging
 from typing import Dict, List, Optional
 from datetime import datetime, timedelta
 
@@ -8,13 +7,7 @@ from binance.exceptions import BinanceAPIException
 from pymongo import MongoClient
 from pymongo.errors import PyMongoError
 
-
-# Configuration du logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s'
-)
-logger = logging.getLogger(__name__)
+from src.custom_logger import logger
 
 # Exception personnalisée pour le rate limiting
 class RateLimitExceededException(Exception):

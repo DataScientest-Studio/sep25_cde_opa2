@@ -2,8 +2,6 @@
 from pymongo import MongoClient
 from pymongo.errors import PyMongoError
 import pandas as pd
-import sys
-import os
 from datetime import datetime, timedelta
 import logging
 
@@ -12,19 +10,7 @@ from streamlit_autorefresh import st_autorefresh
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
-# Ajouter le répertoire src au path pour importer config
-script_dir = os.path.dirname(os.path.abspath(__file__))
-data_dir = os.path.dirname(script_dir)  # src/data
-src_dir = os.path.dirname(data_dir)     # src
-sys.path.insert(0, src_dir)
-
-try:
-    from config import (DB_NAME, DB_BOT_USER, DB_BOT_PASSWORD, MONGO_DB_PORT, MONGO_HOST)
-except ImportError as e:
-    logging.error(f"Impossible d'importer config: {e}")
-    logging.error("Assurez-vous que le fichier src/config.py existe et est accessible")
-    sys.exit(1)
-
+from src.config import DB_NAME, MONGO_DB_PORT, DB_BOT_USER, DB_BOT_PASSWORD, MONGO_HOST
 
 # Configuration de la page
 st.set_page_config(

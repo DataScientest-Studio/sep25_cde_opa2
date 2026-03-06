@@ -1,31 +1,10 @@
 import argparse
-import logging
 import sys
-import os
 from datetime import datetime
 
 from BinanceDataCollector import BinanceDataCollector
-
-# Ajouter le répertoire src au path pour importer config
-script_dir = os.path.dirname(os.path.abspath(__file__))
-data_dir = os.path.dirname(script_dir)  # src/data
-src_dir = os.path.dirname(data_dir)     # src
-sys.path.insert(0, src_dir)
-
-try:
-    from config import (DB_NAME, DB_BOT_USER, DB_BOT_PASSWORD, MONGO_DB_PORT, MONGO_HOST)
-except ImportError as e:
-    logging.error(f"Impossible d'importer config: {e}")
-    logging.error("Assurez-vous que le fichier src/config.py existe et est accessible")
-    sys.exit(1)
-
-# Configuration du logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s'
-)
-logger = logging.getLogger(__name__)
-
+from src.custom_logger import logger
+from src.config import DB_NAME, MONGO_DB_PORT, DB_BOT_USER, DB_BOT_PASSWORD, MONGO_HOST
 
 def parse_arguments():
     """Parse les arguments de ligne de commande."""

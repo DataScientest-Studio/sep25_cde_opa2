@@ -1,0 +1,31 @@
+#!/bin/bash
+## Lancement de Streamlit
+echo "Lancement de l'application Streamlit Klines Viewer..."
+streamlit run src/visualization/streamlit/klines_viewer.py
+
+## -------------------------------------------------------------------------- ##
+
+#!/bin/bash
+echo "Lancement de l'extraction de données de Binance en temps réel (kline de BTCUSDT) pour tester streamlit ..."
+echo -e "Aller voir Streamlit dans son conteneur en cliquant sur \e[34mhttp://localhost:8501\e[0m \n"
+# Extraction de kline data en temps réel pour BTCUSDT avec un intervalle de 1 minute
+python3 src/data/binance/extract_kline_data_ws.py --symbol BTCUSDT --interval 1m
+
+## -------------------------------------------------------------------------- ##
+
+#!/bin/bash
+# Exemples de récupération de données de Binance pour le symbole BTCUSDT
+
+# Récupération des données de Binance pour le symbole BTCUSDT sur une période de 30 jours à partir du 1er janvier 2024, avec un intervalle de 1 heure
+python3 src/data/binance/extract_klines_data.py --symbol BTCUSDT --start_date 2024-01-01 --interval 1h --days 30
+# Récupération des données de Binance pour le symbole BTCUSDT sur une période de 10 jours à partir du 1er janvier 2024, avec un intervalle de 1 minute
+python3 src/data/binance/extract_klines_data.py --symbol BTCUSDT --start_date 2024-01-01 --interval 1m --days 10
+
+# Récupération des exchange_info de Binance (symbols)
+python3 src/data/binance/extract_exchange_info_data.py
+
+# Extraction de données de marché en temps réel (API REST) pour BTCUSDT
+python3 src/data/binance/extract_realtime_data.py --symbol BTCUSDT --duration 120 --interval 10
+
+# Extraction de kline data en temps réel (web socket) pour BTCUSDT avec un intervalle de 1 minute
+python3 src/data/binance/extract_kline_data_ws.py --symbol BTCUSDT --interval 1m
