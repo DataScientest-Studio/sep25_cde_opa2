@@ -1,5 +1,21 @@
 #!/bin/bash
 
+echo "Install playwright and deps for webscrapping part"
+# activate venv
+source venv/bin/activate
+# install python deps
+pip install -r requirements.txt
+
+# install chromium and deps
+python -m playwright install --with-deps chromium
+
+# deactivate venv
+deactivate
+
+echo "Project dependencies intallation ended"
+
+
+# Init project folders
 echo "Init folders for CryptoBot Project"
 
 cd ~
