@@ -79,20 +79,7 @@ async def main():
             }
             logger.info(f"Collection: {formatted_data_collection_name}")
             logger.info(f"Données formatées: {formatted_data_point}")
-            # not_formatted_data_point = {
-            #         'open_time': kline[0],
-            #         'close_time': kline[6],
-            #         'open_price': kline[1],
-            #         'high_price': kline[2],
-            #         'low_price': kline[3],
-            #         'close_price': kline[4],
-            #         'volume': kline[5],
-            #         'quote_volume': kline[7],
-            #         'trades_count': kline[8],
-            #         'taker_buy_base_volume': kline[9],
-            #         'taker_buy_quote_volume': kline[10],
-            #         'ignore': kline[11]  # Champ ignoré, peut être utilisé pour des données futures
-            #     }
+
             success_klines = collector.save_kline_to_mongodb(formatted_data_point, formatted_data_collection_name)
 
     await client.close_connection()

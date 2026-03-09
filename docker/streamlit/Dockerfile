@@ -2,11 +2,6 @@ FROM python:3.11-slim
 ARG PYTHONPATH="."
 ENV PYTHONPATH=$PYTHONPATH
 
-# Installer les dépendances système nécessaires
-# RUN apt-get update && apt-get install -y \
-#     curl \
-#     && rm -rf /var/lib/apt/lists/*
-
 # Définir le répertoire de travail
 WORKDIR /app
 
