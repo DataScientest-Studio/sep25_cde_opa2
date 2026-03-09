@@ -121,10 +121,78 @@ services:
           condition: service_completed_successfully
       restart: "no"
 
+  # Streamlit application
+  streamlit:
+    build:
+      context: .
+      dockerfile: docker/streamlit/Dockerfile
+    container_name: streamlit-app
+    env_file:
+      - .env
+    environment:
+      ENV: docker
+    ports:
+      - "8501:8501"
+    depends_on:
+      mongo:
+        condition: service_started
+      mongo-init:
+        condition: service_completed_successfully
+      postgres:
+        condition: service_healthy
+      postgres-init:
+        condition: service_completed_successfully
+    restart: unless-stopped
+    volumes:
+      # Optionnel : pour le développement, monter le code source en temps réel
+      # - ./src:/app/src
+      - streamlit_data:/app/data  # Pour persister les données si nécessaire
+
+  # Service pour collecter les données MongoDB (WebSocket Binance)
+  data-collector:
+    build:
+      context: .
+      dockerfile: docker/python/Dockerfile
+    container_name: data-collector
+    command: python -m src.data.binance.extract_kline_data_ws --symbol BTCUSDT --interval 1m
+    env_file:
+      - .env
+    environment:
+      ENV: docker
+    depends_on:
+      mongo:
+        condition: service_started
+      mongo-init:
+        condition: service_completed_successfully
+    restart: unless-stopped
+
+  # Service pour synchroniser MongoDB vers PostgreSQL
+  data-transformer:
+    build:
+      context: .
+      dockerfile: docker/python/Dockerfile
+    container_name: data-transformer
+    command: python -m src.data.binance.transform_and_load
+    env_file:
+      - .env
+    environment:
+      ENV: docker
+    depends_on:
+      mongo:
+        condition: service_started
+      mongo-init:
+        condition: service_completed_successfully
+      postgres:
+        condition: service_healthy
+      postgres-init:
+        condition: service_completed_successfully
+    restart: unless-stopped
+
 volumes:
   mongo_data:
   postgresql_data:
   pgadmin_data:
+  streamlit_data:
   
 # Pour le montage des volumes locaux, on propose d'utiliser le chemin sur l'hôte : ~/DATAS/datascientest/projet/ (ou autre)
 # Dans lequel il faut créer les dossiers pour les données de MongoDB, PostgreSQL et pgAdmin, comme suit :
