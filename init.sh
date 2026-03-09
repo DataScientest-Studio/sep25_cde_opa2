@@ -1,11 +1,5 @@
 #!/bin/bash
 
-# Install project deps
-echo "Install project dependencies"
-
-sudo apt update
-sudo apt install -y xvfb
-
 echo "Install playwright and deps for webscrapping part"
 # activate venv
 source venv/bin/activate
