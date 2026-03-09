@@ -267,10 +267,10 @@ def main():
     # Limite du nombre de points
     max_points = st.sidebar.slider(
         "Nombre max de points", 
-        min_value=100, 
-        max_value=5000, 
-        value=1000,
-        step=100,
+        min_value=1,
+        max_value=1000,
+        value=10,
+        step=1,
         help="Limite le nombre de points affichés pour optimiser les performances"
     )
     
