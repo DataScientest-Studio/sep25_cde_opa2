@@ -110,6 +110,8 @@ services:
         context: .
         dockerfile: docker/scraper/Dockerfile
       container_name: scraper
+      volumes:
+        - ./data/external:/app/data/external
       env_file:
         - .env
       environment:

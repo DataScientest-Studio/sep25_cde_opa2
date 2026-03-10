@@ -1,3 +1,4 @@
+import argparse
 import json
 import time
 
@@ -18,6 +19,21 @@ DEFAULT_SYMBOLS = [
         "alisases": ["btc", "bitcoin"]
     }
 ]
+
+def parse_arguments():
+    """Parse les arguments de ligne de commande."""
+    parser = argparse.ArgumentParser(
+        description="Scrap un article sur investing.com afin d'enrichir ses données"
+    )
+    
+    parser.add_argument(
+        "--force-update",
+        type=bool,
+        default=False,
+        help="Forcer la mise à jour du fichier"
+    )
+    
+    return parser.parse_args()
 
 def get_cryptos_symbols_and_names(force_update=False) -> list[dict[str, str]] | None:
     file_name = "mapping_cryptos_symbol_name.json"
@@ -76,7 +92,8 @@ def set_crypto_symbol_to_articles(symbols: list[dict[str, str]] | None = None):
     print(symbols[0])
 
 def main():
-    symbols_and_names=get_cryptos_symbols_and_names()
+    args = parse_arguments()
+    symbols_and_names=get_cryptos_symbols_and_names(force_update=args.force_update)
     if not symbols_and_names:
         logger.warning(
             """La récupération du mapping entre le symbol d'une crypto et son nom n'a pas été possible.
