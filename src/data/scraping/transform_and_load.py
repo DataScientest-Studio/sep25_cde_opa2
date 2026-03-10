@@ -1,5 +1,7 @@
 import argparse
 import json
+import re
+import sys
 import time
 
 from pathlib import Path
@@ -7,9 +9,13 @@ from typing import cast
 
 from binance.client import Client
 from binance.exceptions import BinanceAPIException, BinanceRequestException
+from pymongo.cursor import Cursor
 
-from src.config import BINANCE_API_KEY, BINANCE_API_SECRET, PROJECT_ROOT
+from sklearn.feature_extraction.text import ENGLISH_STOP_WORDS
+
+from src.config import BINANCE_API_KEY, BINANCE_API_SECRET, DB_BOT_PASSWORD, DB_BOT_USER, DB_NAME, MONGO_DB_PORT, MONGO_HOST, PROJECT_ROOT
 from src.data.scraping.custom_logger import logger
+from src.data.scraping.scraping_mongo_client import ScrappingMongoClient
 
 # Define a default symbols list in case of api error, or file access errors.
 DEFAULT_SYMBOLS = [
@@ -19,6 +25,14 @@ DEFAULT_SYMBOLS = [
         "alisases": ["btc", "bitcoin"]
     }
 ]
+
+CRYPTO_SYMBOL_BLACKLIST = {
+    "ONE","KEY","DATA","HIGH","LOW","TOP","NEW","ALL","WIN",
+    "BAD","HOT","FUN","ACE","SUN","GAS","MAP","DOG","CAT",
+    "ANT","MAN","YOU","HER","HIM","NOW","DAY","RED","BLUE",
+    "GREEN","OPEN","SAFE","FREE","FAST","LIVE","COOL","RICH",
+    "HERO","MOON","STAR","WAVE"
+} 
 
 def parse_arguments():
     """Parse les arguments de ligne de commande."""
@@ -32,6 +46,13 @@ def parse_arguments():
         default=False,
         help="Forcer la mise à jour du fichier"
     )
+
+    parser.add_argument(
+        "--limit",
+        type=int,
+        default=1,
+        help="Nombre d'articles à traiter"
+    )    
     
     return parser.parse_args()
 
@@ -85,11 +106,64 @@ def get_cryptos_symbols_and_names(force_update=False) -> list[dict[str, str]] | 
         logger.error(f"Erreur lors de la récupération des données Binance: {e}")
         return None
 
-def set_crypto_symbol_to_articles(symbols: list[dict[str, str]] | None = None):
+def detect_crypto_symbol_in_article(article, symbols: list[dict[str, str]]):
+    article_with_symbols=dict()
+    detected_symbols=set()
+    text_full_lower=f"{article['title']} {article['text_content']}".lower()
+    
+    filtered_symbols = [
+        symbol for symbol in symbols 
+            if len(symbol['symbol']) >= 3 
+                and symbol['symbol'] not in CRYPTO_SYMBOL_BLACKLIST 
+                and symbol['symbol'].lower() not in ENGLISH_STOP_WORDS
+        ]
+
+    # Scan text
+    for symbol in filtered_symbols:
+        for alias in symbol['aliases']:
+            if re.search(rf"\b{re.escape(alias)}\b", text_full_lower, flags=re.IGNORECASE):
+                detected_symbols.add(symbol['symbol'])
+                break
+
+    if not detected_symbols:
+        return None
+    
+    article_with_symbols["_id"] = article['_id']
+    article_with_symbols["symbols"] = list(detected_symbols)
+
+    return article_with_symbols
+
+def detect_crypto_symbol_in_articles(articles: Cursor, symbols: list[dict[str, str]] | None = None):
+    articles_to_update = list()
     if not symbols:
         symbols = DEFAULT_SYMBOLS
 
-    print(symbols[0])
+    for article in articles:
+        article_to_update = detect_crypto_symbol_in_article(article, symbols)
+        if article_to_update:
+            articles_to_update.append(article_to_update)
+    
+    return articles_to_update
+
+def connect_to_mongo():
+    # Connect to mongo db and save datas
+    mongodb_config = {
+        'username': DB_BOT_USER,
+        'password': DB_BOT_PASSWORD,
+        'host': MONGO_HOST,
+        'port': MONGO_DB_PORT,
+        'db_name': DB_NAME
+    }       
+
+    # Initialisation du client mongo
+    mongodb_client = ScrappingMongoClient(mongodb_config)
+
+    # Connexion à MongoDB
+    if not mongodb_client.connect_to_mongodb():
+        logger.error("Impossible de se connecter à MongoDB")
+        sys.exit(1)
+    
+    return mongodb_client
 
 def main():
     args = parse_arguments()
@@ -100,7 +174,12 @@ def main():
                Ainsi, seul le Bitcoin sera évalué dans l'identification des symbols présents dans les articles.
             """)
 
-    set_crypto_symbol_to_articles(symbols_and_names)
+    mongodb_client=connect_to_mongo()
+    collection_name='investing_articles'
+
+    articles=mongodb_client.get_complete_articles(collection_name, args.limit)
+
+    detect_crypto_symbol_in_articles(articles, symbols=symbols_and_names)
 
 
 if __name__ == "__main__":

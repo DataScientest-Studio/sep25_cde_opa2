@@ -75,6 +75,28 @@ class ScrappingMongoClient:
         except PyMongoError as e:
             logger.error(f"Erreur lors de la récupération des articles: {e}")
             return False
+
+    def get_complete_articles(self, collection_name: str, limit: int = 1) -> Cursor:
+        """
+        Récupère les articles dont le contenu a été récupé
+
+        Args:
+            collection_name: Nom de la collection MongoDB
+            limit: Nombre max d'articles retournés
+        """
+
+        try:
+            collection = self.db[collection_name]
+            complete_articles=collection.find(
+                {
+                    "content_scraped": True
+                },
+                limit=limit
+            )
+            return complete_articles
+        except PyMongoError as e:
+            logger.error(f"Erreur lors de la récupération des articles: {e}")
+            return False        
     
     def update_articles(self, data:List[Dict], collection_name: str) -> bool:
         """
