@@ -1,3 +1,4 @@
+<<<<<<< Updated upstream
 beautifulsoup4==4.14.3
 certifi==2026.1.4
 charset-normalizer==3.4.4
@@ -10,6 +11,9 @@ lxml==6.0.2
 packaging==23.2
 playwright==1.58.0
 pluggy==1.6.0
+=======
+dnspython==2.7.0
+>>>>>>> Stashed changes
 psycopg==3.3.2
 psycopg-binary==3.3.2
 pyee==13.0.1
