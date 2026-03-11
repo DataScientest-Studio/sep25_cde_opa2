@@ -192,16 +192,13 @@ def connect_to_mongo_and_save_data(data: List[Dict]):
         sys.exit(1)
 
     # Save in MongoDB
-    save_scrapping = mongodb_client.save_scrapping_to_mongodb(data, 'investing_articles')
+    results = mongodb_client.save_to_mongodb(data, 'investing_articles', is_source=True)
+
+    if results and results["new_ids"]:
+        logger.info(f"{len(results['new_ids'])} nouveaux articles ajoutés à la base.")
 
     # Close connexions
     mongodb_client.close_connections()
-
-    if save_scrapping:
-        logger.info("Sauvegarde du scrapping terminée avec succès\n")
-    else:
-        logger.error("Erreur lors de la sauvegarde\n")
-        sys.exit(1)
 
 def main():
     articles_data=scrap_pages()
