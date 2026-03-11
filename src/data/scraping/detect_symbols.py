@@ -107,7 +107,8 @@ def get_cryptos_symbols_and_names(force_update=False) -> list[dict[str, str]] | 
         return None
 
 def detect_crypto_symbol_in_article(article, symbols: list[dict[str, str]]):
-    article_with_symbols=dict()
+    original_article_id=article.pop("_id")
+    article_with_symbols=dict(article)
     detected_symbols=set()
     text_full_lower=f"{article['title']} {article['text_content']}".lower()
     
@@ -128,7 +129,7 @@ def detect_crypto_symbol_in_article(article, symbols: list[dict[str, str]]):
     if not detected_symbols:
         return None
     
-    article_with_symbols["_id"] = article['_id']
+    article_with_symbols["original_id"] = original_article_id
     article_with_symbols["symbols"] = list(detected_symbols)
 
     return article_with_symbols
@@ -167,6 +168,7 @@ def connect_to_mongo():
 
 def main():
     args = parse_arguments()
+
     symbols_and_names=get_cryptos_symbols_and_names(force_update=args.force_update)
     if not symbols_and_names:
         logger.warning(
@@ -177,9 +179,30 @@ def main():
     mongodb_client=connect_to_mongo()
     collection_name='investing_articles'
 
+    mongodb_client.db[collection_name].create_index([
+        ("content_scraped", 1), 
+        ("crypto_detected", 1)
+    ])
+
     articles=mongodb_client.get_complete_articles(collection_name, args.limit)
 
-    detect_crypto_symbol_in_articles(articles, symbols=symbols_and_names)
+    articles_with_symbols=detect_crypto_symbol_in_articles(articles, symbols=symbols_and_names)
+
+    # Save in MongoDB
+    results = mongodb_client.save_to_mongodb(articles_with_symbols, 'investing_articles_enriched')
+
+    # Flag original articles
+    if results and results["original_ids"]:
+        success=mongodb_client.flag_articles(ids=results["original_ids"], flag="crypto_detected", value=True, collection_name="investing_articles")
+        if success:
+            print(f"Detection de symboles terminée : {len(results['original_ids'])} articles traités et marqués.")
+        else:
+            print("Échec du flag dans la source.")
+            print("Les données ont été sauvegardées, mais seront ré-analysées au prochain lancement car le flag n'a pas pu être mis à jour.")
+            sys.exit(1)
+
+    # Close connexions
+    mongodb_client.close_connections()   
 
 
 if __name__ == "__main__":
