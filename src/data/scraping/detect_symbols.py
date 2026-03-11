@@ -127,7 +127,7 @@ def detect_crypto_symbol_in_article(article, symbols: list[dict[str, str]]):
                 break
 
     if not detected_symbols:
-        return None
+        logger.warning(f"Pas de symbol trouvé pour {original_article_id}, {article['title']}")
     
     article_with_symbols["original_id"] = original_article_id
     article_with_symbols["symbols"] = list(detected_symbols)
@@ -195,10 +195,10 @@ def main():
     if results and results["original_ids"]:
         success=mongodb_client.flag_articles(ids=results["original_ids"], flag="crypto_detected", value=True, collection_name="investing_articles")
         if success:
-            print(f"Detection de symboles terminée : {len(results['original_ids'])} articles traités et marqués.")
+            logger.info(f"Detection de symboles terminée : {len(results['original_ids'])} articles traités et marqués.")
         else:
-            print("Échec du flag dans la source.")
-            print("Les données ont été sauvegardées, mais seront ré-analysées au prochain lancement car le flag n'a pas pu être mis à jour.")
+            logger.error("Échec du flag dans la source.")
+            logger.error("Les données ont été sauvegardées, mais seront ré-analysées au prochain lancement car le flag n'a pas pu être mis à jour.")
             sys.exit(1)
 
     # Close connexions
