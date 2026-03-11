@@ -20,7 +20,8 @@ Project Organization
     │   ├── pgadmin        <- Contains the servers.json file to configure ther servers
     │   │   └── .servers.sample    <- To rename servers.json, remplace 'xxxxxxx' with the right values, same as in .env
     │   │
-    │   └── python         <- Contains the DockerFile to prepare the pyhton container
+    │   ├── python         <- Contains the DockerFile to prepare the python container
+    │   └── streamlit      <- Contains the DockerFile to prepare the streamlit container
     │
     ├── logs               <- Logs from training and predicting
     │
@@ -38,12 +39,22 @@ Project Organization
     ├── requirements.txt   <- The requirements file for reproducing the analysis environment, e.g.
     │                         generated with `pip freeze > requirements.txt`
     │
+    ├── compose.yaml       <- Docker compose file to run the different containers of the project
+    │
+    ├── Makefile           <- Makefile to automate the different steps of the project
+    │
     ├── src                <- Source code for use in this project.
     │   ├── __init__.py    <- Makes src a Python module
     │   │
     │   ├── data           <- Scripts to download or generate data
-    │   │   └── make_dataset.py
-    │   │
+    │   │   ├── make_dataset.py
+    │   │   └── binance
+    │   │       ├── BinanceDataCollector.py (class to collect data from Binance API and save it in MongoDB)
+    │   │       ├── extract_exchange_info.py
+    │   │       ├── extract_klines_data.py
+    │   │       ├── extract_realtime_data.py
+    │   │       └── extract_kline_data_ws.py
+    │   │
     │   ├── features       <- Scripts to turn raw data into features for modeling
     │   │   └── build_features.py
     │   │
@@ -58,8 +69,12 @@ Project Organization
     │   │
     │   ├── visualization  <- Scripts to create exploratory and results oriented visualizations
     │   │   └── visualize.py
-    │   ├── config.py      <- Expose the environement variables, to be imported by other scripts.
-    │   └── config         <- Describe the parameters used in train_model.py and predict_model.py
+    │   │   └── streamlit
+    │   │       └── klines_viewer.py
+    │   ├── config.py           <- Expose the environement variables, to be imported by other scripts.
+    │   ├── custom_logger.py    <- Create a custom logger  
+    │   ├── config              <- Describe the parameters used in train_model.py and predict_model.py
+    │   └── scripts.sample      <- Python scripts call examples
 
 --------
 
