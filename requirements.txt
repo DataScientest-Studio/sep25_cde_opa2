@@ -21,6 +21,12 @@ pytest-base-url==2.1.0
 pytest-playwright==0.7.2
 python-dateutil==2.9.0.post0
 python-dotenv==1.2.1
+python-binance==1.0.19
+pandas==2.1.4
+numpy==1.24.4
+streamlit==1.31.0
+streamlit-autorefresh==1.0.1
+plotly==5.24.1
 python-slugify==8.0.4
 pytz==2025.2
 regex==2026.1.15
