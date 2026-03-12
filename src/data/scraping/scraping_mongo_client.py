@@ -111,44 +111,42 @@ class ScrappingMongoClient:
         Returns:
             bool: True si la sauvegarde est réussie
         """
+
+        if not data:
+            logger.warning("Aucune donnée à sauvegarder")
+            return False
+
         try:
-            if not data:
-                logger.warning("Aucune donnée à sauvegarder")
-                return False
-            
             collection = self.db[collection_name]
-            
-            # Insertion des données
-            updated_count = 0
-            skipped_count  = 0
+            now = datetime.now().timestamp()            
+            operations = []
             
             for document in data:
                 update_fields = {k: v for k, v in document.items() if k != "_id"}
-                try:
-                    now = datetime.now().timestamp()
-                    result=collection.update_one(
-                            {'_id': document['_id']}, 
-                            {
-                                '$set': {
-                                    **update_fields,
-                                    'last_seen': now,
-                                    'content_scraped': True
-                                }
-                            }
-                        )
-                    if result.modified_count > 0:
-                        updated_count+=1
-                    else:
-                        skipped_count+=1
-                except PyMongoError as e:
-                        logger.warning(f"Erreur lors de la mise à jour des articles: {e}")
+
+                op = UpdateOne(
+                    {'_id': document['_id']}, 
+                    {
+                        "$set": {
+                                **update_fields,
+                                'last_seen': now,
+                                'content_scraped': True
+                            },
+                    },
+                )
+
+                operations.append(op)
+            
+            # Execution
+            result = collection.bulk_write(operations, ordered=False)
                     
-            logger.info(f"Mise à jour terminée: {updated_count} documents mis à jour, {skipped_count} doublons ignorés")
+            logger.info(f"Mise à jour terminée: {result.matched_count}, {result.modified_count} documents mis à jour sur {len(data)}.")
+            
             return True
             
         except PyMongoError as e:
             logger.error(f"Erreur lors de la mise à jour dans MongoDB: {e}")
-            return False
+            return False    
 
     def flag_articles(self, ids:List[ObjectId], flag: str, value: bool, collection_name: str) -> bool:
         """
@@ -241,9 +239,9 @@ class ScrappingMongoClient:
                         "comments_scraped": False
                     }
                 else:
-                    # Enrichissement, copie de la source vers une collection
+                    # Enrichissement et copie de la source vers une collection
                     # La collection enrichie servira de base pour le calcul des features
-                    # Et l'envoie vers postgresSQL
+                    # Et l'envoi vers postgresSQL
                     set_on_insert = {
                         "enriched_at": now,
                         "features_calculated": False,
@@ -263,12 +261,10 @@ class ScrappingMongoClient:
             # Exécution
             result = collection.bulk_write(operations, ordered=False)
 
-            # 1. Récupérer les IDs des documents NOUVELLEMENT créés par MongoDB
-            # result.upserted_ids est un dict {index_dans_la_liste: new_id}
+            # Ids créés
             new_ids = list(result.upserted_ids.values())
 
-            # 2. Récupérer les original_ids (provenant de ta source) pour tous les docs traités
-            # On considère que si c'est dans 'data', c'est un succès potentiel
+            # Ids originaux
             original_ids = [d["original_id"] for d in data if "original_id" in d]
 
             logger.info(f"Sauvegarde terminée: {len(new_ids)} documents insérés, {result.matched_count} documents mis à jour")

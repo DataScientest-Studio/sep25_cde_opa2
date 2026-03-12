@@ -169,41 +169,46 @@ def connect_to_mongo():
 def main():
     args = parse_arguments()
 
-    symbols_and_names=get_cryptos_symbols_and_names(force_update=args.force_update)
-    if not symbols_and_names:
-        logger.warning(
-            """La récupération du mapping entre le symbol d'une crypto et son nom n'a pas été possible.
-               Ainsi, seul le Bitcoin sera évalué dans l'identification des symbols présents dans les articles.
-            """)
+    try:
+        symbols_and_names=get_cryptos_symbols_and_names(force_update=args.force_update)
+        if not symbols_and_names:
+            logger.warning(
+                """La récupération du mapping entre le symbol d'une crypto et son nom n'a pas été possible.
+                Ainsi, seul le Bitcoin sera évalué dans l'identification des symbols présents dans les articles.
+                """)
 
-    mongodb_client=connect_to_mongo()
-    collection_name='investing_articles'
+        mongodb_client=connect_to_mongo()
+        collection_name='investing_articles'
 
-    mongodb_client.db[collection_name].create_index([
-        ("content_scraped", 1), 
-        ("crypto_detected", 1)
-    ])
+        mongodb_client.db[collection_name].create_index([
+            ("content_scraped", 1), 
+            ("crypto_detected", 1)
+        ])
 
-    articles=mongodb_client.get_complete_articles(collection_name, args.limit)
+        articles=mongodb_client.get_complete_articles(collection_name, args.limit)
 
-    articles_with_symbols=detect_crypto_symbol_in_articles(articles, symbols=symbols_and_names)
+        articles_with_symbols=detect_crypto_symbol_in_articles(articles, symbols=symbols_and_names)
 
-    # Save in MongoDB
-    results = mongodb_client.save_to_mongodb(articles_with_symbols, 'investing_articles_enriched')
+        # Save in MongoDB
+        results = mongodb_client.save_to_mongodb(articles_with_symbols, 'investing_articles_enriched')
 
-    # Flag original articles
-    if results and results["original_ids"]:
-        success=mongodb_client.flag_articles(ids=results["original_ids"], flag="crypto_detected", value=True, collection_name="investing_articles")
-        if success:
-            logger.info(f"Detection de symboles terminée : {len(results['original_ids'])} articles traités et marqués.")
-        else:
-            logger.error("Échec du flag dans la source.")
-            logger.error("Les données ont été sauvegardées, mais seront ré-analysées au prochain lancement car le flag n'a pas pu être mis à jour.")
+        # Flag original articles
+        if results and results["original_ids"]:
+            success=mongodb_client.flag_articles(ids=results["original_ids"], flag="crypto_detected", value=True, collection_name="investing_articles")
+            if success:
+                logger.info(f"Detection de symboles terminée : {len(results['original_ids'])} articles traités et marqués.")
+            else:
+                logger.error("Échec du flag dans la source.")
+                logger.error("Les données ont été sauvegardées, mais seront ré-analysées au prochain lancement car le flag n'a pas pu être mis à jour.")
+                sys.exit(1)
+
+    except Exception as e:
+            logger.error(f"Erreur critique dans le main : {e}")
             sys.exit(1)
-
-    # Close connexions
-    mongodb_client.close_connections()   
-
+    finally:
+        # Close connexions
+        if mongodb_client: 
+            mongodb_client.close_connections()
 
 if __name__ == "__main__":
     main()
