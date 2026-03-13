@@ -174,38 +174,45 @@ def connect_to_mongo_and_save_data(data: List[Dict]):
         logger.info('Aucune données à insérer!')
         return None
 
-    # Connect to mongo db and save datas
-    mongodb_config = {
-        'username': DB_BOT_USER,
-        'password': DB_BOT_PASSWORD,
-        'host': MONGO_HOST,
-        'port': MONGO_DB_PORT,
-        'db_name': DB_NAME
-    }       
+    try: 
+        # Connect to mongo db and save datas
+        mongodb_config = {
+            'username': DB_BOT_USER,
+            'password': DB_BOT_PASSWORD,
+            'host': MONGO_HOST,
+            'port': MONGO_DB_PORT,
+            'db_name': DB_NAME
+        }       
 
-    # Init MongoDB Client
-    mongodb_client = ScrappingMongoClient(mongodb_config)
+        # Init MongoDB Client
+        mongodb_client = ScrappingMongoClient(mongodb_config)
 
-    # Connect to MongoDB
-    if not mongodb_client.connect_to_mongodb():
-        logger.error("Impossible de se connecter à MongoDB")
-        sys.exit(1)
+        # Connect to MongoDB
+        if not mongodb_client.connect_to_mongodb():
+            logger.error("Impossible de se connecter à MongoDB")
+            sys.exit(1)
 
-    # Save in MongoDB
-    save_scrapping = mongodb_client.save_scrapping_to_mongodb(data, 'investing_articles')
+        # Save in MongoDB
+        results = mongodb_client.save_to_mongodb(data, 'investing_articles', is_source=True)
 
-    # Close connexions
-    mongodb_client.close_connections()
+        if results and results["new_ids"]:
+            logger.info(f"{len(results['new_ids'])} nouveaux articles ajoutés à la base.")
 
-    if save_scrapping:
-        logger.info("Sauvegarde du scrapping terminée avec succès\n")
-    else:
-        logger.error("Erreur lors de la sauvegarde\n")
-        sys.exit(1)
-
+    except Exception as e:
+            logger.error(f"Erreur critique dans la sauvegarde des données : {e}")
+            sys.exit(1)
+    finally:
+        # Close connexions
+        if mongodb_client: 
+            mongodb_client.close_connections()
+    
 def main():
-    articles_data=scrap_pages()
-    connect_to_mongo_and_save_data(articles_data)
+    try:
+        articles_data=scrap_pages()
+        connect_to_mongo_and_save_data(articles_data)
+    except Exception as e:
+        logger.error(f"Erreur critique dans le main : {e}")
+        sys.exit(1)
 
 if __name__ == "__main__":
     main()

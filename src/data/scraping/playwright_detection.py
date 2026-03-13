@@ -79,7 +79,7 @@ def get_html_with_playwright(page: Page, url: str, selector: str):
     
     for attempt in range(max_retry):
         try:
-            human_sleep(sleep=random.uniform(5, 15), msg="Attente humaine")
+            # human_sleep(sleep=random.uniform(5, 15), msg="Attente humaine")
 
             page.set_extra_http_headers({
                 "Accept-Language": "fr-FR,fr;q=0.9"
@@ -112,10 +112,10 @@ def get_html_with_playwright(page: Page, url: str, selector: str):
             human_sleep(sleep=random.uniform(6, 20), msg="Attente humaine après chargement")
 
             # Natural human behaviors as mouse move, scroll
-            page.evaluate(
-                "window.scrollTo(0, document.body.scrollHeight)"
-            )
-            human_sleep(sleep=random.uniform(5, 15), msg="Attente humaine après scroll")
+            # page.evaluate(
+            #     "window.scrollTo(0, document.body.scrollHeight)"
+            # )
+            # human_sleep(sleep=random.uniform(5, 15), msg="Attente humaine après scroll")
 
             for _ in range(random.randint(2, 4)):
                 page.mouse.wheel(
