@@ -1,5 +1,5 @@
 
-from src.data.scraping.custom_logger import logger
+from src.custom_logger import logger
 from typing import Dict, List
 from datetime import datetime
 

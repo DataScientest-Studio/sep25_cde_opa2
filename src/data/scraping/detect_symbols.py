@@ -14,7 +14,7 @@ from pymongo.cursor import Cursor
 from sklearn.feature_extraction.text import ENGLISH_STOP_WORDS
 
 from src.config import BINANCE_API_KEY, BINANCE_API_SECRET, DB_BOT_PASSWORD, DB_BOT_USER, DB_NAME, MONGO_DB_PORT, MONGO_HOST, PROJECT_ROOT
-from src.data.scraping.custom_logger import logger
+from src.custom_logger import logger
 from src.data.scraping.scraping_mongo_client import ScrappingMongoClient
 
 # Define a default symbols list in case of api error, or file access errors.
