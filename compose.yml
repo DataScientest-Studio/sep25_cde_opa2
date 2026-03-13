@@ -110,6 +110,7 @@ services:
         context: .
         dockerfile: docker/scraper/Dockerfile
       container_name: scraper
+      command: ["python", "-m", "src.data.scraping.main"]
       volumes:
         - ./data/external:/app/data/external
       env_file:
@@ -121,7 +122,7 @@ services:
           condition: service_started
         mongo-init:
           condition: service_completed_successfully
-      restart: "no"
+      restart: unless-stopped
 
   # Streamlit application
   streamlit:
