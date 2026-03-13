@@ -67,7 +67,7 @@ def scrap_pages():
             page.close()
             close_playwright(p, browser)
 
-            human_sleep(sleep=random.uniform(60, 180), msg="Attente humaine après limit de page dans la session ou 403")
+            human_sleep(sleep=random.uniform(30, 60), msg="Attente humaine après limit de page dans la session ou 403")
 
             # Start a new playwright session
             p, browser, page = start_playwright_session()
@@ -158,7 +158,7 @@ def scrap_pages():
         
         logger.info(f'Récupération des articles de la page {page_to_scrap} terminée.')
         if session_page_limit != 1 and len(pages_to_scrap) > 1 and index < len(pages_to_scrap)-1:
-            human_sleep(sleep=random.uniform(40, 120), msg="Attente humaine entre 2 pages")  
+            human_sleep(sleep=random.uniform(20, 60), msg="Attente humaine entre 2 pages")  
             
     
     logger.info(f"Récupération de la liste d'articles terminées, {len(articles_data)} trouvés.")

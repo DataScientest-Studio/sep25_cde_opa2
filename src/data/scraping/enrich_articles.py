@@ -70,7 +70,7 @@ def complete_articles(articles_to_complete: Cursor):
             page.close()
             close_playwright(p, browser)
 
-            human_sleep(sleep=random.uniform(60, 180), msg="Attente humaine après limit de page dans la session ou 403")
+            human_sleep(sleep=random.uniform(30, 60), msg="Attente humaine après limit de page dans la session ou 403")
 
             # Start a new playwright session
             p, browser, page = start_playwright_session()
@@ -109,7 +109,7 @@ def complete_articles(articles_to_complete: Cursor):
         # Due to the limit from query, we can use this method to count the number of the articles
         nb_articles_to_complete=len(articles)
         if session_page_limit != 1 and nb_articles_to_complete > 1 and index < nb_articles_to_complete-1:
-            human_sleep(sleep=random.uniform(40, 120), msg="Attente humaine entre 2 pages")          
+            human_sleep(sleep=random.uniform(20, 60), msg="Attente humaine entre 2 pages")          
    
     logger.info(f"Récupération de {pages_scraped} article(s) sur {nb_articles_to_complete} terminée")
     return articles_completed
