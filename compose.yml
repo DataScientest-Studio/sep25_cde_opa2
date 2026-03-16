@@ -189,11 +189,11 @@ services:
     restart: unless-stopped
 
   # Service pour collecter les données historiques Binance
-  get-historical-klines:
+  get-historical-data:
     build:
       context: .
       dockerfile: docker/python/Dockerfile
-    container_name: get-historical-klines
+    container_name: get-historical-data
     command: bash src/data/binance/extract_historical_klines.sh
     env_file:
       - .env

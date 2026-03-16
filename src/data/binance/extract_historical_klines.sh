@@ -18,6 +18,10 @@ python -m src.data.binance.extract_klines_data --symbol BTCUSDT --start_date $ST
 echo "Collecte des données BTCUSDT (1m, 10 jours)..."
 python -m src.data.binance.extract_klines_data --symbol BTCUSDT --start_date $START_DATE --interval 1m --days 10
 
+# Récupération des exchange_info de Binance (symbols)
+echo "Récupération des informations sur les symboles Binance..."
+python -m src.data.binance.extract_exchange_info_data
+
 # On pourrait ajouter d'autres symboles ou intervalles si nécessaire ou même éditer les commandes ci-dessus 
 # pour collecter des données en fonction de nos besoins spécifiques.
 
