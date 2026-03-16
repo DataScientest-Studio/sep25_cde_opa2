@@ -194,7 +194,7 @@ services:
       context: .
       dockerfile: docker/python/Dockerfile
     container_name: get-historical-data
-    command: bash src/data/binance/extract_historical_klines.sh
+    command: bash src/data/binance/extract_historical_data.sh
     env_file:
       - .env
     environment:
