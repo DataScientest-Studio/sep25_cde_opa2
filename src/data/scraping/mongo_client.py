@@ -8,7 +8,7 @@ from pymongo.errors import PyMongoError
 from pymongo.cursor import Cursor
 from bson.objectid import ObjectId
 
-class ScrappingMongoClient:
+class MongoClient:
     """Classe pour la connection et le stockage dans MongoDB."""
     
     def __init__(self, mongodb_config: Dict[str, str]):

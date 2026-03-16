@@ -5,10 +5,10 @@ from typing import Dict, List
 from datetime import datetime
 import random
 
-from src.data.scraping.scraping_mongo_client import ScrappingMongoClient
+from src.data.scraping.mongo_client import MongoClient
 from src.custom_logger import logger
 from src.config import DB_NAME, MONGO_DB_PORT, DB_BOT_USER, DB_BOT_PASSWORD, MONGO_HOST, ENV
-from src.data.scraping.playwright_detection import close_cookie_modal, close_playwright, close_signup_modal, get_html_with_playwright, human_sleep, init_playwright, start_playwright_session
+from src.data.scraping.antibot import close_cookie_modal, close_playwright, close_signup_modal, get_html_with_playwright, human_sleep, init_playwright, start_playwright_session
 
 
 def parse_arguments():
@@ -185,7 +185,7 @@ def connect_to_mongo_and_save_data(data: List[Dict]):
         }       
 
         # Init MongoDB Client
-        mongodb_client = ScrappingMongoClient(mongodb_config)
+        mongodb_client = MongoClient(mongodb_config)
 
         # Connect to MongoDB
         if not mongodb_client.connect_to_mongodb():
