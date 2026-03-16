@@ -12,6 +12,7 @@ Project Organization
     ├── .env.sample        <- To rename .env, contains the environment variables for this project.
     ├── data
     │   ├── external       <- Data from third party sources.
+    │   │   └── mapping_cryptos_symbol_name.json    <- Contain a mapping between symbol and crypto names
     │   ├── interim        <- Intermediate data that has been transformed.
     │   ├── processed      <- The final, canonical data sets for modeling.
     │   └── raw            <- The original, immutable data dump.
@@ -21,6 +22,7 @@ Project Organization
     │   │   └── .servers.sample    <- To rename servers.json, remplace 'xxxxxxx' with the right values, same as in .env
     │   │
     │   ├── python         <- Contains the DockerFile to prepare the python container
+    │   └── scraper        <- Contains the DockerFile to prepare the scraper container
     │   └── streamlit      <- Contains the DockerFile to prepare the streamlit container
     │
     ├── logs               <- Logs from training and predicting
@@ -48,12 +50,19 @@ Project Organization
     │   │
     │   ├── data           <- Scripts to download or generate data
     │   │   ├── make_dataset.py
-    │   │   └── binance
-    │   │       ├── BinanceDataCollector.py (class to collect data from Binance API and save it in MongoDB)
-    │   │       ├── extract_exchange_info.py
-    │   │       ├── extract_klines_data.py
-    │   │       ├── extract_realtime_data.py
-    │   │       └── extract_kline_data_ws.py
+    │   │   ├── binance
+    │   │   │   ├── BinanceDataCollector.py (class to collect data from Binance API and save it in MongoDB)
+    │   │   │   ├── extract_exchange_info.py
+    │   │   │   ├── extract_klines_data.py
+    │   │   │   ├── extract_realtime_data.py
+    │   │   │   └── extract_kline_data_ws.py
+    │   │   └── scraper
+    │   │       ├── antibot.py             <- Antibot detection using playwright
+    │   │       ├── detect_symbols.py      <- Detect symbols in text
+    │   │       ├── enrich_articles.py     <- Enrich collected articles 
+    │   │       ├── index_articles.py      <- Collect articles from a source
+    │   │       ├── main.py                <- Start scraping scripts with ProcessPoolExecutor
+    │   │       └── mongo_client.py        <- Client to connect and save data to mongoDb
     │   │
     │   ├── features       <- Scripts to turn raw data into features for modeling
     │   │   └── build_features.py
