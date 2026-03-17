@@ -10,7 +10,7 @@ START_DATE="2025-01-01"
 TODAY=$(date +%Y-%m-%d)
 DAYS=$(( ( $(date -d "$TODAY" +%s) - $(date -d "$START_DATE" +%s) ) / 86400 ))
 
-# Collecte des données BTCUSDT - depuis 2024-01-01 jusqu'à aujourd'hui avec intervalle 1h
+# Collecte des données BTCUSDT - depuis 2025-01-01 jusqu'à aujourd'hui avec intervalle 1h
 echo "Collecte des données BTCUSDT (1h, $DAYS jours depuis $START_DATE)..."
 python -m src.data.binance.extract_klines_data --symbol BTCUSDT --start_date $START_DATE --interval 1h --days $DAYS
 
