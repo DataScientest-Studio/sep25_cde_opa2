@@ -8,7 +8,7 @@ from bs4 import BeautifulSoup as bs
 from src.data.scraping.antibot import close_cookie_modal, close_playwright, close_signup_modal, get_html_with_playwright, human_sleep, start_playwright_session
 from src.data.scraping.mongo_client import MongoClient
 from src.custom_logger import logger
-from src.config import DB_NAME, ENV, MONGO_DB_PORT, DB_BOT_USER, DB_BOT_PASSWORD, MONGO_HOST
+from src.config import DB_NAME, ENV, MONGO_DB_PORT, DB_BOT_USER, DB_BOT_PASSWORD, MONGO_HOST, SCRAPER_ENRICH_LIMIT
 
 def parse_arguments():
     """Parse les arguments de ligne de commande."""
@@ -19,7 +19,7 @@ def parse_arguments():
     parser.add_argument(
         "--limit",
         type=int,
-        default=1,
+        default=SCRAPER_ENRICH_LIMIT,
         help="Nombre d'articles à compléter"
     )
     

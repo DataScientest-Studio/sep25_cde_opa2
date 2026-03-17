@@ -7,7 +7,7 @@ import random
 
 from src.data.scraping.mongo_client import MongoClient
 from src.custom_logger import logger
-from src.config import DB_NAME, MONGO_DB_PORT, DB_BOT_USER, DB_BOT_PASSWORD, MONGO_HOST, ENV
+from src.config import DB_NAME, MONGO_DB_PORT, DB_BOT_USER, DB_BOT_PASSWORD, MONGO_HOST, ENV, SCRAPER_INDEX_LIMIT
 from src.data.scraping.antibot import close_cookie_modal, close_playwright, close_signup_modal, get_html_with_playwright, human_sleep, init_playwright, start_playwright_session
 
 
@@ -27,7 +27,7 @@ def parse_arguments():
     parser.add_argument(
         '--nb_page',
         type=int,
-        default=1,
+        default=SCRAPER_INDEX_LIMIT,
         help="Nombre de page à scrapper"
     )
     
