@@ -1,7 +1,6 @@
 from concurrent.futures import ProcessPoolExecutor
 import signal
 import subprocess
-import time
 import sys
 
 from src.custom_logger import logger
