@@ -45,7 +45,7 @@ def connect_to_mongo():
     
     return mongodb_client
 
-def complete_articles(articles_to_complete: Cursor):
+def complete_articles(articles_to_complete: Cursor, client: MongoClient, collection: str):
     # Playwright is used to bypass cloudflare protection of investing.com
     p, browser, page = start_playwright_session()
 
@@ -54,9 +54,10 @@ def complete_articles(articles_to_complete: Cursor):
     pages_scraped = 0
     consecutive_403 = 0
 
-    articles_completed=list()
+    articles_in_error=list()
 
     articles=list(articles_to_complete)
+    nb_articles_to_complete=len(articles)
 
     for index, article in enumerate(articles):
         article_data=dict()
@@ -104,32 +105,45 @@ def complete_articles(articles_to_complete: Cursor):
             article_data['text_content']=article_complete_content.text
         
         logger.info(f"Récupération du contenu de l'article {index+1} terminée")
-        articles_completed.append(article_data)
+        
+        # Save immediately.
+        # If an error occurs, save data in a list and try to save at the end of the loop.
+        success=client.update_articles([article_data], collection)
+        if not success:
+            logger.error(f"Échec de la mise à jour l'article {index+1}, stockage de l'article dans une liste pour retenter en sortie de boucle.")
+            articles_in_error.append(article_data)
+        else:
+            logger.info(f"Sauvegarde de l'article {index+1} terminée")
 
         # Due to the limit from query, we can use this method to count the number of the articles
-        nb_articles_to_complete=len(articles)
         if session_page_limit != 1 and nb_articles_to_complete > 1 and index < nb_articles_to_complete-1:
             human_sleep(sleep=random.uniform(20, 60), msg="Attente humaine entre 2 pages")          
    
-    logger.info(f"Récupération de {pages_scraped} article(s) sur {nb_articles_to_complete} terminée")
-    return articles_completed
-
+    logger.info(f"Récupération de {pages_scraped} article(s) sur {nb_articles_to_complete} terminée.")
+    logger.info(f"{pages_scraped-len(articles_in_error)} article(s) sauvées immédiatement.")
+    logger.info(f"{len(articles_in_error)} articles en erreur avec nouvelle tentative en fin de boucle.")
+    return articles_in_error
 
 def main():
     args = parse_arguments()
 
     try: 
         mongodb_client=connect_to_mongo()
-        collection_name='investing_articles'
+        collection='investing_articles'
 
-        articles_to_complete=mongodb_client.get_articles_to_complete(collection_name, args.limit)
+        articles_to_complete=mongodb_client.get_articles_to_complete(collection, args.limit)
         
-        articles_completed=complete_articles(articles_to_complete)
-        
-        success=mongodb_client.update_articles(articles_completed, collection_name)
-        if not success:
-            logger.error("Échec de la mise à jour des articles.")
-            sys.exit(1)
+        articles_in_error=complete_articles(articles_to_complete, client=mongodb_client, collection=collection)
+
+        # Try to save only the rest of articles if exists.
+        # The list could have some articles to save because of on error in a previous try during the enrich loop.
+        if len(articles_in_error):
+            success=mongodb_client.update_articles(articles_in_error, collection)
+            if not success:
+                logger.error("Échec de la mise à jour des articles restants à sauver.")
+                sys.exit(1)
+            else:
+                logger.info(f"{len(articles_in_error)} articles restants sauvés en fin de boucle.")
 
     except Exception as e:
             logger.error(f"Erreur critique dans le main : {e}")
