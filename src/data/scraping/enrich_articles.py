@@ -53,6 +53,7 @@ def complete_articles(articles_to_complete: Cursor, client: MongoClient, collect
     session_page_limit = 1 if ENV == "docker" else random.randint(3, 6)  
     pages_scraped = 0
     consecutive_403 = 0
+    articles_scraped = 0
 
     articles_in_error=list()
 
@@ -92,6 +93,7 @@ def complete_articles(articles_to_complete: Cursor, client: MongoClient, collect
 
         consecutive_403 = 0
         pages_scraped += 1
+        articles_scraped += 1
 
         # As a human, close cookie and signup modals
         close_cookie_modal(page)
@@ -119,8 +121,8 @@ def complete_articles(articles_to_complete: Cursor, client: MongoClient, collect
         if session_page_limit != 1 and nb_articles_to_complete > 1 and index < nb_articles_to_complete-1:
             human_sleep(sleep=random.uniform(20, 60), msg="Attente humaine entre 2 pages")          
    
-    logger.info(f"Récupération de {pages_scraped} article(s) sur {nb_articles_to_complete} terminée.")
-    logger.info(f"{pages_scraped-len(articles_in_error)} article(s) sauvées immédiatement.")
+    logger.info(f"Récupération de {articles_scraped} article(s) sur {nb_articles_to_complete} terminée.")
+    logger.info(f"{articles_scraped-len(articles_in_error)} article(s) sauvées immédiatement.")
     logger.info(f"{len(articles_in_error)} articles en erreur avec nouvelle tentative en fin de boucle.")
     return articles_in_error
 
