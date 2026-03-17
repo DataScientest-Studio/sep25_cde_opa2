@@ -118,13 +118,27 @@ def complete_articles(articles_to_complete: Cursor):
 def main():
     args = parse_arguments()
 
-    mongodb_client=connect_to_mongo()
-    collection_name='investing_articles'
+    try: 
+        mongodb_client=connect_to_mongo()
+        collection_name='investing_articles'
 
-    articles_to_complete=mongodb_client.get_articles_to_complete(collection_name, args.limit)
-    
-    articles_completed=complete_articles(articles_to_complete)
-    mongodb_client.update_articles(articles_completed, collection_name)
+        articles_to_complete=mongodb_client.get_articles_to_complete(collection_name, args.limit)
+        
+        articles_completed=complete_articles(articles_to_complete)
+        
+        success=mongodb_client.update_articles(articles_completed, collection_name)
+        if not success:
+            logger.error("Échec de la mise à jour des articles.")
+            sys.exit(1)
+
+    except Exception as e:
+            logger.error(f"Erreur critique dans le main : {e}")
+            sys.exit(1)
+    finally:
+        # Close connexions
+        if mongodb_client: 
+            mongodb_client.close_connections()  
+        
 
 if __name__ == "__main__":
     main()
