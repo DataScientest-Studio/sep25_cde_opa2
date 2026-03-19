@@ -43,7 +43,7 @@ with psycopg.connect(
         conn.autocommit = True
         with conn.cursor() as cur:
 
-            # Attribue les droits au user DB_BOT_USER
+            # Attribue les droit au user DB_BOT_USER
             cur.execute(f"""
                 GRANT CONNECT ON DATABASE {DB_NAME} TO {DB_BOT_USER};
                 GRANT USAGE, CREATE ON SCHEMA public TO {DB_BOT_USER};
