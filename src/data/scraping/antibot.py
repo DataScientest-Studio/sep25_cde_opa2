@@ -1,7 +1,7 @@
 import time
 import random
 from playwright.sync_api import sync_playwright, Browser, Page, BrowserContext, Playwright
-from src.data.scraping.custom_logger import logger
+from src.custom_logger import logger
 from src.config import ENV
 
 def human_sleep(sleep: int, msg: str):
@@ -103,7 +103,7 @@ def get_html_with_playwright(page: Page, url: str, selector: str):
                 logger.warning("Page en 403, probable détection du scraping automatisé")
 
                 # Wait long before retry
-                human_sleep(sleep=random.uniform(60, 180), msg="Attente humaine avant retry")
+                human_sleep(sleep=random.uniform(30, 60), msg="Attente humaine avant retry")
                 return None
 
             # Waiting for the element
@@ -136,6 +136,6 @@ def get_html_with_playwright(page: Page, url: str, selector: str):
 
         except Exception as e:
             logger.error(str(e))
-            human_sleep(sleep=random.uniform(30, 90), msg="Attente humaine après erreur")
+            human_sleep(sleep=random.uniform(20, 60), msg="Attente humaine après erreur")
 
     return None

@@ -13,9 +13,9 @@ from pymongo.cursor import Cursor
 
 from sklearn.feature_extraction.text import ENGLISH_STOP_WORDS
 
-from src.config import BINANCE_API_KEY, BINANCE_API_SECRET, DB_BOT_PASSWORD, DB_BOT_USER, DB_NAME, MONGO_DB_PORT, MONGO_HOST, PROJECT_ROOT
-from src.data.scraping.custom_logger import logger
-from src.data.scraping.scraping_mongo_client import ScrappingMongoClient
+from src.config import BINANCE_API_KEY, BINANCE_API_SECRET, DB_BOT_PASSWORD, DB_BOT_USER, DB_NAME, MONGO_DB_PORT, MONGO_HOST, PROJECT_ROOT, SCRAPER_DETECT_LIMIT
+from src.custom_logger import logger
+from src.data.scraping.mongo_client import MongoClient
 
 # Define a default symbols list in case of api error, or file access errors.
 DEFAULT_SYMBOLS = [
@@ -50,7 +50,7 @@ def parse_arguments():
     parser.add_argument(
         "--limit",
         type=int,
-        default=1,
+        default=SCRAPER_DETECT_LIMIT,
         help="Nombre d'articles à traiter"
     )    
     
@@ -157,7 +157,7 @@ def connect_to_mongo():
     }       
 
     # Initialisation du client mongo
-    mongodb_client = ScrappingMongoClient(mongodb_config)
+    mongodb_client = MongoClient(mongodb_config)
 
     # Connexion à MongoDB
     if not mongodb_client.connect_to_mongodb():

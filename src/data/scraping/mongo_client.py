@@ -1,14 +1,14 @@
 
-from src.data.scraping.custom_logger import logger
+from src.custom_logger import logger
 from typing import Dict, List
 from datetime import datetime
 
-from pymongo import MongoClient, UpdateOne
+from pymongo import MongoClient as PyMongoClient, UpdateOne
 from pymongo.errors import PyMongoError
 from pymongo.cursor import Cursor
 from bson.objectid import ObjectId
 
-class ScrappingMongoClient:
+class MongoClient:
     """Classe pour la connection et le stockage dans MongoDB."""
     
     def __init__(self, mongodb_config: Dict[str, str]):
@@ -43,7 +43,7 @@ class ScrappingMongoClient:
                 logger.error("Configuration MongoDB incomplète. Veuillez vérifier les variables d'environnement.")
                 return False
             
-            self.mongo_client = MongoClient(connection_string)
+            self.mongo_client = PyMongoClient(connection_string)
             self.db = self.mongo_client[db_name]
             
             # Test de la connexion
