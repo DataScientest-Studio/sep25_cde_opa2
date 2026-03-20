@@ -211,6 +211,24 @@ services:
         condition: service_completed_successfully
     restart: unless-stopped
 
+  # Service pour collecter les données historiques Binance
+  get-historical-data:
+    build:
+      context: .
+      dockerfile: docker/python/Dockerfile
+    container_name: get-historical-data
+    command: bash src/data/binance/extract_historical_data.sh
+    env_file:
+      - .env
+    environment:
+      ENV: docker
+    depends_on:
+      mongo:
+        condition: service_started
+      mongo-init:
+        condition: service_completed_successfully
+    restart: "no"
+
 volumes:
   mongo_data:
   postgresql_data:
