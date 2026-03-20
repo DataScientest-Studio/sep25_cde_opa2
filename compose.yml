@@ -1,4 +1,24 @@
 services:
+  # Ofelia // Simple Job scheduler
+  scheduler:
+    image: mcuadros/ofelia:latest
+    container_name: cryptobot-scheduler
+    user: root
+    command: daemon --config /etc/ofelia/config.ini
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./scheduler.ini:/etc/ofelia/config.ini
+    depends_on:
+      mongo:
+        condition: service_started
+      mongo-init:
+        condition: service_completed_successfully
+      postgres:
+        condition: service_healthy
+      postgres-init:
+        condition: service_completed_successfully         
+    restart: always
+    
   # Mongo containers
   mongo:
     image: mongo:7
@@ -110,6 +130,9 @@ services:
         context: .
         dockerfile: docker/scraper/Dockerfile
       container_name: scraper
+      command: sh -c "python -m src.data.scraping.main && sleep infinity"
+      volumes:
+        - ./data/external:/app/data/external
       env_file:
         - .env
       environment:
@@ -119,7 +142,7 @@ services:
           condition: service_started
         mongo-init:
           condition: service_completed_successfully
-      restart: "no"
+      restart: unless-stopped
 
   # Streamlit application
   streamlit:
@@ -187,6 +210,24 @@ services:
       postgres-init:
         condition: service_completed_successfully
     restart: unless-stopped
+
+  # Service pour collecter les données historiques Binance
+  get-historical-data:
+    build:
+      context: .
+      dockerfile: docker/python/Dockerfile
+    container_name: get-historical-data
+    command: bash src/data/binance/extract_historical_data.sh
+    env_file:
+      - .env
+    environment:
+      ENV: docker
+    depends_on:
+      mongo:
+        condition: service_started
+      mongo-init:
+        condition: service_completed_successfully
+    restart: "no"
 
 volumes:
   mongo_data:

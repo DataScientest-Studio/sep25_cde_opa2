@@ -1,0 +1,5378 @@
+[
+    {
+        "symbol": "AGLD",
+        "name": "Adventure Gold",
+        "aliases": [
+            "agld",
+            "adventure gold"
+        ]
+    },
+    {
+        "symbol": "STPT",
+        "name": "Standard Tokenization Protocol",
+        "aliases": [
+            "stpt",
+            "standard tokenization protocol"
+        ]
+    },
+    {
+        "symbol": "SCR",
+        "name": "Scroll",
+        "aliases": [
+            "scr",
+            "scroll"
+        ]
+    },
+    {
+        "symbol": "UGX",
+        "name": "Uganda Shilling",
+        "aliases": [
+            "ugx",
+            "uganda shilling"
+        ]
+    },
+    {
+        "symbol": "NEAR",
+        "name": "NEAR Protocol",
+        "aliases": [
+            "near",
+            "near protocol"
+        ]
+    },
+    {
+        "symbol": "AUDIO",
+        "name": "Audius",
+        "aliases": [
+            "audio",
+            "audius"
+        ]
+    },
+    {
+        "symbol": "WLD",
+        "name": "Worldcoin",
+        "aliases": [
+            "wld",
+            "worldcoin"
+        ]
+    },
+    {
+        "symbol": "ETHFI",
+        "name": "ether.fi",
+        "aliases": [
+            "ethfi",
+            "ether.fi"
+        ]
+    },
+    {
+        "symbol": "FARM",
+        "name": "Harvest Finance",
+        "aliases": [
+            "farm",
+            "harvest finance"
+        ]
+    },
+    {
+        "symbol": "SDG",
+        "name": "Sudanese Pound",
+        "aliases": [
+            "sdg",
+            "sudanese pound"
+        ]
+    },
+    {
+        "symbol": "AVAOLD",
+        "name": "Travala.com",
+        "aliases": [
+            "avaold",
+            "travala.com"
+        ]
+    },
+    {
+        "symbol": "DGB",
+        "name": "DigiByte",
+        "aliases": [
+            "dgb",
+            "digibyte"
+        ]
+    },
+    {
+        "symbol": "WING",
+        "name": "Wing Token",
+        "aliases": [
+            "wing",
+            "wing token"
+        ]
+    },
+    {
+        "symbol": "BCH",
+        "name": "Bitcoin Cash",
+        "aliases": [
+            "bch",
+            "bitcoin cash"
+        ]
+    },
+    {
+        "symbol": "AI",
+        "name": "Sleepless AI",
+        "aliases": [
+            "ai",
+            "sleepless ai"
+        ]
+    },
+    {
+        "symbol": "JST",
+        "name": "JUST",
+        "aliases": [
+            "jst",
+            "just"
+        ]
+    },
+    {
+        "symbol": "HOT",
+        "name": "Holo",
+        "aliases": [
+            "hot",
+            "holo"
+        ]
+    },
+    {
+        "symbol": "AR",
+        "name": "Arweave",
+        "aliases": [
+            "ar",
+            "arweave"
+        ]
+    },
+    {
+        "symbol": "AT",
+        "name": "APRO",
+        "aliases": [
+            "at",
+            "apro"
+        ]
+    },
+    {
+        "symbol": "SEI",
+        "name": "Sei",
+        "aliases": [
+            "sei",
+            "sei"
+        ]
+    },
+    {
+        "symbol": "SEK",
+        "name": "Swedish Kroner",
+        "aliases": [
+            "sek",
+            "swedish kroner"
+        ]
+    },
+    {
+        "symbol": "BB",
+        "name": "BounceBit",
+        "aliases": [
+            "bb",
+            "bouncebit"
+        ]
+    },
+    {
+        "symbol": "A",
+        "name": "Vaulta",
+        "aliases": [
+            "a",
+            "vaulta"
+        ]
+    },
+    {
+        "symbol": "C",
+        "name": "Chainbase",
+        "aliases": [
+            "c",
+            "chainbase"
+        ]
+    },
+    {
+        "symbol": "QAR",
+        "name": "Qatar Riyal",
+        "aliases": [
+            "qar",
+            "qatar riyal"
+        ]
+    },
+    {
+        "symbol": "D",
+        "name": "Dar Open Network",
+        "aliases": [
+            "d",
+            "dar open network"
+        ]
+    },
+    {
+        "symbol": "JTO",
+        "name": "JITO",
+        "aliases": [
+            "jto",
+            "jito"
+        ]
+    },
+    {
+        "symbol": "F",
+        "name": "SynFutures",
+        "aliases": [
+            "f",
+            "synfutures"
+        ]
+    },
+    {
+        "symbol": "FLM",
+        "name": "Flamingo",
+        "aliases": [
+            "flm",
+            "flamingo"
+        ]
+    },
+    {
+        "symbol": "G",
+        "name": "Gravity",
+        "aliases": [
+            "g",
+            "gravity"
+        ]
+    },
+    {
+        "symbol": "RLUSD",
+        "name": "Ripple USD",
+        "aliases": [
+            "rlusd",
+            "ripple usd"
+        ]
+    },
+    {
+        "symbol": "FLR",
+        "name": "Flare",
+        "aliases": [
+            "flr",
+            "flare"
+        ]
+    },
+    {
+        "symbol": "BIGTIME",
+        "name": "Big Time",
+        "aliases": [
+            "bigtime",
+            "big time"
+        ]
+    },
+    {
+        "symbol": "S",
+        "name": "Sonic",
+        "aliases": [
+            "s",
+            "sonic"
+        ]
+    },
+    {
+        "symbol": "T",
+        "name": "Threshold",
+        "aliases": [
+            "t",
+            "threshold"
+        ]
+    },
+    {
+        "symbol": "U",
+        "name": "United Stables",
+        "aliases": [
+            "u",
+            "united stables"
+        ]
+    },
+    {
+        "symbol": "LYD",
+        "name": "Libyan Dinar",
+        "aliases": [
+            "lyd",
+            "libyan dinar"
+        ]
+    },
+    {
+        "symbol": "W",
+        "name": "Wormhole",
+        "aliases": [
+            "w",
+            "wormhole"
+        ]
+    },
+    {
+        "symbol": "SFP",
+        "name": "SafePal",
+        "aliases": [
+            "sfp",
+            "safepal"
+        ]
+    },
+    {
+        "symbol": "DIA",
+        "name": "DIA",
+        "aliases": [
+            "dia",
+            "dia"
+        ]
+    },
+    {
+        "symbol": "ARDR",
+        "name": "Ardor",
+        "aliases": [
+            "ardr",
+            "ardor"
+        ]
+    },
+    {
+        "symbol": "JUP",
+        "name": "Jupiter",
+        "aliases": [
+            "jup",
+            "jupiter"
+        ]
+    },
+    {
+        "symbol": "BEL",
+        "name": "Bella Protocol",
+        "aliases": [
+            "bel",
+            "bella protocol"
+        ]
+    },
+    {
+        "symbol": "JUV",
+        "name": "Juventus Fan Token",
+        "aliases": [
+            "juv",
+            "juventus fan token"
+        ]
+    },
+    {
+        "symbol": "WOO",
+        "name": "WOO",
+        "aliases": [
+            "woo",
+            "woo"
+        ]
+    },
+    {
+        "symbol": "1MBABYDOGE",
+        "name": "1M x BABYDOGE",
+        "aliases": [
+            "1mbabydoge",
+            "1m x babydoge"
+        ]
+    },
+    {
+        "symbol": "BLUR",
+        "name": "Blur",
+        "aliases": [
+            "blur",
+            "blur"
+        ]
+    },
+    {
+        "symbol": "STRK",
+        "name": "Starknet Token",
+        "aliases": [
+            "strk",
+            "starknet token"
+        ]
+    },
+    {
+        "symbol": "HRK",
+        "name": "Croatia Kuna",
+        "aliases": [
+            "hrk",
+            "croatia kuna"
+        ]
+    },
+    {
+        "symbol": "DF",
+        "name": "dForce",
+        "aliases": [
+            "df",
+            "dforce"
+        ]
+    },
+    {
+        "symbol": "WAVES",
+        "name": "Waves",
+        "aliases": [
+            "waves",
+            "waves"
+        ]
+    },
+    {
+        "symbol": "PGALA",
+        "name": "Old pNetwork Gala",
+        "aliases": [
+            "pgala",
+            "old pnetwork gala"
+        ]
+    },
+    {
+        "symbol": "FLOKI",
+        "name": "FLOKI",
+        "aliases": [
+            "floki",
+            "floki"
+        ]
+    },
+    {
+        "symbol": "SAND",
+        "name": "The Sandbox",
+        "aliases": [
+            "sand",
+            "the sandbox"
+        ]
+    },
+    {
+        "symbol": "AVNT",
+        "name": "Avantis",
+        "aliases": [
+            "avnt",
+            "avantis"
+        ]
+    },
+    {
+        "symbol": "DKK",
+        "name": "Danish Kroner",
+        "aliases": [
+            "dkk",
+            "danish kroner"
+        ]
+    },
+    {
+        "symbol": "BGN",
+        "name": "Bulgarian Leva",
+        "aliases": [
+            "bgn",
+            "bulgarian leva"
+        ]
+    },
+    {
+        "symbol": "FOR",
+        "name": "ForTube",
+        "aliases": [
+            "for",
+            "fortube"
+        ]
+    },
+    {
+        "symbol": "UMA",
+        "name": "UMA",
+        "aliases": [
+            "uma",
+            "uma"
+        ]
+    },
+    {
+        "symbol": "SCRT",
+        "name": "Secret",
+        "aliases": [
+            "scrt",
+            "secret"
+        ]
+    },
+    {
+        "symbol": "TUSD",
+        "name": "TrueUSD",
+        "aliases": [
+            "tusd",
+            "trueusd"
+        ]
+    },
+    {
+        "symbol": "COOKIE",
+        "name": "Cookie DAO",
+        "aliases": [
+            "cookie",
+            "cookie dao"
+        ]
+    },
+    {
+        "symbol": "MUBARAK",
+        "name": "Mubarak",
+        "aliases": [
+            "mubarak",
+            "mubarak"
+        ]
+    },
+    {
+        "symbol": "BHD",
+        "name": "Bahraini Dinar",
+        "aliases": [
+            "bhd",
+            "bahraini dinar"
+        ]
+    },
+    {
+        "symbol": "IDRT",
+        "name": "Rupiah Token",
+        "aliases": [
+            "idrt",
+            "rupiah token"
+        ]
+    },
+    {
+        "symbol": "FF",
+        "name": "Falcon Finance",
+        "aliases": [
+            "ff",
+            "falcon finance"
+        ]
+    },
+    {
+        "symbol": "OAX",
+        "name": "openANX",
+        "aliases": [
+            "oax",
+            "openanx"
+        ]
+    },
+    {
+        "symbol": "HARD",
+        "name": "Kava Lend",
+        "aliases": [
+            "hard",
+            "kava lend"
+        ]
+    },
+    {
+        "symbol": "BTCDOWN",
+        "name": "BTCDOWN",
+        "aliases": [
+            "btcdown",
+            "btcdown"
+        ]
+    },
+    {
+        "symbol": "UNI",
+        "name": "Uniswap",
+        "aliases": [
+            "uni",
+            "uniswap"
+        ]
+    },
+    {
+        "symbol": "HUF",
+        "name": "Hungarian Forint",
+        "aliases": [
+            "huf",
+            "hungarian forint"
+        ]
+    },
+    {
+        "symbol": "WRX",
+        "name": "WazirX",
+        "aliases": [
+            "wrx",
+            "wazirx"
+        ]
+    },
+    {
+        "symbol": "ETHDOWN",
+        "name": "ETHDOWN",
+        "aliases": [
+            "ethdown",
+            "ethdown"
+        ]
+    },
+    {
+        "symbol": "GO",
+        "name": "GoChain",
+        "aliases": [
+            "go",
+            "gochain"
+        ]
+    },
+    {
+        "symbol": "BIO",
+        "name": "Bio Protocol",
+        "aliases": [
+            "bio",
+            "bio protocol"
+        ]
+    },
+    {
+        "symbol": "SKL",
+        "name": "SKALE Network",
+        "aliases": [
+            "skl",
+            "skale network"
+        ]
+    },
+    {
+        "symbol": "SKY",
+        "name": "Sky",
+        "aliases": [
+            "sky",
+            "sky"
+        ]
+    },
+    {
+        "symbol": "WTC",
+        "name": "Walton",
+        "aliases": [
+            "wtc",
+            "walton"
+        ]
+    },
+    {
+        "symbol": "FLOW",
+        "name": "Flow",
+        "aliases": [
+            "flow",
+            "flow"
+        ]
+    },
+    {
+        "symbol": "SLP",
+        "name": "Smooth Love Potion",
+        "aliases": [
+            "slp",
+            "smooth love potion"
+        ]
+    },
+    {
+        "symbol": "TURTLE",
+        "name": "Turtle",
+        "aliases": [
+            "turtle",
+            "turtle"
+        ]
+    },
+    {
+        "symbol": "NXPC",
+        "name": "Nexpace",
+        "aliases": [
+            "nxpc",
+            "nexpace"
+        ]
+    },
+    {
+        "symbol": "ID",
+        "name": "Space ID",
+        "aliases": [
+            "id",
+            "space id"
+        ]
+    },
+    {
+        "symbol": "DOP",
+        "name": "Dominican Peso",
+        "aliases": [
+            "dop",
+            "dominican peso"
+        ]
+    },
+    {
+        "symbol": "IO",
+        "name": "IO.NET",
+        "aliases": [
+            "io",
+            "io.net"
+        ]
+    },
+    {
+        "symbol": "DOT",
+        "name": "Polkadot",
+        "aliases": [
+            "dot",
+            "polkadot"
+        ]
+    },
+    {
+        "symbol": "IQ",
+        "name": "IQ",
+        "aliases": [
+            "iq",
+            "iq"
+        ]
+    },
+    {
+        "symbol": "WRXOLD",
+        "name": "WazirX",
+        "aliases": [
+            "wrxold",
+            "wazirx"
+        ]
+    },
+    {
+        "symbol": "1INCH",
+        "name": "1inch",
+        "aliases": [
+            "1inch",
+            "1inch"
+        ]
+    },
+    {
+        "symbol": "MAD",
+        "name": "Moroccan Dirham",
+        "aliases": [
+            "mad",
+            "moroccan dirham"
+        ]
+    },
+    {
+        "symbol": "TURBO",
+        "name": "Turbo",
+        "aliases": [
+            "turbo",
+            "turbo"
+        ]
+    },
+    {
+        "symbol": "UNFI",
+        "name": "Unifi Protocol DAO",
+        "aliases": [
+            "unfi",
+            "unifi protocol dao"
+        ]
+    },
+    {
+        "symbol": "FTM",
+        "name": "Fantom",
+        "aliases": [
+            "ftm",
+            "fantom"
+        ]
+    },
+    {
+        "symbol": "POWR",
+        "name": "Powerledger",
+        "aliases": [
+            "powr",
+            "powerledger"
+        ]
+    },
+    {
+        "symbol": "MAV",
+        "name": "Maverick Protocol",
+        "aliases": [
+            "mav",
+            "maverick protocol"
+        ]
+    },
+    {
+        "symbol": "FTT",
+        "name": "FTX Token",
+        "aliases": [
+            "ftt",
+            "ftx token"
+        ]
+    },
+    {
+        "symbol": "BEAMX",
+        "name": "Beam (Formerly Merit Circle)",
+        "aliases": [
+            "beamx",
+            "beam (formerly merit circle)"
+        ]
+    },
+    {
+        "symbol": "ARKM",
+        "name": "Arkham",
+        "aliases": [
+            "arkm",
+            "arkham"
+        ]
+    },
+    {
+        "symbol": "ATOM",
+        "name": "Cosmos",
+        "aliases": [
+            "atom",
+            "cosmos"
+        ]
+    },
+    {
+        "symbol": "PENDLE",
+        "name": "Pendle",
+        "aliases": [
+            "pendle",
+            "pendle"
+        ]
+    },
+    {
+        "symbol": "QUICK",
+        "name": "QuickSwap",
+        "aliases": [
+            "quick",
+            "quickswap"
+        ]
+    },
+    {
+        "symbol": "BLZ",
+        "name": "Bluzelle",
+        "aliases": [
+            "blz",
+            "bluzelle"
+        ]
+    },
+    {
+        "symbol": "MBL",
+        "name": "MovieBloc",
+        "aliases": [
+            "mbl",
+            "moviebloc"
+        ]
+    },
+    {
+        "symbol": "SNT",
+        "name": "Status",
+        "aliases": [
+            "snt",
+            "status"
+        ]
+    },
+    {
+        "symbol": "SNS",
+        "name": "Solana Name Service",
+        "aliases": [
+            "sns",
+            "solana name service"
+        ]
+    },
+    {
+        "symbol": "SNX",
+        "name": "Synthetix Network Token",
+        "aliases": [
+            "snx",
+            "synthetix network token"
+        ]
+    },
+    {
+        "symbol": "FUN",
+        "name": "FunToken",
+        "aliases": [
+            "fun",
+            "funtoken"
+        ]
+    },
+    {
+        "symbol": "API3",
+        "name": "API3",
+        "aliases": [
+            "api3",
+            "api3"
+        ]
+    },
+    {
+        "symbol": "BMT",
+        "name": "Bubblemaps",
+        "aliases": [
+            "bmt",
+            "bubblemaps"
+        ]
+    },
+    {
+        "symbol": "QKC",
+        "name": "QuarkChain",
+        "aliases": [
+            "qkc",
+            "quarkchain"
+        ]
+    },
+    {
+        "symbol": "ROSE",
+        "name": "Oasis Network",
+        "aliases": [
+            "rose",
+            "oasis network"
+        ]
+    },
+    {
+        "symbol": "PORTAL",
+        "name": "Portal",
+        "aliases": [
+            "portal",
+            "portal"
+        ]
+    },
+    {
+        "symbol": "SOL",
+        "name": "Solana",
+        "aliases": [
+            "sol",
+            "solana"
+        ]
+    },
+    {
+        "symbol": "CITY",
+        "name": "Manchester City Fan Token",
+        "aliases": [
+            "city",
+            "manchester city fan token"
+        ]
+    },
+    {
+        "symbol": "LA",
+        "name": "Lagrange",
+        "aliases": [
+            "la",
+            "lagrange"
+        ]
+    },
+    {
+        "symbol": "BNB",
+        "name": "BNB",
+        "aliases": [
+            "bnb",
+            "bnb"
+        ]
+    },
+    {
+        "symbol": "CELR",
+        "name": "Celer Network",
+        "aliases": [
+            "celr",
+            "celer network"
+        ]
+    },
+    {
+        "symbol": "CGPT",
+        "name": "ChainGPT",
+        "aliases": [
+            "cgpt",
+            "chaingpt"
+        ]
+    },
+    {
+        "symbol": "OGN",
+        "name": "OriginToken",
+        "aliases": [
+            "ogn",
+            "origintoken"
+        ]
+    },
+    {
+        "symbol": "BND",
+        "name": "Brunei Dollar",
+        "aliases": [
+            "bnd",
+            "brunei dollar"
+        ]
+    },
+    {
+        "symbol": "CELO",
+        "name": "Celo",
+        "aliases": [
+            "celo",
+            "celo"
+        ]
+    },
+    {
+        "symbol": "AUCTION",
+        "name": "Auction",
+        "aliases": [
+            "auction",
+            "auction"
+        ]
+    },
+    {
+        "symbol": "BADGER",
+        "name": "Badger DAO",
+        "aliases": [
+            "badger",
+            "badger dao"
+        ]
+    },
+    {
+        "symbol": "LAYER",
+        "name": "Solayer",
+        "aliases": [
+            "layer",
+            "solayer"
+        ]
+    },
+    {
+        "symbol": "MANTA",
+        "name": "Manta",
+        "aliases": [
+            "manta",
+            "manta"
+        ]
+    },
+    {
+        "symbol": "TUSDOLD",
+        "name": "TrueUSD",
+        "aliases": [
+            "tusdold",
+            "trueusd"
+        ]
+    },
+    {
+        "symbol": "MULTI",
+        "name": "Multichain",
+        "aliases": [
+            "multi",
+            "multichain"
+        ]
+    },
+    {
+        "symbol": "CETUS",
+        "name": "Cetus Protocol",
+        "aliases": [
+            "cetus",
+            "cetus protocol"
+        ]
+    },
+    {
+        "symbol": "BNT",
+        "name": "Bancor",
+        "aliases": [
+            "bnt",
+            "bancor"
+        ]
+    },
+    {
+        "symbol": "BNX",
+        "name": "BinaryX",
+        "aliases": [
+            "bnx",
+            "binaryx"
+        ]
+    },
+    {
+        "symbol": "UTK",
+        "name": "xMoney",
+        "aliases": [
+            "utk",
+            "xmoney"
+        ]
+    },
+    {
+        "symbol": "SPK",
+        "name": "Spark",
+        "aliases": [
+            "spk",
+            "spark"
+        ]
+    },
+    {
+        "symbol": "MDL",
+        "name": "Moldovan Leu",
+        "aliases": [
+            "mdl",
+            "moldovan leu"
+        ]
+    },
+    {
+        "symbol": "ME",
+        "name": "Magic Eden",
+        "aliases": [
+            "me",
+            "magic eden"
+        ]
+    },
+    {
+        "symbol": "MDT",
+        "name": "Measurable Data Token",
+        "aliases": [
+            "mdt",
+            "measurable data token"
+        ]
+    },
+    {
+        "symbol": "AERGO",
+        "name": "Aergo",
+        "aliases": [
+            "aergo",
+            "aergo"
+        ]
+    },
+    {
+        "symbol": "RWUSD",
+        "name": "RWUSD",
+        "aliases": [
+            "rwusd",
+            "rwusd"
+        ]
+    },
+    {
+        "symbol": "BDOT",
+        "name": "BDOT",
+        "aliases": [
+            "bdot",
+            "bdot"
+        ]
+    },
+    {
+        "symbol": "EGLD",
+        "name": "MultiversX",
+        "aliases": [
+            "egld",
+            "multiversx"
+        ]
+    },
+    {
+        "symbol": "PLUME",
+        "name": "PLUME",
+        "aliases": [
+            "plume",
+            "plume"
+        ]
+    },
+    {
+        "symbol": "TRUMP",
+        "name": "OFFICIAL TRUMP",
+        "aliases": [
+            "trump",
+            "official trump"
+        ]
+    },
+    {
+        "symbol": "MET",
+        "name": "Meteora",
+        "aliases": [
+            "met",
+            "meteora"
+        ]
+    },
+    {
+        "symbol": "PUNDIX",
+        "name": "Pundi X",
+        "aliases": [
+            "pundix",
+            "pundi x"
+        ]
+    },
+    {
+        "symbol": "FXS",
+        "name": "Frax Share",
+        "aliases": [
+            "fxs",
+            "frax share"
+        ]
+    },
+    {
+        "symbol": "AEVO",
+        "name": "AEVO",
+        "aliases": [
+            "aevo",
+            "aevo"
+        ]
+    },
+    {
+        "symbol": "FLUX",
+        "name": "Flux",
+        "aliases": [
+            "flux",
+            "flux"
+        ]
+    },
+    {
+        "symbol": "TORN",
+        "name": "Tornado Cash",
+        "aliases": [
+            "torn",
+            "tornado cash"
+        ]
+    },
+    {
+        "symbol": "QNT",
+        "name": "Quant",
+        "aliases": [
+            "qnt",
+            "quant"
+        ]
+    },
+    {
+        "symbol": "OG",
+        "name": "OG Fan Token",
+        "aliases": [
+            "og",
+            "og fan token"
+        ]
+    },
+    {
+        "symbol": "ETHW",
+        "name": "Ethereum PoW",
+        "aliases": [
+            "ethw",
+            "ethereum pow"
+        ]
+    },
+    {
+        "symbol": "OM",
+        "name": "MANTRA",
+        "aliases": [
+            "om",
+            "mantra"
+        ]
+    },
+    {
+        "symbol": "AEUR",
+        "name": "Anchored EUR",
+        "aliases": [
+            "aeur",
+            "anchored eur"
+        ]
+    },
+    {
+        "symbol": "OP",
+        "name": "Optimism",
+        "aliases": [
+            "op",
+            "optimism"
+        ]
+    },
+    {
+        "symbol": "WETH",
+        "name": "Wrapped Ether",
+        "aliases": [
+            "weth",
+            "wrapped ether"
+        ]
+    },
+    {
+        "symbol": "SSV",
+        "name": "SSV Token",
+        "aliases": [
+            "ssv",
+            "ssv token"
+        ]
+    },
+    {
+        "symbol": "BUSD",
+        "name": "BUSD",
+        "aliases": [
+            "busd",
+            "busd"
+        ]
+    },
+    {
+        "symbol": "ARPA",
+        "name": "ARPA Network",
+        "aliases": [
+            "arpa",
+            "arpa network"
+        ]
+    },
+    {
+        "symbol": "BRL",
+        "name": "Brazilian Real",
+        "aliases": [
+            "brl",
+            "brazilian real"
+        ]
+    },
+    {
+        "symbol": "ALCX",
+        "name": "Alchemix",
+        "aliases": [
+            "alcx",
+            "alchemix"
+        ]
+    },
+    {
+        "symbol": "STG",
+        "name": "Stargate Finance",
+        "aliases": [
+            "stg",
+            "stargate finance"
+        ]
+    },
+    {
+        "symbol": "IOTX",
+        "name": "IoTeX",
+        "aliases": [
+            "iotx",
+            "iotex"
+        ]
+    },
+    {
+        "symbol": "SHIB",
+        "name": "SHIBA INU",
+        "aliases": [
+            "shib",
+            "shiba inu"
+        ]
+    },
+    {
+        "symbol": "FRONT",
+        "name": "Frontier",
+        "aliases": [
+            "front",
+            "frontier"
+        ]
+    },
+    {
+        "symbol": "KDA",
+        "name": "Kadena",
+        "aliases": [
+            "kda",
+            "kadena"
+        ]
+    },
+    {
+        "symbol": "ZAR",
+        "name": "South African Rand",
+        "aliases": [
+            "zar",
+            "south african rand"
+        ]
+    },
+    {
+        "symbol": "QUICKOLD",
+        "name": "QuickSwap OLD",
+        "aliases": [
+            "quickold",
+            "quickswap old"
+        ]
+    },
+    {
+        "symbol": "STO",
+        "name": "StakeStone",
+        "aliases": [
+            "sto",
+            "stakestone"
+        ]
+    },
+    {
+        "symbol": "STX",
+        "name": "Stacks",
+        "aliases": [
+            "stx",
+            "stacks"
+        ]
+    },
+    {
+        "symbol": "QI",
+        "name": "BENQI",
+        "aliases": [
+            "qi",
+            "benqi"
+        ]
+    },
+    {
+        "symbol": "MBOX",
+        "name": "MOBOX",
+        "aliases": [
+            "mbox",
+            "mobox"
+        ]
+    },
+    {
+        "symbol": "IOST",
+        "name": "IOST",
+        "aliases": [
+            "iost",
+            "iost"
+        ]
+    },
+    {
+        "symbol": "SUI",
+        "name": "Sui",
+        "aliases": [
+            "sui",
+            "sui"
+        ]
+    },
+    {
+        "symbol": "BSW",
+        "name": "Biswap",
+        "aliases": [
+            "bsw",
+            "biswap"
+        ]
+    },
+    {
+        "symbol": "CAKE",
+        "name": "PancakeSwap",
+        "aliases": [
+            "cake",
+            "pancakeswap"
+        ]
+    },
+    {
+        "symbol": "XUSD",
+        "name": "XUSD",
+        "aliases": [
+            "xusd",
+            "xusd"
+        ]
+    },
+    {
+        "symbol": "OMG",
+        "name": "OMG Network",
+        "aliases": [
+            "omg",
+            "omg network"
+        ]
+    },
+    {
+        "symbol": "SUN",
+        "name": "SUN",
+        "aliases": [
+            "sun",
+            "sun"
+        ]
+    },
+    {
+        "symbol": "ZBT",
+        "name": "Zerobase",
+        "aliases": [
+            "zbt",
+            "zerobase"
+        ]
+    },
+    {
+        "symbol": "TRXOLD",
+        "name": "Old BEP20 Tron",
+        "aliases": [
+            "trxold",
+            "old bep20 tron"
+        ]
+    },
+    {
+        "symbol": "BTC",
+        "name": "Bitcoin",
+        "aliases": [
+            "btc",
+            "bitcoin"
+        ]
+    },
+    {
+        "symbol": "UYU",
+        "name": "Uruguay Peso",
+        "aliases": [
+            "uyu",
+            "uruguay peso"
+        ]
+    },
+    {
+        "symbol": "IOTA",
+        "name": "IOTA",
+        "aliases": [
+            "iota",
+            "iota"
+        ]
+    },
+    {
+        "symbol": "REEF",
+        "name": "Reef",
+        "aliases": [
+            "reef",
+            "reef"
+        ]
+    },
+    {
+        "symbol": "AIXBT",
+        "name": "aixbt by Virtuals",
+        "aliases": [
+            "aixbt",
+            "aixbt by virtuals"
+        ]
+    },
+    {
+        "symbol": "OMR",
+        "name": "Oman Rial",
+        "aliases": [
+            "omr",
+            "oman rial"
+        ]
+    },
+    {
+        "symbol": "KES",
+        "name": "Kenya Shilling",
+        "aliases": [
+            "kes",
+            "kenya shilling"
+        ]
+    },
+    {
+        "symbol": "KEY",
+        "name": "Selfkey",
+        "aliases": [
+            "key",
+            "selfkey"
+        ]
+    },
+    {
+        "symbol": "RONIN",
+        "name": "Ronin",
+        "aliases": [
+            "ronin",
+            "ronin"
+        ]
+    },
+    {
+        "symbol": "BTS",
+        "name": "BitShares",
+        "aliases": [
+            "bts",
+            "bitshares"
+        ]
+    },
+    {
+        "symbol": "ONE",
+        "name": "Harmony",
+        "aliases": [
+            "one",
+            "harmony"
+        ]
+    },
+    {
+        "symbol": "RENDER",
+        "name": "Render",
+        "aliases": [
+            "render",
+            "render"
+        ]
+    },
+    {
+        "symbol": "ONG",
+        "name": "Ontology Gas",
+        "aliases": [
+            "ong",
+            "ontology gas"
+        ]
+    },
+    {
+        "symbol": "ANKR",
+        "name": "Ankr",
+        "aliases": [
+            "ankr",
+            "ankr"
+        ]
+    },
+    {
+        "symbol": "ALGO",
+        "name": "Algorand",
+        "aliases": [
+            "algo",
+            "algorand"
+        ]
+    },
+    {
+        "symbol": "UZS",
+        "name": "Uzbekistani Sum",
+        "aliases": [
+            "uzs",
+            "uzbekistani sum"
+        ]
+    },
+    {
+        "symbol": "SC",
+        "name": "Siacoin",
+        "aliases": [
+            "sc",
+            "siacoin"
+        ]
+    },
+    {
+        "symbol": "ONT",
+        "name": "Ontology",
+        "aliases": [
+            "ont",
+            "ontology"
+        ]
+    },
+    {
+        "symbol": "DYM",
+        "name": "Dymension",
+        "aliases": [
+            "dym",
+            "dymension"
+        ]
+    },
+    {
+        "symbol": "PIVX",
+        "name": "PIVX",
+        "aliases": [
+            "pivx",
+            "pivx"
+        ]
+    },
+    {
+        "symbol": "A2Z",
+        "name": "Arena-Z",
+        "aliases": [
+            "a2z",
+            "arena-z"
+        ]
+    },
+    {
+        "symbol": "HYPER",
+        "name": "Hyperlane",
+        "aliases": [
+            "hyper",
+            "hyperlane"
+        ]
+    },
+    {
+        "symbol": "DZD",
+        "name": "Algerian Dinar",
+        "aliases": [
+            "dzd",
+            "algerian dinar"
+        ]
+    },
+    {
+        "symbol": "WLFI",
+        "name": "World Liberty Financial",
+        "aliases": [
+            "wlfi",
+            "world liberty financial"
+        ]
+    },
+    {
+        "symbol": "MKR",
+        "name": "Maker",
+        "aliases": [
+            "mkr",
+            "maker"
+        ]
+    },
+    {
+        "symbol": "DODO",
+        "name": "DODO",
+        "aliases": [
+            "dodo",
+            "dodo"
+        ]
+    },
+    {
+        "symbol": "KGS",
+        "name": "Kyrgyzstani Som",
+        "aliases": [
+            "kgs",
+            "kyrgyzstani som"
+        ]
+    },
+    {
+        "symbol": "ICP",
+        "name": "Internet Computer",
+        "aliases": [
+            "icp",
+            "internet computer"
+        ]
+    },
+    {
+        "symbol": "RESOLV",
+        "name": "Resolv",
+        "aliases": [
+            "resolv",
+            "resolv"
+        ]
+    },
+    {
+        "symbol": "ZEC",
+        "name": "Zcash",
+        "aliases": [
+            "zec",
+            "zcash"
+        ]
+    },
+    {
+        "symbol": "XAF",
+        "name": "Central African CFA franc",
+        "aliases": [
+            "xaf",
+            "central african cfa franc"
+        ]
+    },
+    {
+        "symbol": "ICX",
+        "name": "ICON",
+        "aliases": [
+            "icx",
+            "icon"
+        ]
+    },
+    {
+        "symbol": "KMNO",
+        "name": "Kamino Finance",
+        "aliases": [
+            "kmno",
+            "kamino finance"
+        ]
+    },
+    {
+        "symbol": "XAI",
+        "name": "Xai",
+        "aliases": [
+            "xai",
+            "xai"
+        ]
+    },
+    {
+        "symbol": "ZEN",
+        "name": "Horizen",
+        "aliases": [
+            "zen",
+            "horizen"
+        ]
+    },
+    {
+        "symbol": "KP3R",
+        "name": "Keep3rV1",
+        "aliases": [
+            "kp3r",
+            "keep3rv1"
+        ]
+    },
+    {
+        "symbol": "ALPHA",
+        "name": "Stella",
+        "aliases": [
+            "alpha",
+            "stella"
+        ]
+    },
+    {
+        "symbol": "DOGE",
+        "name": "Dogecoin",
+        "aliases": [
+            "doge",
+            "dogecoin"
+        ]
+    },
+    {
+        "symbol": "DUSK",
+        "name": "Dusk",
+        "aliases": [
+            "dusk",
+            "dusk"
+        ]
+    },
+    {
+        "symbol": "HBAR",
+        "name": "Hedera Hashgraph",
+        "aliases": [
+            "hbar",
+            "hedera hashgraph"
+        ]
+    },
+    {
+        "symbol": "SXP",
+        "name": "Solar",
+        "aliases": [
+            "sxp",
+            "solar"
+        ]
+    },
+    {
+        "symbol": "OPN",
+        "name": "OPINION",
+        "aliases": [
+            "opn",
+            "opinion"
+        ]
+    },
+    {
+        "symbol": "MLN",
+        "name": "Enzyme",
+        "aliases": [
+            "mln",
+            "enzyme"
+        ]
+    },
+    {
+        "symbol": "SXT",
+        "name": "Space and Time",
+        "aliases": [
+            "sxt",
+            "space and time"
+        ]
+    },
+    {
+        "symbol": "PEPE",
+        "name": "Pepe",
+        "aliases": [
+            "pepe",
+            "pepe"
+        ]
+    },
+    {
+        "symbol": "KHR",
+        "name": "Cambodian riel",
+        "aliases": [
+            "khr",
+            "cambodian riel"
+        ]
+    },
+    {
+        "symbol": "IDR",
+        "name": "Indonesian Rupiah",
+        "aliases": [
+            "idr",
+            "indonesian rupiah"
+        ]
+    },
+    {
+        "symbol": "DOGS",
+        "name": "Dogs",
+        "aliases": [
+            "dogs",
+            "dogs"
+        ]
+    },
+    {
+        "symbol": "CTSI",
+        "name": "Cartesi",
+        "aliases": [
+            "ctsi",
+            "cartesi"
+        ]
+    },
+    {
+        "symbol": "BWP",
+        "name": "Botswana Pula",
+        "aliases": [
+            "bwp",
+            "botswana pula"
+        ]
+    },
+    {
+        "symbol": "LINEA",
+        "name": "Linea",
+        "aliases": [
+            "linea",
+            "linea"
+        ]
+    },
+    {
+        "symbol": "C98",
+        "name": "Coin98",
+        "aliases": [
+            "c98",
+            "coin98"
+        ]
+    },
+    {
+        "symbol": "OSMO",
+        "name": "Osmosis",
+        "aliases": [
+            "osmo",
+            "osmosis"
+        ]
+    },
+    {
+        "symbol": "SHELL",
+        "name": "MyShell",
+        "aliases": [
+            "shell",
+            "myshell"
+        ]
+    },
+    {
+        "symbol": "NTRN",
+        "name": "Neutron",
+        "aliases": [
+            "ntrn",
+            "neutron"
+        ]
+    },
+    {
+        "symbol": "SYN",
+        "name": "Synapse",
+        "aliases": [
+            "syn",
+            "synapse"
+        ]
+    },
+    {
+        "symbol": "MMK",
+        "name": "Myanmar Kyat",
+        "aliases": [
+            "mmk",
+            "myanmar kyat"
+        ]
+    },
+    {
+        "symbol": "VIDT",
+        "name": "VIDT DAO",
+        "aliases": [
+            "vidt",
+            "vidt dao"
+        ]
+    },
+    {
+        "symbol": "SYS",
+        "name": "Syscoin",
+        "aliases": [
+            "sys",
+            "syscoin"
+        ]
+    },
+    {
+        "symbol": "GAL",
+        "name": "Galxe",
+        "aliases": [
+            "gal",
+            "galxe"
+        ]
+    },
+    {
+        "symbol": "MMT",
+        "name": "Momentum",
+        "aliases": [
+            "mmt",
+            "momentum"
+        ]
+    },
+    {
+        "symbol": "GAS",
+        "name": "NeoGas",
+        "aliases": [
+            "gas",
+            "neogas"
+        ]
+    },
+    {
+        "symbol": "BOME",
+        "name": "BOOK OF MEME",
+        "aliases": [
+            "bome",
+            "book of meme"
+        ]
+    },
+    {
+        "symbol": "COMBO",
+        "name": "COMBO",
+        "aliases": [
+            "combo",
+            "combo"
+        ]
+    },
+    {
+        "symbol": "THETA",
+        "name": "Theta Token",
+        "aliases": [
+            "theta",
+            "theta token"
+        ]
+    },
+    {
+        "symbol": "NEXO",
+        "name": "Nexo",
+        "aliases": [
+            "nexo",
+            "nexo"
+        ]
+    },
+    {
+        "symbol": "ORN",
+        "name": "Orion Protocol",
+        "aliases": [
+            "orn",
+            "orion protocol"
+        ]
+    },
+    {
+        "symbol": "PERL",
+        "name": "Perlin",
+        "aliases": [
+            "perl",
+            "perlin"
+        ]
+    },
+    {
+        "symbol": "AAVE",
+        "name": "Aave",
+        "aliases": [
+            "aave",
+            "aave"
+        ]
+    },
+    {
+        "symbol": "MNT",
+        "name": "Mongolian Tughrik",
+        "aliases": [
+            "mnt",
+            "mongolian tughrik"
+        ]
+    },
+    {
+        "symbol": "GBP",
+        "name": "Pound Sterling",
+        "aliases": [
+            "gbp",
+            "pound sterling"
+        ]
+    },
+    {
+        "symbol": "BONK",
+        "name": "Bonk",
+        "aliases": [
+            "bonk",
+            "bonk"
+        ]
+    },
+    {
+        "symbol": "BYN",
+        "name": "Belarusian Ruble",
+        "aliases": [
+            "byn",
+            "belarusian ruble"
+        ]
+    },
+    {
+        "symbol": "PERP",
+        "name": "Perpetual Protocol",
+        "aliases": [
+            "perp",
+            "perpetual protocol"
+        ]
+    },
+    {
+        "symbol": "SAPIEN",
+        "name": "SAPIEN",
+        "aliases": [
+            "sapien",
+            "sapien"
+        ]
+    },
+    {
+        "symbol": "BICO",
+        "name": "Biconomy",
+        "aliases": [
+            "bico",
+            "biconomy"
+        ]
+    },
+    {
+        "symbol": "ALLO",
+        "name": "Allora",
+        "aliases": [
+            "allo",
+            "allora"
+        ]
+    },
+    {
+        "symbol": "NEWT",
+        "name": "Newton Protocol",
+        "aliases": [
+            "newt",
+            "newton protocol"
+        ]
+    },
+    {
+        "symbol": "HMSTR",
+        "name": "Hamster Kombat",
+        "aliases": [
+            "hmstr",
+            "hamster kombat"
+        ]
+    },
+    {
+        "symbol": "XEC",
+        "name": "eCash",
+        "aliases": [
+            "xec",
+            "ecash"
+        ]
+    },
+    {
+        "symbol": "PEOPLE",
+        "name": "ConstitutionDAO",
+        "aliases": [
+            "people",
+            "constitutiondao"
+        ]
+    },
+    {
+        "symbol": "ZIL",
+        "name": "Zilliqa",
+        "aliases": [
+            "zil",
+            "zilliqa"
+        ]
+    },
+    {
+        "symbol": "VAI",
+        "name": "Vai",
+        "aliases": [
+            "vai",
+            "vai"
+        ]
+    },
+    {
+        "symbol": "XEM",
+        "name": "NEM",
+        "aliases": [
+            "xem",
+            "nem"
+        ]
+    },
+    {
+        "symbol": "CTXC",
+        "name": "Cortex",
+        "aliases": [
+            "ctxc",
+            "cortex"
+        ]
+    },
+    {
+        "symbol": "KEYFI",
+        "name": "KeyFi",
+        "aliases": [
+            "keyfi",
+            "keyfi"
+        ]
+    },
+    {
+        "symbol": "YB",
+        "name": "Yield Basis",
+        "aliases": [
+            "yb",
+            "yield basis"
+        ]
+    },
+    {
+        "symbol": "BIDR",
+        "name": "BIDR",
+        "aliases": [
+            "bidr",
+            "bidr"
+        ]
+    },
+    {
+        "symbol": "OOKI",
+        "name": "OokiDAO",
+        "aliases": [
+            "ooki",
+            "ookidao"
+        ]
+    },
+    {
+        "symbol": "APEOLD",
+        "name": "Old ApeCoin",
+        "aliases": [
+            "apeold",
+            "old apecoin"
+        ]
+    },
+    {
+        "symbol": "KMD",
+        "name": "Komodo",
+        "aliases": [
+            "kmd",
+            "komodo"
+        ]
+    },
+    {
+        "symbol": "EPIC",
+        "name": "Epic Chain",
+        "aliases": [
+            "epic",
+            "epic chain"
+        ]
+    },
+    {
+        "symbol": "GEL",
+        "name": "Georgian Lari",
+        "aliases": [
+            "gel",
+            "georgian lari"
+        ]
+    },
+    {
+        "symbol": "ZK",
+        "name": "zkSync",
+        "aliases": [
+            "zk",
+            "zksync"
+        ]
+    },
+    {
+        "symbol": "ZKC",
+        "name": "Boundless",
+        "aliases": [
+            "zkc",
+            "boundless"
+        ]
+    },
+    {
+        "symbol": "USUAL",
+        "name": "Usual",
+        "aliases": [
+            "usual",
+            "usual"
+        ]
+    },
+    {
+        "symbol": "ZKP",
+        "name": "zkPass",
+        "aliases": [
+            "zkp",
+            "zkpass"
+        ]
+    },
+    {
+        "symbol": "KNC",
+        "name": "KyberNetwork",
+        "aliases": [
+            "knc",
+            "kybernetwork"
+        ]
+    },
+    {
+        "symbol": "HUMA",
+        "name": "Huma Finance",
+        "aliases": [
+            "huma",
+            "huma finance"
+        ]
+    },
+    {
+        "symbol": "PROS",
+        "name": "Prosper",
+        "aliases": [
+            "pros",
+            "prosper"
+        ]
+    },
+    {
+        "symbol": "PROM",
+        "name": "Prometeus",
+        "aliases": [
+            "prom",
+            "prometeus"
+        ]
+    },
+    {
+        "symbol": "BGBP",
+        "name": "BGBP",
+        "aliases": [
+            "bgbp",
+            "bgbp"
+        ]
+    },
+    {
+        "symbol": "CATI",
+        "name": "Catizen",
+        "aliases": [
+            "cati",
+            "catizen"
+        ]
+    },
+    {
+        "symbol": "FOGO",
+        "name": "FOGO",
+        "aliases": [
+            "fogo",
+            "fogo"
+        ]
+    },
+    {
+        "symbol": "GFT",
+        "name": "Gifto",
+        "aliases": [
+            "gft",
+            "gifto"
+        ]
+    },
+    {
+        "symbol": "BIFI",
+        "name": "Beefy.Finance",
+        "aliases": [
+            "bifi",
+            "beefy.finance"
+        ]
+    },
+    {
+        "symbol": "PORTO",
+        "name": "FC Porto Fan Token",
+        "aliases": [
+            "porto",
+            "fc porto fan token"
+        ]
+    },
+    {
+        "symbol": "OPUSDCE",
+        "name": "Bridged USDC(OP network)",
+        "aliases": [
+            "opusdce",
+            "bridged usdc(op network)"
+        ]
+    },
+    {
+        "symbol": "WAXP",
+        "name": "WAX",
+        "aliases": [
+            "waxp",
+            "wax"
+        ]
+    },
+    {
+        "symbol": "DOLO",
+        "name": "Dolomite",
+        "aliases": [
+            "dolo",
+            "dolomite"
+        ]
+    },
+    {
+        "symbol": "DOOD",
+        "name": "Doodles",
+        "aliases": [
+            "dood",
+            "doodles"
+        ]
+    },
+    {
+        "symbol": "MORPHO",
+        "name": "Morpho Token",
+        "aliases": [
+            "morpho",
+            "morpho token"
+        ]
+    },
+    {
+        "symbol": "TAO",
+        "name": "Bittensor",
+        "aliases": [
+            "tao",
+            "bittensor"
+        ]
+    },
+    {
+        "symbol": "MTL",
+        "name": "Metal DAO",
+        "aliases": [
+            "mtl",
+            "metal dao"
+        ]
+    },
+    {
+        "symbol": "VET",
+        "name": "VeChain",
+        "aliases": [
+            "vet",
+            "vechain"
+        ]
+    },
+    {
+        "symbol": "USDT",
+        "name": "TetherUS",
+        "aliases": [
+            "usdt",
+            "tetherus"
+        ]
+    },
+    {
+        "symbol": "OXT",
+        "name": "Orchid",
+        "aliases": [
+            "oxt",
+            "orchid"
+        ]
+    },
+    {
+        "symbol": "USDP",
+        "name": "Pax Dollar",
+        "aliases": [
+            "usdp",
+            "pax dollar"
+        ]
+    },
+    {
+        "symbol": "ILS",
+        "name": "Israeli new shekel",
+        "aliases": [
+            "ils",
+            "israeli new shekel"
+        ]
+    },
+    {
+        "symbol": "ILV",
+        "name": "Illuvium",
+        "aliases": [
+            "ilv",
+            "illuvium"
+        ]
+    },
+    {
+        "symbol": "GHS",
+        "name": "Ghanaian cedi",
+        "aliases": [
+            "ghs",
+            "ghanaian cedi"
+        ]
+    },
+    {
+        "symbol": "EDU",
+        "name": "Open Campus",
+        "aliases": [
+            "edu",
+            "open campus"
+        ]
+    },
+    {
+        "symbol": "CAD",
+        "name": "Canadian Dollar",
+        "aliases": [
+            "cad",
+            "canadian dollar"
+        ]
+    },
+    {
+        "symbol": "LUMIA",
+        "name": "LUMIA",
+        "aliases": [
+            "lumia",
+            "lumia"
+        ]
+    },
+    {
+        "symbol": "USD1",
+        "name": "World Liberty Financial USD",
+        "aliases": [
+            "usd1",
+            "world liberty financial usd"
+        ]
+    },
+    {
+        "symbol": "CAN",
+        "name": "CanYaCoin",
+        "aliases": [
+            "can",
+            "canyacoin"
+        ]
+    },
+    {
+        "symbol": "CREAM",
+        "name": "Cream Finance",
+        "aliases": [
+            "cream",
+            "cream finance"
+        ]
+    },
+    {
+        "symbol": "IMX",
+        "name": "ImmutableX",
+        "aliases": [
+            "imx",
+            "immutablex"
+        ]
+    },
+    {
+        "symbol": "USDE",
+        "name": "USD Ethena",
+        "aliases": [
+            "usde",
+            "usd ethena"
+        ]
+    },
+    {
+        "symbol": "TREE",
+        "name": "Treehouse",
+        "aliases": [
+            "tree",
+            "treehouse"
+        ]
+    },
+    {
+        "symbol": "USDC",
+        "name": "USDC",
+        "aliases": [
+            "usdc",
+            "usdc"
+        ]
+    },
+    {
+        "symbol": "INJ",
+        "name": "Injective",
+        "aliases": [
+            "inj",
+            "injective"
+        ]
+    },
+    {
+        "symbol": "TCT",
+        "name": "TokenClub Token",
+        "aliases": [
+            "tct",
+            "tokenclub token"
+        ]
+    },
+    {
+        "symbol": "PARA",
+        "name": "Parallel Finance",
+        "aliases": [
+            "para",
+            "parallel finance"
+        ]
+    },
+    {
+        "symbol": "VGX",
+        "name": "Voyager Token",
+        "aliases": [
+            "vgx",
+            "voyager token"
+        ]
+    },
+    {
+        "symbol": "TRIBE",
+        "name": "Tribe",
+        "aliases": [
+            "tribe",
+            "tribe"
+        ]
+    },
+    {
+        "symbol": "EFI",
+        "name": "Efinity Token",
+        "aliases": [
+            "efi",
+            "efinity token"
+        ]
+    },
+    {
+        "symbol": "KERNEL",
+        "name": "KernelDAO",
+        "aliases": [
+            "kernel",
+            "kerneldao"
+        ]
+    },
+    {
+        "symbol": "1000SATS",
+        "name": "1000*SATS (Ordinals)",
+        "aliases": [
+            "1000sats",
+            "1000*sats (ordinals)"
+        ]
+    },
+    {
+        "symbol": "XLM",
+        "name": "Stellar Lumens",
+        "aliases": [
+            "xlm",
+            "stellar lumens"
+        ]
+    },
+    {
+        "symbol": "EIGEN",
+        "name": "EigenLayer",
+        "aliases": [
+            "eigen",
+            "eigenlayer"
+        ]
+    },
+    {
+        "symbol": "SUPER",
+        "name": "SuperVerse",
+        "aliases": [
+            "super",
+            "superverse"
+        ]
+    },
+    {
+        "symbol": "KSM",
+        "name": "Kusama",
+        "aliases": [
+            "ksm",
+            "kusama"
+        ]
+    },
+    {
+        "symbol": "ANIME",
+        "name": "Animecoin",
+        "aliases": [
+            "anime",
+            "animecoin"
+        ]
+    },
+    {
+        "symbol": "GALA",
+        "name": "Gala",
+        "aliases": [
+            "gala",
+            "gala"
+        ]
+    },
+    {
+        "symbol": "VIB",
+        "name": "Viberate",
+        "aliases": [
+            "vib",
+            "viberate"
+        ]
+    },
+    {
+        "symbol": "EGP",
+        "name": "Egyptian pound",
+        "aliases": [
+            "egp",
+            "egyptian pound"
+        ]
+    },
+    {
+        "symbol": "VIC",
+        "name": "Viction",
+        "aliases": [
+            "vic",
+            "viction"
+        ]
+    },
+    {
+        "symbol": "RAD",
+        "name": "Radworks",
+        "aliases": [
+            "rad",
+            "radworks"
+        ]
+    },
+    {
+        "symbol": "MOVE",
+        "name": "Movement",
+        "aliases": [
+            "move",
+            "movement"
+        ]
+    },
+    {
+        "symbol": "MOVR",
+        "name": "Moonriver",
+        "aliases": [
+            "movr",
+            "moonriver"
+        ]
+    },
+    {
+        "symbol": "XMR",
+        "name": "Monero",
+        "aliases": [
+            "xmr",
+            "monero"
+        ]
+    },
+    {
+        "symbol": "MXN",
+        "name": "Mexican Peso",
+        "aliases": [
+            "mxn",
+            "mexican peso"
+        ]
+    },
+    {
+        "symbol": "MATICUSDCE",
+        "name": "Bridged USDC",
+        "aliases": [
+            "maticusdce",
+            "bridged usdc"
+        ]
+    },
+    {
+        "symbol": "GLM",
+        "name": "Golem",
+        "aliases": [
+            "glm",
+            "golem"
+        ]
+    },
+    {
+        "symbol": "RAY",
+        "name": "Raydium",
+        "aliases": [
+            "ray",
+            "raydium"
+        ]
+    },
+    {
+        "symbol": "FDUSD",
+        "name": "First Digital USD",
+        "aliases": [
+            "fdusd",
+            "first digital usd"
+        ]
+    },
+    {
+        "symbol": "ZRO",
+        "name": "LayerZero",
+        "aliases": [
+            "zro",
+            "layerzero"
+        ]
+    },
+    {
+        "symbol": "XNO",
+        "name": "Nano",
+        "aliases": [
+            "xno",
+            "nano"
+        ]
+    },
+    {
+        "symbol": "NPXS",
+        "name": "Old Pundi X",
+        "aliases": [
+            "npxs",
+            "old pundi x"
+        ]
+    },
+    {
+        "symbol": "VELODROME",
+        "name": "Velodrome Finance",
+        "aliases": [
+            "velodrome",
+            "velodrome finance"
+        ]
+    },
+    {
+        "symbol": "ZRX",
+        "name": "0x",
+        "aliases": [
+            "zrx",
+            "0x"
+        ]
+    },
+    {
+        "symbol": "SANTOS",
+        "name": "Santos FC Fan Token",
+        "aliases": [
+            "santos",
+            "santos fc fan token"
+        ]
+    },
+    {
+        "symbol": "WNXM",
+        "name": "Wrapped NXM",
+        "aliases": [
+            "wnxm",
+            "wrapped nxm"
+        ]
+    },
+    {
+        "symbol": "XOF",
+        "name": "West African CFA",
+        "aliases": [
+            "xof",
+            "west african cfa"
+        ]
+    },
+    {
+        "symbol": "GMT",
+        "name": "Green Metaverse Token",
+        "aliases": [
+            "gmt",
+            "green metaverse token"
+        ]
+    },
+    {
+        "symbol": "IRIS",
+        "name": "IRISnet",
+        "aliases": [
+            "iris",
+            "irisnet"
+        ]
+    },
+    {
+        "symbol": "GMX",
+        "name": "GMX",
+        "aliases": [
+            "gmx",
+            "gmx"
+        ]
+    },
+    {
+        "symbol": "OMNI",
+        "name": "Omni Network",
+        "aliases": [
+            "omni",
+            "omni network"
+        ]
+    },
+    {
+        "symbol": "RCN",
+        "name": "Ripio Credit Network",
+        "aliases": [
+            "rcn",
+            "ripio credit network"
+        ]
+    },
+    {
+        "symbol": "GNF",
+        "name": "Guinean Franc",
+        "aliases": [
+            "gnf",
+            "guinean franc"
+        ]
+    },
+    {
+        "symbol": "GNO",
+        "name": "Gnosis",
+        "aliases": [
+            "gno",
+            "gnosis"
+        ]
+    },
+    {
+        "symbol": "VITE",
+        "name": "VITE",
+        "aliases": [
+            "vite",
+            "vite"
+        ]
+    },
+    {
+        "symbol": "GNS",
+        "name": "Gains Network",
+        "aliases": [
+            "gns",
+            "gains network"
+        ]
+    },
+    {
+        "symbol": "THE",
+        "name": "THENA",
+        "aliases": [
+            "the",
+            "thena"
+        ]
+    },
+    {
+        "symbol": "VANRY",
+        "name": "Vanar",
+        "aliases": [
+            "vanry",
+            "vanar"
+        ]
+    },
+    {
+        "symbol": "CFX",
+        "name": "Conflux Network",
+        "aliases": [
+            "cfx",
+            "conflux network"
+        ]
+    },
+    {
+        "symbol": "XPL",
+        "name": "Plasma",
+        "aliases": [
+            "xpl",
+            "plasma"
+        ]
+    },
+    {
+        "symbol": "KWD",
+        "name": "Kuwaiti Dinar",
+        "aliases": [
+            "kwd",
+            "kuwaiti dinar"
+        ]
+    },
+    {
+        "symbol": "ACA",
+        "name": "Acala Token",
+        "aliases": [
+            "aca",
+            "acala token"
+        ]
+    },
+    {
+        "symbol": "ISK",
+        "name": "Icelandic Kronur",
+        "aliases": [
+            "isk",
+            "icelandic kronur"
+        ]
+    },
+    {
+        "symbol": "ACE",
+        "name": "Fusionist",
+        "aliases": [
+            "ace",
+            "fusionist"
+        ]
+    },
+    {
+        "symbol": "LOOMOLD",
+        "name": "Old Loom Network",
+        "aliases": [
+            "loomold",
+            "old loom network"
+        ]
+    },
+    {
+        "symbol": "ACH",
+        "name": "Alchemy Pay",
+        "aliases": [
+            "ach",
+            "alchemy pay"
+        ]
+    },
+    {
+        "symbol": "ACM",
+        "name": "AC Milan Fan Token",
+        "aliases": [
+            "acm",
+            "ac milan fan token"
+        ]
+    },
+    {
+        "symbol": "MINA",
+        "name": "Mina",
+        "aliases": [
+            "mina",
+            "mina"
+        ]
+    },
+    {
+        "symbol": "KITE",
+        "name": "KITE",
+        "aliases": [
+            "kite",
+            "kite"
+        ]
+    },
+    {
+        "symbol": "TIA",
+        "name": "Celestia",
+        "aliases": [
+            "tia",
+            "celestia"
+        ]
+    },
+    {
+        "symbol": "VTHO",
+        "name": "VeThor Token",
+        "aliases": [
+            "vtho",
+            "vethor token"
+        ]
+    },
+    {
+        "symbol": "PAB",
+        "name": "Panamanian balboa",
+        "aliases": [
+            "pab",
+            "panamanian balboa"
+        ]
+    },
+    {
+        "symbol": "RED",
+        "name": "RedStone",
+        "aliases": [
+            "red",
+            "redstone"
+        ]
+    },
+    {
+        "symbol": "ACT",
+        "name": "Act I : The AI Prophecy",
+        "aliases": [
+            "act",
+            "act i : the ai prophecy"
+        ]
+    },
+    {
+        "symbol": "ACX",
+        "name": "Across Protocol",
+        "aliases": [
+            "acx",
+            "across protocol"
+        ]
+    },
+    {
+        "symbol": "REI",
+        "name": "REI Network",
+        "aliases": [
+            "rei",
+            "rei network"
+        ]
+    },
+    {
+        "symbol": "REN",
+        "name": "Ren",
+        "aliases": [
+            "ren",
+            "ren"
+        ]
+    },
+    {
+        "symbol": "ADA",
+        "name": "Cardano",
+        "aliases": [
+            "ada",
+            "cardano"
+        ]
+    },
+    {
+        "symbol": "ELF",
+        "name": "aelf",
+        "aliases": [
+            "elf",
+            "aelf"
+        ]
+    },
+    {
+        "symbol": "REQ",
+        "name": "Request Network",
+        "aliases": [
+            "req",
+            "request network"
+        ]
+    },
+    {
+        "symbol": "STORJ",
+        "name": "Storj",
+        "aliases": [
+            "storj",
+            "storj"
+        ]
+    },
+    {
+        "symbol": "VIRTUAL",
+        "name": "Virtuals Protocol",
+        "aliases": [
+            "virtual",
+            "virtuals protocol"
+        ]
+    },
+    {
+        "symbol": "CHF",
+        "name": "schweizer Franken",
+        "aliases": [
+            "chf",
+            "schweizer franken"
+        ]
+    },
+    {
+        "symbol": "RARE",
+        "name": "SuperRare",
+        "aliases": [
+            "rare",
+            "superrare"
+        ]
+    },
+    {
+        "symbol": "PAXG",
+        "name": "PAX Gold",
+        "aliases": [
+            "paxg",
+            "pax gold"
+        ]
+    },
+    {
+        "symbol": "PAX",
+        "name": "Paxos Standard",
+        "aliases": [
+            "pax",
+            "paxos standard"
+        ]
+    },
+    {
+        "symbol": "REZ",
+        "name": "Renzo",
+        "aliases": [
+            "rez",
+            "renzo"
+        ]
+    },
+    {
+        "symbol": "BROCCOLI714",
+        "name": "CZ'S Dog (broccoli.ngo)",
+        "aliases": [
+            "broccoli714",
+            "cz's dog (broccoli.ngo)"
+        ]
+    },
+    {
+        "symbol": "GPS",
+        "name": "GoPlus Security",
+        "aliases": [
+            "gps",
+            "goplus security"
+        ]
+    },
+    {
+        "symbol": "CHR",
+        "name": "Chromia",
+        "aliases": [
+            "chr",
+            "chromia"
+        ]
+    },
+    {
+        "symbol": "VND",
+        "name": "Vietnamese Dong",
+        "aliases": [
+            "vnd",
+            "vietnamese dong"
+        ]
+    },
+    {
+        "symbol": "CHZ",
+        "name": "Chiliz",
+        "aliases": [
+            "chz",
+            "chiliz"
+        ]
+    },
+    {
+        "symbol": "ADX",
+        "name": "AdEx",
+        "aliases": [
+            "adx",
+            "adex"
+        ]
+    },
+    {
+        "symbol": "XRP",
+        "name": "XRP",
+        "aliases": [
+            "xrp",
+            "xrp"
+        ]
+    },
+    {
+        "symbol": "JASMY",
+        "name": "JasmyCoin",
+        "aliases": [
+            "jasmy",
+            "jasmycoin"
+        ]
+    },
+    {
+        "symbol": "TJS",
+        "name": "Tajikistani Somoni",
+        "aliases": [
+            "tjs",
+            "tajikistani somoni"
+        ]
+    },
+    {
+        "symbol": "KGST",
+        "name": "Kyrgyz Som Stablecoin",
+        "aliases": [
+            "kgst",
+            "kyrgyz som stablecoin"
+        ]
+    },
+    {
+        "symbol": "AED",
+        "name": "United Arab Emirates dirham",
+        "aliases": [
+            "aed",
+            "united arab emirates dirham"
+        ]
+    },
+    {
+        "symbol": "FIDA",
+        "name": "Bonfida",
+        "aliases": [
+            "fida",
+            "bonfida"
+        ]
+    },
+    {
+        "symbol": "OCEAN",
+        "name": "Ocean Protocol",
+        "aliases": [
+            "ocean",
+            "ocean protocol"
+        ]
+    },
+    {
+        "symbol": "ENA",
+        "name": "Ethena",
+        "aliases": [
+            "ena",
+            "ethena"
+        ]
+    },
+    {
+        "symbol": "TKO",
+        "name": "Tokocrypto",
+        "aliases": [
+            "tko",
+            "tokocrypto"
+        ]
+    },
+    {
+        "symbol": "ENJ",
+        "name": "Enjin Coin",
+        "aliases": [
+            "enj",
+            "enjin coin"
+        ]
+    },
+    {
+        "symbol": "SOLV",
+        "name": "Solv Protocol",
+        "aliases": [
+            "solv",
+            "solv protocol"
+        ]
+    },
+    {
+        "symbol": "KZT",
+        "name": "Kazakhstani Tenge",
+        "aliases": [
+            "kzt",
+            "kazakhstani tenge"
+        ]
+    },
+    {
+        "symbol": "YFII",
+        "name": "DFI.Money",
+        "aliases": [
+            "yfii",
+            "dfi.money"
+        ]
+    },
+    {
+        "symbol": "TOWNS",
+        "name": "Towns Protocol",
+        "aliases": [
+            "towns",
+            "towns protocol"
+        ]
+    },
+    {
+        "symbol": "BABY",
+        "name": "Babylon",
+        "aliases": [
+            "baby",
+            "babylon"
+        ]
+    },
+    {
+        "symbol": "GRT",
+        "name": "The Graph",
+        "aliases": [
+            "grt",
+            "the graph"
+        ]
+    },
+    {
+        "symbol": "AFN",
+        "name": "Afghan Afghani",
+        "aliases": [
+            "afn",
+            "afghan afghani"
+        ]
+    },
+    {
+        "symbol": "TFUEL",
+        "name": "Theta Fuel",
+        "aliases": [
+            "tfuel",
+            "theta fuel"
+        ]
+    },
+    {
+        "symbol": "ENS",
+        "name": "Ethereum Name Service",
+        "aliases": [
+            "ens",
+            "ethereum name service"
+        ]
+    },
+    {
+        "symbol": "PDA",
+        "name": "PlayDapp",
+        "aliases": [
+            "pda",
+            "playdapp"
+        ]
+    },
+    {
+        "symbol": "KAIA",
+        "name": "Kaia",
+        "aliases": [
+            "kaia",
+            "kaia"
+        ]
+    },
+    {
+        "symbol": "TROY",
+        "name": "Troy",
+        "aliases": [
+            "troy",
+            "troy"
+        ]
+    },
+    {
+        "symbol": "EURPS",
+        "name": "EURPaysafe",
+        "aliases": [
+            "eurps",
+            "eurpaysafe"
+        ]
+    },
+    {
+        "symbol": "TLM",
+        "name": "Alien Worlds",
+        "aliases": [
+            "tlm",
+            "alien worlds"
+        ]
+    },
+    {
+        "symbol": "CKB",
+        "name": "CKB",
+        "aliases": [
+            "ckb",
+            "ckb"
+        ]
+    },
+    {
+        "symbol": "LUNC",
+        "name": "Terra Classic",
+        "aliases": [
+            "lunc",
+            "terra classic"
+        ]
+    },
+    {
+        "symbol": "SOMI",
+        "name": "Somnia",
+        "aliases": [
+            "somi",
+            "somnia"
+        ]
+    },
+    {
+        "symbol": "LUNA",
+        "name": "Terra",
+        "aliases": [
+            "luna",
+            "terra"
+        ]
+    },
+    {
+        "symbol": "XTZ",
+        "name": "Tezos",
+        "aliases": [
+            "xtz",
+            "tezos"
+        ]
+    },
+    {
+        "symbol": "BCHA",
+        "name": "Bitcoin Cash ABC",
+        "aliases": [
+            "bcha",
+            "bitcoin cash abc"
+        ]
+    },
+    {
+        "symbol": "ENSO",
+        "name": "Enso",
+        "aliases": [
+            "enso",
+            "enso"
+        ]
+    },
+    {
+        "symbol": "FORM",
+        "name": "Four",
+        "aliases": [
+            "form",
+            "four"
+        ]
+    },
+    {
+        "symbol": "EOS",
+        "name": "EOS",
+        "aliases": [
+            "eos",
+            "eos"
+        ]
+    },
+    {
+        "symbol": "HOLO",
+        "name": "Holoworld AI",
+        "aliases": [
+            "holo",
+            "holoworld ai"
+        ]
+    },
+    {
+        "symbol": "RIF",
+        "name": "Rootstock Infrastructure Framework",
+        "aliases": [
+            "rif",
+            "rootstock infrastructure framework"
+        ]
+    },
+    {
+        "symbol": "MIRA",
+        "name": "Mira",
+        "aliases": [
+            "mira",
+            "mira"
+        ]
+    },
+    {
+        "symbol": "GTC",
+        "name": "Gitcoin",
+        "aliases": [
+            "gtc",
+            "gitcoin"
+        ]
+    },
+    {
+        "symbol": "PEN",
+        "name": "Peruvian sol",
+        "aliases": [
+            "pen",
+            "peruvian sol"
+        ]
+    },
+    {
+        "symbol": "SOLO",
+        "name": "Sologenic",
+        "aliases": [
+            "solo",
+            "sologenic"
+        ]
+    },
+    {
+        "symbol": "TMT",
+        "name": "Turkmenistani Manat",
+        "aliases": [
+            "tmt",
+            "turkmenistani manat"
+        ]
+    },
+    {
+        "symbol": "HOME",
+        "name": "Defi App",
+        "aliases": [
+            "home",
+            "defi app"
+        ]
+    },
+    {
+        "symbol": "BURGER",
+        "name": "BurgerCities",
+        "aliases": [
+            "burger",
+            "burgercities"
+        ]
+    },
+    {
+        "symbol": "HOOK",
+        "name": "Hooked Protocol",
+        "aliases": [
+            "hook",
+            "hooked protocol"
+        ]
+    },
+    {
+        "symbol": "CLP",
+        "name": "Chilean Peso",
+        "aliases": [
+            "clp",
+            "chilean peso"
+        ]
+    },
+    {
+        "symbol": "XVG",
+        "name": "Verge",
+        "aliases": [
+            "xvg",
+            "verge"
+        ]
+    },
+    {
+        "symbol": "EPS",
+        "name": "Ellipsis",
+        "aliases": [
+            "eps",
+            "ellipsis"
+        ]
+    },
+    {
+        "symbol": "TND",
+        "name": "Tunisian Dinar",
+        "aliases": [
+            "tnd",
+            "tunisian dinar"
+        ]
+    },
+    {
+        "symbol": "CLV",
+        "name": "Clover Finance",
+        "aliases": [
+            "clv",
+            "clover finance"
+        ]
+    },
+    {
+        "symbol": "EPX",
+        "name": "Ellipsis",
+        "aliases": [
+            "epx",
+            "ellipsis"
+        ]
+    },
+    {
+        "symbol": "MANTRA",
+        "name": "MANTRA",
+        "aliases": [
+            "mantra",
+            "mantra"
+        ]
+    },
+    {
+        "symbol": "MEME",
+        "name": "Memecoin",
+        "aliases": [
+            "meme",
+            "memecoin"
+        ]
+    },
+    {
+        "symbol": "STEEM",
+        "name": "Steem",
+        "aliases": [
+            "steem",
+            "steem"
+        ]
+    },
+    {
+        "symbol": "XVS",
+        "name": "Venus",
+        "aliases": [
+            "xvs",
+            "venus"
+        ]
+    },
+    {
+        "symbol": "VRT",
+        "name": "Venus Reward Token",
+        "aliases": [
+            "vrt",
+            "venus reward token"
+        ]
+    },
+    {
+        "symbol": "BREV",
+        "name": "Brevis",
+        "aliases": [
+            "brev",
+            "brevis"
+        ]
+    },
+    {
+        "symbol": "GUN",
+        "name": "GUNZ",
+        "aliases": [
+            "gun",
+            "gunz"
+        ]
+    },
+    {
+        "symbol": "LAZIO",
+        "name": "Lazio Fan Token",
+        "aliases": [
+            "lazio",
+            "lazio fan token"
+        ]
+    },
+    {
+        "symbol": "CHESS",
+        "name": "Tranchess",
+        "aliases": [
+            "chess",
+            "tranchess"
+        ]
+    },
+    {
+        "symbol": "INIT",
+        "name": "Initia",
+        "aliases": [
+            "init",
+            "initia"
+        ]
+    },
+    {
+        "symbol": "TON",
+        "name": "Toncoin",
+        "aliases": [
+            "ton",
+            "toncoin"
+        ]
+    },
+    {
+        "symbol": "MITO",
+        "name": "Mitosis",
+        "aliases": [
+            "mito",
+            "mitosis"
+        ]
+    },
+    {
+        "symbol": "ASTER",
+        "name": "Aster",
+        "aliases": [
+            "aster",
+            "aster"
+        ]
+    },
+    {
+        "symbol": "ERA",
+        "name": "Caldera",
+        "aliases": [
+            "era",
+            "caldera"
+        ]
+    },
+    {
+        "symbol": "DEGO",
+        "name": "Dego Finance",
+        "aliases": [
+            "dego",
+            "dego finance"
+        ]
+    },
+    {
+        "symbol": "MONKY",
+        "name": "Wise Monkey",
+        "aliases": [
+            "monky",
+            "wise monkey"
+        ]
+    },
+    {
+        "symbol": "PNUT",
+        "name": "Peanut the Squirrel",
+        "aliases": [
+            "pnut",
+            "peanut the squirrel"
+        ]
+    },
+    {
+        "symbol": "GYEN",
+        "name": "GYEN",
+        "aliases": [
+            "gyen",
+            "gyen"
+        ]
+    },
+    {
+        "symbol": "ERN",
+        "name": "Ethernity Chain",
+        "aliases": [
+            "ern",
+            "ethernity chain"
+        ]
+    },
+    {
+        "symbol": "VOXEL",
+        "name": "Voxies",
+        "aliases": [
+            "voxel",
+            "voxies"
+        ]
+    },
+    {
+        "symbol": "PHA",
+        "name": "Phala.Network",
+        "aliases": [
+            "pha",
+            "phala.network"
+        ]
+    },
+    {
+        "symbol": "RLC",
+        "name": "iExecRLC",
+        "aliases": [
+            "rlc",
+            "iexecrlc"
+        ]
+    },
+    {
+        "symbol": "PHB",
+        "name": "Phoenix",
+        "aliases": [
+            "phb",
+            "phoenix"
+        ]
+    },
+    {
+        "symbol": "币安人生",
+        "name": "币安人生",
+        "aliases": [
+            "币安人生",
+            "币安人生"
+        ]
+    },
+    {
+        "symbol": "BNBUP",
+        "name": "BNBUP",
+        "aliases": [
+            "bnbup",
+            "bnbup"
+        ]
+    },
+    {
+        "symbol": "MTLX",
+        "name": "Mettalex",
+        "aliases": [
+            "mtlx",
+            "mettalex"
+        ]
+    },
+    {
+        "symbol": "PHP",
+        "name": "Philippine Peso",
+        "aliases": [
+            "php",
+            "philippine peso"
+        ]
+    },
+    {
+        "symbol": "SAHARA",
+        "name": "Sahara AI",
+        "aliases": [
+            "sahara",
+            "sahara ai"
+        ]
+    },
+    {
+        "symbol": "ESP",
+        "name": "Espresso",
+        "aliases": [
+            "esp",
+            "espresso"
+        ]
+    },
+    {
+        "symbol": "COP",
+        "name": "Colombian Peso",
+        "aliases": [
+            "cop",
+            "colombian peso"
+        ]
+    },
+    {
+        "symbol": "COS",
+        "name": "Contentos",
+        "aliases": [
+            "cos",
+            "contentos"
+        ]
+    },
+    {
+        "symbol": "COW",
+        "name": "CoW Protocol",
+        "aliases": [
+            "cow",
+            "cow protocol"
+        ]
+    },
+    {
+        "symbol": "GLMR",
+        "name": "Glimmer",
+        "aliases": [
+            "glmr",
+            "glimmer"
+        ]
+    },
+    {
+        "symbol": "PROVE",
+        "name": "Succinct",
+        "aliases": [
+            "prove",
+            "succinct"
+        ]
+    },
+    {
+        "symbol": "ETB",
+        "name": "Ethiopian Birr",
+        "aliases": [
+            "etb",
+            "ethiopian birr"
+        ]
+    },
+    {
+        "symbol": "SOPH",
+        "name": "Sophon",
+        "aliases": [
+            "soph",
+            "sophon"
+        ]
+    },
+    {
+        "symbol": "ETC",
+        "name": "Ethereum Classic",
+        "aliases": [
+            "etc",
+            "ethereum classic"
+        ]
+    },
+    {
+        "symbol": "LAK",
+        "name": "Laotian Kip",
+        "aliases": [
+            "lak",
+            "laotian kip"
+        ]
+    },
+    {
+        "symbol": "ETH",
+        "name": "Ethereum",
+        "aliases": [
+            "eth",
+            "ethereum"
+        ]
+    },
+    {
+        "symbol": "NEO",
+        "name": "NEO",
+        "aliases": [
+            "neo",
+            "neo"
+        ]
+    },
+    {
+        "symbol": "KLAY",
+        "name": "Kaia",
+        "aliases": [
+            "klay",
+            "kaia"
+        ]
+    },
+    {
+        "symbol": "HIGH",
+        "name": "Highstreet",
+        "aliases": [
+            "high",
+            "highstreet"
+        ]
+    },
+    {
+        "symbol": "TRB",
+        "name": "Tellor Tributes",
+        "aliases": [
+            "trb",
+            "tellor tributes"
+        ]
+    },
+    {
+        "symbol": "ALT",
+        "name": "AltLayer",
+        "aliases": [
+            "alt",
+            "altlayer"
+        ]
+    },
+    {
+        "symbol": "LBA",
+        "name": "Lend Borrow Asset",
+        "aliases": [
+            "lba",
+            "lend borrow asset"
+        ]
+    },
+    {
+        "symbol": "ORDI",
+        "name": "ORDI",
+        "aliases": [
+            "ordi",
+            "ordi"
+        ]
+    },
+    {
+        "symbol": "WSOL",
+        "name": "Wrapped SOL",
+        "aliases": [
+            "wsol",
+            "wrapped sol"
+        ]
+    },
+    {
+        "symbol": "AMB",
+        "name": "AirDAO",
+        "aliases": [
+            "amb",
+            "airdao"
+        ]
+    },
+    {
+        "symbol": "TRU",
+        "name": "TrueFi",
+        "aliases": [
+            "tru",
+            "truefi"
+        ]
+    },
+    {
+        "symbol": "WBNB",
+        "name": "Wrapped BNB",
+        "aliases": [
+            "wbnb",
+            "wrapped bnb"
+        ]
+    },
+    {
+        "symbol": "AMD",
+        "name": "Armenian Dram",
+        "aliases": [
+            "amd",
+            "armenian dram"
+        ]
+    },
+    {
+        "symbol": "DREP",
+        "name": "DREP",
+        "aliases": [
+            "drep",
+            "drep"
+        ]
+    },
+    {
+        "symbol": "NFP",
+        "name": "NFPrompt Token",
+        "aliases": [
+            "nfp",
+            "nfprompt token"
+        ]
+    },
+    {
+        "symbol": "TRY",
+        "name": "Turkish Lira",
+        "aliases": [
+            "try",
+            "turkish lira"
+        ]
+    },
+    {
+        "symbol": "SIGN",
+        "name": "Sign",
+        "aliases": [
+            "sign",
+            "sign"
+        ]
+    },
+    {
+        "symbol": "TRX",
+        "name": "TRON",
+        "aliases": [
+            "trx",
+            "tron"
+        ]
+    },
+    {
+        "symbol": "EUL",
+        "name": "Euler",
+        "aliases": [
+            "eul",
+            "euler"
+        ]
+    },
+    {
+        "symbol": "NFT",
+        "name": "APENFT",
+        "aliases": [
+            "nft",
+            "apenft"
+        ]
+    },
+    {
+        "symbol": "EUR",
+        "name": "Euro",
+        "aliases": [
+            "eur",
+            "euro"
+        ]
+    },
+    {
+        "symbol": "AMP",
+        "name": "AMP",
+        "aliases": [
+            "amp",
+            "amp"
+        ]
+    },
+    {
+        "symbol": "ORCA",
+        "name": "Orca",
+        "aliases": [
+            "orca",
+            "orca"
+        ]
+    },
+    {
+        "symbol": "HIFI",
+        "name": "Hifi Finance",
+        "aliases": [
+            "hifi",
+            "hifi finance"
+        ]
+    },
+    {
+        "symbol": "EDEN",
+        "name": "OpenEden",
+        "aliases": [
+            "eden",
+            "openeden"
+        ]
+    },
+    {
+        "symbol": "NULS",
+        "name": "Nuls",
+        "aliases": [
+            "nuls",
+            "nuls"
+        ]
+    },
+    {
+        "symbol": "USTC",
+        "name": "TerraClassicUSD",
+        "aliases": [
+            "ustc",
+            "terraclassicusd"
+        ]
+    },
+    {
+        "symbol": "BERA",
+        "name": "BERACHAIN",
+        "aliases": [
+            "bera",
+            "berachain"
+        ]
+    },
+    {
+        "symbol": "RON",
+        "name": "Romanian Lei",
+        "aliases": [
+            "ron",
+            "romanian lei"
+        ]
+    },
+    {
+        "symbol": "NGN",
+        "name": "Nigerian Naira",
+        "aliases": [
+            "ngn",
+            "nigerian naira"
+        ]
+    },
+    {
+        "symbol": "RDNTOLD",
+        "name": "Radiant Capital OLD",
+        "aliases": [
+            "rdntold",
+            "radiant capital old"
+        ]
+    },
+    {
+        "symbol": "TST",
+        "name": "Test",
+        "aliases": [
+            "tst",
+            "test"
+        ]
+    },
+    {
+        "symbol": "CRC",
+        "name": "Costa Rican Colon",
+        "aliases": [
+            "crc",
+            "costa rican colon"
+        ]
+    },
+    {
+        "symbol": "PKR",
+        "name": "Pakistani Rupee",
+        "aliases": [
+            "pkr",
+            "pakistani rupee"
+        ]
+    },
+    {
+        "symbol": "VANA",
+        "name": "Vana",
+        "aliases": [
+            "vana",
+            "vana"
+        ]
+    },
+    {
+        "symbol": "SPELL",
+        "name": "Spell Token",
+        "aliases": [
+            "spell",
+            "spell token"
+        ]
+    },
+    {
+        "symbol": "CRV",
+        "name": "Curve",
+        "aliases": [
+            "crv",
+            "curve"
+        ]
+    },
+    {
+        "symbol": "EVX",
+        "name": "Everex",
+        "aliases": [
+            "evx",
+            "everex"
+        ]
+    },
+    {
+        "symbol": "BAKE",
+        "name": "BakeryToken",
+        "aliases": [
+            "bake",
+            "bakerytoken"
+        ]
+    },
+    {
+        "symbol": "RPL",
+        "name": "Rocket Pool",
+        "aliases": [
+            "rpl",
+            "rocket pool"
+        ]
+    },
+    {
+        "symbol": "PLN",
+        "name": "Polish Zlotych",
+        "aliases": [
+            "pln",
+            "polish zlotych"
+        ]
+    },
+    {
+        "symbol": "LDO",
+        "name": "Lido DAO",
+        "aliases": [
+            "ldo",
+            "lido dao"
+        ]
+    },
+    {
+        "symbol": "MAGIC",
+        "name": "Treasure",
+        "aliases": [
+            "magic",
+            "treasure"
+        ]
+    },
+    {
+        "symbol": "ALICE",
+        "name": "My Neighbor Alice",
+        "aliases": [
+            "alice",
+            "my neighbor alice"
+        ]
+    },
+    {
+        "symbol": "BTTOLD",
+        "name": "BitTorrent OLD",
+        "aliases": [
+            "bttold",
+            "bittorrent old"
+        ]
+    },
+    {
+        "symbol": "BETH",
+        "name": "BETH",
+        "aliases": [
+            "beth",
+            "beth"
+        ]
+    },
+    {
+        "symbol": "BETA",
+        "name": "Beta Finance",
+        "aliases": [
+            "beta",
+            "beta finance"
+        ]
+    },
+    {
+        "symbol": "NIL",
+        "name": "Nillion",
+        "aliases": [
+            "nil",
+            "nillion"
+        ]
+    },
+    {
+        "symbol": "TUT",
+        "name": "Tutorial",
+        "aliases": [
+            "tut",
+            "tutorial"
+        ]
+    },
+    {
+        "symbol": "APE",
+        "name": "ApeCoin",
+        "aliases": [
+            "ape",
+            "apecoin"
+        ]
+    },
+    {
+        "symbol": "CTK",
+        "name": "Shentu",
+        "aliases": [
+            "ctk",
+            "shentu"
+        ]
+    },
+    {
+        "symbol": "MATIC",
+        "name": "Polygon Old",
+        "aliases": [
+            "matic",
+            "polygon old"
+        ]
+    },
+    {
+        "symbol": "APT",
+        "name": "Aptos",
+        "aliases": [
+            "apt",
+            "aptos"
+        ]
+    },
+    {
+        "symbol": "0G",
+        "name": "0G",
+        "aliases": [
+            "0g",
+            "0g"
+        ]
+    },
+    {
+        "symbol": "PNT",
+        "name": "pNetwork",
+        "aliases": [
+            "pnt",
+            "pnetwork"
+        ]
+    },
+    {
+        "symbol": "DENT",
+        "name": "DENT",
+        "aliases": [
+            "dent",
+            "dent"
+        ]
+    },
+    {
+        "symbol": "PYTH",
+        "name": "Pyth Network",
+        "aliases": [
+            "pyth",
+            "pyth network"
+        ]
+    },
+    {
+        "symbol": "TWD",
+        "name": "New Taiwan Dollar",
+        "aliases": [
+            "twd",
+            "new taiwan dollar"
+        ]
+    },
+    {
+        "symbol": "BANK",
+        "name": "Lorenzo Protocol",
+        "aliases": [
+            "bank",
+            "lorenzo protocol"
+        ]
+    },
+    {
+        "symbol": "FRAX",
+        "name": "Frax Finance",
+        "aliases": [
+            "frax",
+            "frax finance"
+        ]
+    },
+    {
+        "symbol": "ETHUP",
+        "name": "ETHUP",
+        "aliases": [
+            "ethup",
+            "ethup"
+        ]
+    },
+    {
+        "symbol": "WBETH",
+        "name": "Wrapped Beacon ETH (WBETH)",
+        "aliases": [
+            "wbeth",
+            "wrapped beacon eth (wbeth)"
+        ]
+    },
+    {
+        "symbol": "BAND",
+        "name": "BAND",
+        "aliases": [
+            "band",
+            "band"
+        ]
+    },
+    {
+        "symbol": "POL",
+        "name": "Polygon Ecosystem Token",
+        "aliases": [
+            "pol",
+            "polygon ecosystem token"
+        ]
+    },
+    {
+        "symbol": "ASTR",
+        "name": "Astar",
+        "aliases": [
+            "astr",
+            "astar"
+        ]
+    },
+    {
+        "symbol": "NKN",
+        "name": "NKN",
+        "aliases": [
+            "nkn",
+            "nkn"
+        ]
+    },
+    {
+        "symbol": "PARTI",
+        "name": "Particle Network",
+        "aliases": [
+            "parti",
+            "particle network"
+        ]
+    },
+    {
+        "symbol": "RSR",
+        "name": "Reserve Rights",
+        "aliases": [
+            "rsr",
+            "reserve rights"
+        ]
+    },
+    {
+        "symbol": "TWT",
+        "name": "Trust Wallet Token",
+        "aliases": [
+            "twt",
+            "trust wallet token"
+        ]
+    },
+    {
+        "symbol": "ARB",
+        "name": "Arbitrum",
+        "aliases": [
+            "arb",
+            "arbitrum"
+        ]
+    },
+    {
+        "symbol": "CVC",
+        "name": "Civic",
+        "aliases": [
+            "cvc",
+            "civic"
+        ]
+    },
+    {
+        "symbol": "ARK",
+        "name": "Ark",
+        "aliases": [
+            "ark",
+            "ark"
+        ]
+    },
+    {
+        "symbol": "LOKA",
+        "name": "League of Kingdoms",
+        "aliases": [
+            "loka",
+            "league of kingdoms"
+        ]
+    },
+    {
+        "symbol": "CVP",
+        "name": "PowerPool",
+        "aliases": [
+            "cvp",
+            "powerpool"
+        ]
+    },
+    {
+        "symbol": "1000CAT",
+        "name": "1000*Simons Cat",
+        "aliases": [
+            "1000cat",
+            "1000*simons cat"
+        ]
+    },
+    {
+        "symbol": "ARS",
+        "name": "Argentine Peso",
+        "aliases": [
+            "ars",
+            "argentine peso"
+        ]
+    },
+    {
+        "symbol": "CVX",
+        "name": "Convex Finance",
+        "aliases": [
+            "cvx",
+            "convex finance"
+        ]
+    },
+    {
+        "symbol": "SUSHI",
+        "name": "Sushi",
+        "aliases": [
+            "sushi",
+            "sushi"
+        ]
+    },
+    {
+        "symbol": "PUMP",
+        "name": "Pump.Fun",
+        "aliases": [
+            "pump",
+            "pump.fun"
+        ]
+    },
+    {
+        "symbol": "WBTC",
+        "name": "Wrapped Bitcoin",
+        "aliases": [
+            "wbtc",
+            "wrapped bitcoin"
+        ]
+    },
+    {
+        "symbol": "BTTC",
+        "name": "BitTorrent",
+        "aliases": [
+            "bttc",
+            "bittorrent"
+        ]
+    },
+    {
+        "symbol": "RUB",
+        "name": "Russian Ruble",
+        "aliases": [
+            "rub",
+            "russian ruble"
+        ]
+    },
+    {
+        "symbol": "ASR",
+        "name": "AS Roma Fan Token",
+        "aliases": [
+            "asr",
+            "as roma fan token"
+        ]
+    },
+    {
+        "symbol": "FIRO",
+        "name": "Firo",
+        "aliases": [
+            "firo",
+            "firo"
+        ]
+    },
+    {
+        "symbol": "AST",
+        "name": "AirSwap",
+        "aliases": [
+            "ast",
+            "airswap"
+        ]
+    },
+    {
+        "symbol": "BNSOL",
+        "name": "Binance Staked SOL",
+        "aliases": [
+            "bnsol",
+            "binance staked sol"
+        ]
+    },
+    {
+        "symbol": "MANA",
+        "name": "Decentraland",
+        "aliases": [
+            "mana",
+            "decentraland"
+        ]
+    },
+    {
+        "symbol": "2Z",
+        "name": "DoubleZero",
+        "aliases": [
+            "2z",
+            "doublezero"
+        ]
+    },
+    {
+        "symbol": "ATA",
+        "name": "Automata",
+        "aliases": [
+            "ata",
+            "automata"
+        ]
+    },
+    {
+        "symbol": "OPEN",
+        "name": "OpenLedger",
+        "aliases": [
+            "open",
+            "openledger"
+        ]
+    },
+    {
+        "symbol": "NMR",
+        "name": "Numeraire",
+        "aliases": [
+            "nmr",
+            "numeraire"
+        ]
+    },
+    {
+        "symbol": "ATM",
+        "name": "Atlético de Madrid Fan Token",
+        "aliases": [
+            "atm",
+            "atlético de madrid fan token"
+        ]
+    },
+    {
+        "symbol": "JEX",
+        "name": "Jex Token",
+        "aliases": [
+            "jex",
+            "jex token"
+        ]
+    },
+    {
+        "symbol": "TNSR",
+        "name": "Tensor",
+        "aliases": [
+            "tnsr",
+            "tensor"
+        ]
+    },
+    {
+        "symbol": "POLYX",
+        "name": "Polymesh",
+        "aliases": [
+            "polyx",
+            "polymesh"
+        ]
+    },
+    {
+        "symbol": "LOOM",
+        "name": "Loom Network",
+        "aliases": [
+            "loom",
+            "loom network"
+        ]
+    },
+    {
+        "symbol": "RVN",
+        "name": "Ravencoin",
+        "aliases": [
+            "rvn",
+            "ravencoin"
+        ]
+    },
+    {
+        "symbol": "TZS",
+        "name": "Tanzanian Shilling",
+        "aliases": [
+            "tzs",
+            "tanzanian shilling"
+        ]
+    },
+    {
+        "symbol": "ONDO",
+        "name": "Ondo",
+        "aliases": [
+            "ondo",
+            "ondo"
+        ]
+    },
+    {
+        "symbol": "AUD",
+        "name": "Australian Dollar",
+        "aliases": [
+            "aud",
+            "australian dollar"
+        ]
+    },
+    {
+        "symbol": "KAVA",
+        "name": "Kava",
+        "aliases": [
+            "kava",
+            "kava"
+        ]
+    },
+    {
+        "symbol": "PSG",
+        "name": "Paris Saint-Germain Fan Token",
+        "aliases": [
+            "psg",
+            "paris saint-germain fan token"
+        ]
+    },
+    {
+        "symbol": "NOK",
+        "name": "Norwegian Kroner",
+        "aliases": [
+            "nok",
+            "norwegian kroner"
+        ]
+    },
+    {
+        "symbol": "AVA",
+        "name": "AVA",
+        "aliases": [
+            "ava",
+            "ava"
+        ]
+    },
+    {
+        "symbol": "NOM",
+        "name": "Nomina",
+        "aliases": [
+            "nom",
+            "nomina"
+        ]
+    },
+    {
+        "symbol": "BARD",
+        "name": "Lombard",
+        "aliases": [
+            "bard",
+            "lombard"
+        ]
+    },
+    {
+        "symbol": "STRAX",
+        "name": "Stratis",
+        "aliases": [
+            "strax",
+            "stratis"
+        ]
+    },
+    {
+        "symbol": "NOT",
+        "name": "Notcoin",
+        "aliases": [
+            "not",
+            "notcoin"
+        ]
+    },
+    {
+        "symbol": "CZK",
+        "name": "Czech Koruny",
+        "aliases": [
+            "czk",
+            "czech koruny"
+        ]
+    },
+    {
+        "symbol": "WAL",
+        "name": "Walrus",
+        "aliases": [
+            "wal",
+            "walrus"
+        ]
+    },
+    {
+        "symbol": "WAN",
+        "name": "Wanchain",
+        "aliases": [
+            "wan",
+            "wanchain"
+        ]
+    },
+    {
+        "symbol": "EURI",
+        "name": "Eurite",
+        "aliases": [
+            "euri",
+            "eurite"
+        ]
+    },
+    {
+        "symbol": "AWE",
+        "name": "AWE Network",
+        "aliases": [
+            "awe",
+            "awe network"
+        ]
+    },
+    {
+        "symbol": "MASK",
+        "name": "Mask Network",
+        "aliases": [
+            "mask",
+            "mask network"
+        ]
+    },
+    {
+        "symbol": "ZAMA",
+        "name": "ZAMA",
+        "aliases": [
+            "zama",
+            "zama"
+        ]
+    },
+    {
+        "symbol": "YFI",
+        "name": "yearn.finance",
+        "aliases": [
+            "yfi",
+            "yearn.finance"
+        ]
+    },
+    {
+        "symbol": "LQTY",
+        "name": "Liquity",
+        "aliases": [
+            "lqty",
+            "liquity"
+        ]
+    },
+    {
+        "symbol": "HEI",
+        "name": "Heima",
+        "aliases": [
+            "hei",
+            "heima"
+        ]
+    },
+    {
+        "symbol": "PIXEL",
+        "name": "Pixels",
+        "aliases": [
+            "pixel",
+            "pixels"
+        ]
+    },
+    {
+        "symbol": "AXL",
+        "name": "Axelar",
+        "aliases": [
+            "axl",
+            "axelar"
+        ]
+    },
+    {
+        "symbol": "YGG",
+        "name": "Yield Guild Games",
+        "aliases": [
+            "ygg",
+            "yield guild games"
+        ]
+    },
+    {
+        "symbol": "AXS",
+        "name": "Axie Infinity",
+        "aliases": [
+            "axs",
+            "axie infinity"
+        ]
+    },
+    {
+        "symbol": "SYRUP",
+        "name": "Maple Finance",
+        "aliases": [
+            "syrup",
+            "maple finance"
+        ]
+    },
+    {
+        "symbol": "WCT",
+        "name": "WalletConnect",
+        "aliases": [
+            "wct",
+            "walletconnect"
+        ]
+    },
+    {
+        "symbol": "COMP",
+        "name": "Compound",
+        "aliases": [
+            "comp",
+            "compound"
+        ]
+    },
+    {
+        "symbol": "HAEDAL",
+        "name": "Haedal",
+        "aliases": [
+            "haedal",
+            "haedal"
+        ]
+    },
+    {
+        "symbol": "HFT",
+        "name": "Hashflow",
+        "aliases": [
+            "hft",
+            "hashflow"
+        ]
+    },
+    {
+        "symbol": "RUNE",
+        "name": "THORChain",
+        "aliases": [
+            "rune",
+            "thorchain"
+        ]
+    },
+    {
+        "symbol": "BANANAS31",
+        "name": "Banana For Scale",
+        "aliases": [
+            "bananas31",
+            "banana for scale"
+        ]
+    },
+    {
+        "symbol": "PENGU",
+        "name": "Pudgy Penguins",
+        "aliases": [
+            "pengu",
+            "pudgy penguins"
+        ]
+    },
+    {
+        "symbol": "FORTH",
+        "name": "Ampleforth Governance Token",
+        "aliases": [
+            "forth",
+            "ampleforth governance token"
+        ]
+    },
+    {
+        "symbol": "GHST",
+        "name": "Aavegotchi",
+        "aliases": [
+            "ghst",
+            "aavegotchi"
+        ]
+    },
+    {
+        "symbol": "ALPINE",
+        "name": "Alpine F1 Team Fan Token",
+        "aliases": [
+            "alpine",
+            "alpine f1 team fan token"
+        ]
+    },
+    {
+        "symbol": "LEVER",
+        "name": "LeverFi",
+        "aliases": [
+            "lever",
+            "leverfi"
+        ]
+    },
+    {
+        "symbol": "IDEX",
+        "name": "IDEX",
+        "aliases": [
+            "idex",
+            "idex"
+        ]
+    },
+    {
+        "symbol": "BNBDOWN",
+        "name": "BNBDOWN",
+        "aliases": [
+            "bnbdown",
+            "bnbdown"
+        ]
+    },
+    {
+        "symbol": "DEXE",
+        "name": "DeXe",
+        "aliases": [
+            "dexe",
+            "dexe"
+        ]
+    },
+    {
+        "symbol": "AVAX",
+        "name": "Avalanche",
+        "aliases": [
+            "avax",
+            "avalanche"
+        ]
+    },
+    {
+        "symbol": "LISTA",
+        "name": "Lista",
+        "aliases": [
+            "lista",
+            "lista"
+        ]
+    },
+    {
+        "symbol": "AZN",
+        "name": "Azerbaijani Manat",
+        "aliases": [
+            "azn",
+            "azerbaijani manat"
+        ]
+    },
+    {
+        "symbol": "BANANA",
+        "name": "Banana Gun",
+        "aliases": [
+            "banana",
+            "banana gun"
+        ]
+    },
+    {
+        "symbol": "UAH",
+        "name": "Ukraine Hryvnia",
+        "aliases": [
+            "uah",
+            "ukraine hryvnia"
+        ]
+    },
+    {
+        "symbol": "NEIRO",
+        "name": "First Neiro On Ethereum",
+        "aliases": [
+            "neiro",
+            "first neiro on ethereum"
+        ]
+    },
+    {
+        "symbol": "BTCUP",
+        "name": "BTCUP",
+        "aliases": [
+            "btcup",
+            "btcup"
+        ]
+    },
+    {
+        "symbol": "HIVE",
+        "name": "Hive",
+        "aliases": [
+            "hive",
+            "hive"
+        ]
+    },
+    {
+        "symbol": "KAITO",
+        "name": "Kaito",
+        "aliases": [
+            "kaito",
+            "kaito"
+        ]
+    },
+    {
+        "symbol": "LPT",
+        "name": "Livepeer",
+        "aliases": [
+            "lpt",
+            "livepeer"
+        ]
+    },
+    {
+        "symbol": "RDNT",
+        "name": "Radiant Capital",
+        "aliases": [
+            "rdnt",
+            "radiant capital"
+        ]
+    },
+    {
+        "symbol": "PYR",
+        "name": "Vulcan Forged PYR",
+        "aliases": [
+            "pyr",
+            "vulcan forged pyr"
+        ]
+    },
+    {
+        "symbol": "ROBO",
+        "name": "Fabric Protocol",
+        "aliases": [
+            "robo",
+            "fabric protocol"
+        ]
+    },
+    {
+        "symbol": "DAI",
+        "name": "Dai",
+        "aliases": [
+            "dai",
+            "dai"
+        ]
+    },
+    {
+        "symbol": "DAR",
+        "name": "Mines of Dalarnia",
+        "aliases": [
+            "dar",
+            "mines of dalarnia"
+        ]
+    },
+    {
+        "symbol": "FET",
+        "name": "Artificial Superintelligence Alliance",
+        "aliases": [
+            "fet",
+            "artificial superintelligence alliance"
+        ]
+    },
+    {
+        "symbol": "GIGGLE",
+        "name": "Giggle Fund",
+        "aliases": [
+            "giggle",
+            "giggle fund"
+        ]
+    },
+    {
+        "symbol": "HEMI",
+        "name": "HEMI",
+        "aliases": [
+            "hemi",
+            "hemi"
+        ]
+    },
+    {
+        "symbol": "LRC",
+        "name": "Loopring",
+        "aliases": [
+            "lrc",
+            "loopring"
+        ]
+    },
+    {
+        "symbol": "ALPACA",
+        "name": "Alpaca Finance",
+        "aliases": [
+            "alpaca",
+            "alpaca finance"
+        ]
+    },
+    {
+        "symbol": "DASH",
+        "name": "Dash",
+        "aliases": [
+            "dash",
+            "dash"
+        ]
+    },
+    {
+        "symbol": "NVT",
+        "name": "NerveNetwork",
+        "aliases": [
+            "nvt",
+            "nervenetwork"
+        ]
+    },
+    {
+        "symbol": "SAGA",
+        "name": "Saga",
+        "aliases": [
+            "saga",
+            "saga"
+        ]
+    },
+    {
+        "symbol": "JOD",
+        "name": "Jordanian Dinar",
+        "aliases": [
+            "jod",
+            "jordanian dinar"
+        ]
+    },
+    {
+        "symbol": "HKD",
+        "name": "Hong Kong Dollar",
+        "aliases": [
+            "hkd",
+            "hong kong dollar"
+        ]
+    },
+    {
+        "symbol": "JOE",
+        "name": "JOE",
+        "aliases": [
+            "joe",
+            "joe"
+        ]
+    },
+    {
+        "symbol": "LSK",
+        "name": "Lisk",
+        "aliases": [
+            "lsk",
+            "lisk"
+        ]
+    },
+    {
+        "symbol": "DCR",
+        "name": "Decred",
+        "aliases": [
+            "dcr",
+            "decred"
+        ]
+    },
+    {
+        "symbol": "DATA",
+        "name": "Streamr",
+        "aliases": [
+            "data",
+            "streamr"
+        ]
+    },
+    {
+        "symbol": "WIF",
+        "name": "Dogwifhat",
+        "aliases": [
+            "wif",
+            "dogwifhat"
+        ]
+    },
+    {
+        "symbol": "LTC",
+        "name": "Litecoin",
+        "aliases": [
+            "ltc",
+            "litecoin"
+        ]
+    },
+    {
+        "symbol": "METIS",
+        "name": "MetisDAO",
+        "aliases": [
+            "metis",
+            "metisdao"
+        ]
+    },
+    {
+        "symbol": "WIN",
+        "name": "WINkLink",
+        "aliases": [
+            "win",
+            "winklink"
+        ]
+    },
+    {
+        "symbol": "SENT",
+        "name": "Sentient",
+        "aliases": [
+            "sent",
+            "sentient"
+        ]
+    },
+    {
+        "symbol": "SAR",
+        "name": "Saudi Riyal",
+        "aliases": [
+            "sar",
+            "saudi riyal"
+        ]
+    },
+    {
+        "symbol": "LTO",
+        "name": "LTO Network",
+        "aliases": [
+            "lto",
+            "lto network"
+        ]
+    },
+    {
+        "symbol": "DYDX",
+        "name": "dYdX",
+        "aliases": [
+            "dydx",
+            "dydx"
+        ]
+    },
+    {
+        "symbol": "AGIX",
+        "name": "SingularityNET Token",
+        "aliases": [
+            "agix",
+            "singularitynet token"
+        ]
+    },
+    {
+        "symbol": "POND",
+        "name": "Marlin",
+        "aliases": [
+            "pond",
+            "marlin"
+        ]
+    },
+    {
+        "symbol": "JPY",
+        "name": "Japanese Yen",
+        "aliases": [
+            "jpy",
+            "japanese yen"
+        ]
+    },
+    {
+        "symbol": "LINA",
+        "name": "Linear",
+        "aliases": [
+            "lina",
+            "linear"
+        ]
+    },
+    {
+        "symbol": "LINK",
+        "name": "ChainLink",
+        "aliases": [
+            "link",
+            "chainlink"
+        ]
+    },
+    {
+        "symbol": "QTUM",
+        "name": "Qtum",
+        "aliases": [
+            "qtum",
+            "qtum"
+        ]
+    },
+    {
+        "symbol": "CYBER",
+        "name": "Cyber",
+        "aliases": [
+            "cyber",
+            "cyber"
+        ]
+    },
+    {
+        "symbol": "UFT",
+        "name": "UniLend",
+        "aliases": [
+            "uft",
+            "unilend"
+        ]
+    },
+    {
+        "symbol": "ARBUSDCE",
+        "name": "Bridged USDC",
+        "aliases": [
+            "arbusdce",
+            "bridged usdc"
+        ]
+    },
+    {
+        "symbol": "FIL",
+        "name": "Filecoin",
+        "aliases": [
+            "fil",
+            "filecoin"
+        ]
+    },
+    {
+        "symbol": "STMX",
+        "name": "StormX",
+        "aliases": [
+            "stmx",
+            "stormx"
+        ]
+    },
+    {
+        "symbol": "BAL",
+        "name": "Balancer",
+        "aliases": [
+            "bal",
+            "balancer"
+        ]
+    },
+    {
+        "symbol": "FIO",
+        "name": "FIO Protocol",
+        "aliases": [
+            "fio",
+            "fio protocol"
+        ]
+    },
+    {
+        "symbol": "FIS",
+        "name": "Stafi",
+        "aliases": [
+            "fis",
+            "stafi"
+        ]
+    },
+    {
+        "symbol": "BAR",
+        "name": "FC Barcelona Fan Token BAR",
+        "aliases": [
+            "bar",
+            "fc barcelona fan token bar"
+        ]
+    },
+    {
+        "symbol": "BAT",
+        "name": "Basic Attention Token",
+        "aliases": [
+            "bat",
+            "basic attention token"
+        ]
+    },
+    {
+        "symbol": "1000CHEEMS",
+        "name": "1000*cheems.pet",
+        "aliases": [
+            "1000cheems",
+            "1000*cheems.pet"
+        ]
+    },
+    {
+        "symbol": "AKRO",
+        "name": "Akropolis",
+        "aliases": [
+            "akro",
+            "akropolis"
+        ]
+    },
+    {
+        "symbol": "NZD",
+        "name": "New Zealand Dollar",
+        "aliases": [
+            "nzd",
+            "new zealand dollar"
+        ]
+    },
+    {
+        "symbol": "1000PEPPER",
+        "name": "PEPPER",
+        "aliases": [
+            "1000pepper",
+            "pepper"
+        ]
+    },
+    {
+        "symbol": "COTI",
+        "name": "COTI",
+        "aliases": [
+            "coti",
+            "coti"
+        ]
+    }
+]

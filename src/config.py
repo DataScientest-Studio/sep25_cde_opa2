@@ -1,7 +1,12 @@
+from pathlib import Path
+
 from dotenv import load_dotenv
 import os
 
 load_dotenv()
+
+# PATHS
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
 # Generals
 DB_NAME=os.getenv('DB_NAME')
@@ -14,16 +19,23 @@ DB_BOT_PASSWORD=os.getenv('DB_BOT_PASSWORD')
 
 ENV=os.getenv('ENV')
 
-
 # Mongo
 MONGO_DB_PORT=os.getenv('MONGO_DB_PORT')
 MONGO_HOST='localhost'
 if ENV == 'docker':
     MONGO_HOST=os.getenv('MONGO_HOST', 'mongo')
 
-
 # PostgresSQL
 PG_DB_PORT=os.getenv('PG_DB_PORT')
 PG_HOST='localhost'
 if ENV == 'docker':
     PG_HOST=os.getenv('PG_HOST', 'postgres')
+
+# Binance api
+BINANCE_API_KEY=os.getenv('BINANCE_API_KEY')
+BINANCE_API_SECRET=os.getenv('BINANCE_API_SECRET')
+
+# Scraper
+SCRAPER_INDEX_LIMIT=os.getenv('SCRAPER_INDEX_LIMIT', 2)
+SCRAPER_ENRICH_LIMIT=os.getenv('SCRAPER_ENRICH_LIMIT', 50)
+SCRAPER_DETECT_LIMIT=os.getenv('SCRAPER_DETECT_LIMIT', 100)

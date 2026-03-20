@@ -5,10 +5,10 @@ from typing import Dict, List
 from datetime import datetime
 import random
 
-from src.data.scraping.scraping_mongo_client import ScrappingMongoClient
-from src.data.scraping.custom_logger import logger
-from src.config import DB_NAME, MONGO_DB_PORT, DB_BOT_USER, DB_BOT_PASSWORD, MONGO_HOST, ENV
-from src.data.scraping.playwright_detection import close_cookie_modal, close_playwright, close_signup_modal, get_html_with_playwright, human_sleep, init_playwright, start_playwright_session
+from src.data.scraping.mongo_client import MongoClient
+from src.custom_logger import logger
+from src.config import DB_NAME, MONGO_DB_PORT, DB_BOT_USER, DB_BOT_PASSWORD, MONGO_HOST, ENV, SCRAPER_INDEX_LIMIT
+from src.data.scraping.antibot import close_cookie_modal, close_playwright, close_signup_modal, get_html_with_playwright, human_sleep, init_playwright, start_playwright_session
 
 
 def parse_arguments():
@@ -27,13 +27,13 @@ def parse_arguments():
     parser.add_argument(
         '--nb_page',
         type=int,
-        default=1,
+        default=SCRAPER_INDEX_LIMIT,
         help="Nombre de page à scrapper"
     )
     
     return parser.parse_args()
 
-def scrap_pages():
+def scrap_pages(client: MongoClient, collection: str):
     args = parse_arguments()
 
     if args.nb_page == 1:
@@ -55,6 +55,9 @@ def scrap_pages():
     pages_scraped = 0
     consecutive_403 = 0
 
+    articles_found = 0
+    articles_saved = 0
+
     for index, page_to_scrap in enumerate(pages_to_scrap):
         url = base_url if page_to_scrap == 1 else f"{base_url}/{page_to_scrap}"
 
@@ -67,7 +70,7 @@ def scrap_pages():
             page.close()
             close_playwright(p, browser)
 
-            human_sleep(sleep=random.uniform(60, 180), msg="Attente humaine après limit de page dans la session ou 403")
+            human_sleep(sleep=random.uniform(30, 60), msg="Attente humaine après limit de page dans la session ou 403")
 
             # Start a new playwright session
             p, browser, page = start_playwright_session()
@@ -103,7 +106,9 @@ def scrap_pages():
             continue
 
         logger.info(f"Container news-liste trouvé, début de la récupération")
+
         articles=container.find_all('article')
+        articles_found += len(articles)
 
         for article in articles:
             article_data=dict({
@@ -153,15 +158,28 @@ def scrap_pages():
                     comments_link=summary_footer_elm[1]
                     if comments_link.find('a') and comments_link.find('a').get('href'):
                         article_data['link_to_comments']=comments_link.find('a').get('href')
-            
+          
             articles_data.append(article_data)
         
         logger.info(f'Récupération des articles de la page {page_to_scrap} terminée.')
+        
+        # Save immediately.
+        # If an error occurs, save data in a list and try to save at the end of the loop.
+        results=save_to_mongo(client, collection, articles_data, close=False)
+        if not results:
+            logger.error(f"Échec de la sauvegarde des articles de la page {page_to_scrap}, nouvelle tentative en sortie de boucle.")
+        else:
+            articles_saved += len(articles_data)
+            articles_data=list()
+            logger.info(f"Sauvegarde de la page {page_to_scrap} terminée.")        
+
         if session_page_limit != 1 and len(pages_to_scrap) > 1 and index < len(pages_to_scrap)-1:
-            human_sleep(sleep=random.uniform(40, 120), msg="Attente humaine entre 2 pages")  
+            human_sleep(sleep=random.uniform(20, 60), msg="Attente humaine entre 2 pages")  
             
     
-    logger.info(f"Récupération de la liste d'articles terminées, {len(articles_data)} trouvés.")
+    logger.info(f"Récupération de la liste d'articles terminées, {articles_found} trouvés.")
+    logger.info(f"{articles_saved} article(s) sauvées immédiatement.")
+    logger.info(f"{articles_found - articles_saved} articles en erreur avec nouvelle tentative en fin de boucle.")
 
     # Close page and playwright session
     page.close()
@@ -169,11 +187,7 @@ def scrap_pages():
 
     return articles_data
 
-def connect_to_mongo_and_save_data(data: List[Dict]):
-    if not data or not len(data):
-        logger.info('Aucune données à insérer!')
-        return None
-
+def connect_to_mongo():
     # Connect to mongo db and save datas
     mongodb_config = {
         'username': DB_BOT_USER,
@@ -184,28 +198,50 @@ def connect_to_mongo_and_save_data(data: List[Dict]):
     }       
 
     # Init MongoDB Client
-    mongodb_client = ScrappingMongoClient(mongodb_config)
+    mongodb_client = MongoClient(mongodb_config)
 
     # Connect to MongoDB
     if not mongodb_client.connect_to_mongodb():
         logger.error("Impossible de se connecter à MongoDB")
         sys.exit(1)
+    
+    return mongodb_client
 
-    # Save in MongoDB
-    save_scrapping = mongodb_client.save_scrapping_to_mongodb(data, 'investing_articles')
-
-    # Close connexions
-    mongodb_client.close_connections()
-
-    if save_scrapping:
-        logger.info("Sauvegarde du scrapping terminée avec succès\n")
-    else:
-        logger.error("Erreur lors de la sauvegarde\n")
-        sys.exit(1)
+def save_to_mongo(client: MongoClient, collection: str, data: List[Dict], close: bool = True):
+    if not data or not len(data):
+        logger.info('Aucune données à insérer!')
+        return None
+        
+    try:
+        results = client.save_to_mongodb(data, collection, is_source=True)
+        return results
+    except Exception as e:
+            logger.error(f"Erreur critique dans la sauvegarde des données : {e}")
+            return None
+    finally:
+        # Close connexions
+        if client and close: 
+            client.close_connections()
 
 def main():
-    articles_data=scrap_pages()
-    connect_to_mongo_and_save_data(articles_data)
+    try:
+        client=connect_to_mongo()
+        collection='investing_articles'
+        articles_data=scrap_pages(client, collection)
+
+        # Try to save only the rest of articles if exists.
+        # The list could have some articles to save because of on error in a previous try during the enrich loop.
+        if len(articles_data):
+            results=save_to_mongo(client, collection, articles_data)
+            if results and results["new_ids"]:
+                logger.info(f"{len(results['new_ids'])} nouveaux articles ajoutés à la base.")
+            else:
+                logger.error("Échec de la mise à jour des articles restants à sauver.")
+                sys.exit(1)
+        
+    except Exception as e:
+        logger.error(f"Erreur critique dans le main : {e}")
+        sys.exit(1)
 
 if __name__ == "__main__":
     main()

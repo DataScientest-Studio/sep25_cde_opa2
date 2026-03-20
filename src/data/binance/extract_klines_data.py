@@ -2,7 +2,7 @@ import argparse
 import sys
 from datetime import datetime
 
-from BinanceDataCollector import BinanceDataCollector
+from src.data.binance.BinanceDataCollector import BinanceDataCollector
 from src.custom_logger import logger
 from src.config import DB_NAME, MONGO_DB_PORT, DB_BOT_USER, DB_BOT_PASSWORD, MONGO_HOST
 
