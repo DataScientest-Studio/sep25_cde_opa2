@@ -6,8 +6,8 @@ from datetime import datetime
 import random
 
 from src.data.scraping.mongo_client import MongoClient
-from src.custom_logger import logger
-from src.config import DB_NAME, MONGO_DB_PORT, DB_BOT_USER, DB_BOT_PASSWORD, MONGO_HOST, ENV, SCRAPER_INDEX_LIMIT
+from src.common.custom_logger import logger
+from src.config import ENV, SCRAPER_INDEX_LIMIT
 from src.data.scraping.antibot import close_cookie_modal, close_playwright, close_signup_modal, get_html_with_playwright, human_sleep, init_playwright, start_playwright_session
 
 
@@ -187,26 +187,6 @@ def scrap_pages(client: MongoClient, collection: str):
 
     return articles_data
 
-def connect_to_mongo():
-    # Connect to mongo db and save datas
-    mongodb_config = {
-        'username': DB_BOT_USER,
-        'password': DB_BOT_PASSWORD,
-        'host': MONGO_HOST,
-        'port': MONGO_DB_PORT,
-        'db_name': DB_NAME
-    }       
-
-    # Init MongoDB Client
-    mongodb_client = MongoClient(mongodb_config)
-
-    # Connect to MongoDB
-    if not mongodb_client.connect_to_mongodb():
-        logger.error("Impossible de se connecter à MongoDB")
-        sys.exit(1)
-    
-    return mongodb_client
-
 def save_to_mongo(client: MongoClient, collection: str, data: List[Dict], close: bool = True):
     if not data or not len(data):
         logger.info('Aucune données à insérer!')
@@ -221,11 +201,11 @@ def save_to_mongo(client: MongoClient, collection: str, data: List[Dict], close:
     finally:
         # Close connexions
         if client and close: 
-            client.close_connections()
+            client.close()
 
 def main():
     try:
-        client=connect_to_mongo()
+        client=MongoClient().connect()
         collection='investing_articles'
         articles_data=scrap_pages(client, collection)
 
@@ -242,6 +222,11 @@ def main():
     except Exception as e:
         logger.error(f"Erreur critique dans le main : {e}")
         sys.exit(1)
+
+    finally:
+        # Close connexions
+        if client: 
+            client.close()
 
 if __name__ == "__main__":
     main()

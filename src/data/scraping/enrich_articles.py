@@ -7,8 +7,8 @@ from bs4 import BeautifulSoup as bs
 
 from src.data.scraping.antibot import close_cookie_modal, close_playwright, close_signup_modal, get_html_with_playwright, human_sleep, start_playwright_session
 from src.data.scraping.mongo_client import MongoClient
-from src.custom_logger import logger
-from src.config import DB_NAME, ENV, MONGO_DB_PORT, DB_BOT_USER, DB_BOT_PASSWORD, MONGO_HOST, SCRAPER_ENRICH_LIMIT
+from src.common.custom_logger import logger
+from src.config import ENV, SCRAPER_ENRICH_LIMIT
 
 def parse_arguments():
     """Parse les arguments de ligne de commande."""
@@ -24,26 +24,6 @@ def parse_arguments():
     )
     
     return parser.parse_args()
-
-def connect_to_mongo():
-    # Connect to mongo db and save datas
-    mongodb_config = {
-        'username': DB_BOT_USER,
-        'password': DB_BOT_PASSWORD,
-        'host': MONGO_HOST,
-        'port': MONGO_DB_PORT,
-        'db_name': DB_NAME
-    }       
-
-    # Initialisation du client mongo
-    mongodb_client = MongoClient(mongodb_config)
-
-    # Connexion à MongoDB
-    if not mongodb_client.connect_to_mongodb():
-        logger.error("Impossible de se connecter à MongoDB")
-        sys.exit(1)
-    
-    return mongodb_client
 
 def complete_articles(articles_to_complete: Cursor, client: MongoClient, collection: str):
     # Playwright is used to bypass cloudflare protection of investing.com
@@ -130,7 +110,7 @@ def main():
     args = parse_arguments()
 
     try: 
-        mongodb_client=connect_to_mongo()
+        mongodb_client=MongoClient().connect()
         collection='investing_articles'
 
         articles_to_complete=mongodb_client.get_articles_to_complete(collection, args.limit)
@@ -153,7 +133,7 @@ def main():
     finally:
         # Close connexions
         if mongodb_client: 
-            mongodb_client.close_connections()  
+            mongodb_client.close()  
         
 
 if __name__ == "__main__":
