@@ -187,7 +187,7 @@ class MongoClient(MongoConnector):
                 if is_source:
                     # La source de données provient du scraping
                     set_on_insert = {
-                        "scrapped_at": now,
+                        "scraped_at": now,
                         "first_seen": now,
                         "raw_content": None,
                         "text_content": None,
