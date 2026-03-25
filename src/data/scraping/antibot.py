@@ -1,7 +1,7 @@
 import time
 import random
 from playwright.sync_api import sync_playwright, Browser, Page, BrowserContext, Playwright
-from src.custom_logger import logger
+from src.common.custom_logger import logger
 from src.config import ENV
 
 def human_sleep(sleep: int, msg: str):

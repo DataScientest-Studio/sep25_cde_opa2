@@ -3,7 +3,7 @@ import signal
 import subprocess
 import sys
 
-from src.custom_logger import logger
+from src.common.custom_logger import logger
 
 executor = None
 
