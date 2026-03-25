@@ -303,15 +303,15 @@ class BinanceDataCollector:
             # Insertion des données
             
             try:
-                result = collection.replace_one(
-                        filter={'open_time': kline['open_time']}, 
-                        replacement=kline, 
-                        upsert=True
-                    )
+                collection.replace_one(
+                    filter={'open_time': kline['open_time']}, 
+                    replacement=kline, 
+                    upsert=True
+                )
                 
             except PyMongoError as e:
                 if "duplicate key error" in str(e).lower():
-                    skipped_count += 1
+                    logger.warning(f"Doublon ignoré: {e}")
                 else:
                     logger.warning(f"Erreur lors de l'insertion: {e}")
             

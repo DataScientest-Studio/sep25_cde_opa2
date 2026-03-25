@@ -52,7 +52,8 @@ if __name__ == "__main__":
     logger.info("--- Démarrage du scrapping, de l'enrichissement, et de la détection des symbols au sein des articles ---")
 
     try:
-        with ProcessPoolExecutor(max_workers=len(tasks)) as executor:
+        executor = ProcessPoolExecutor(max_workers=len(tasks))
+        with executor:
             executor.map(worker, tasks)
     except KeyboardInterrupt:
         logger.info("Arrêt manuel du scraping.")
