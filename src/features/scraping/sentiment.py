@@ -15,52 +15,64 @@ emotion_pipe = pipeline("text-classification", model="j-hartmann/emotion-english
 
 
 def analyse_articles_sentiment(articles: Cursor):
-     
+    # Recupération du mapping symbol -> names et aliases
     symbols_and_names=get_cryptos_symbols_and_names()
+    # Convertion en dictionnaire
+    cryptos={s['symbol']: s for s in symbols_and_names}
 
     for article in articles:
         full_content=f"{article['title']}\n{article['text_content']}"
         article_blob=TextBlob(full_content)
+
+        article_texts_by_symbol=[]
+
+        for symbol in article.get('symbols', []):
+            crypto=cryptos.get(symbol)
+            if not crypto:
+                continue
+
+            regex_pattern = rf"\b({'|'.join(map(re.escape, crypto['aliases']))})\b"
+            crypto_sentences = [
+                str(s) for s in article_blob.sentences 
+                if re.search(regex_pattern, str(s), flags=re.IGNORECASE)
+            ]
+
+            if crypto_sentences:
+                context_text = " ".join(crypto_sentences)
+                article_texts_by_symbol.append({"symbol": symbol, "text": context_text})
+
+        if not article_texts_by_symbol:
+            continue 
+
+
+        # Creation d'un tableau de textes
+        texts_to_analyze = [c['text'] for c in article_texts_by_symbol]
+        
+        # Calcul des sentiments et emotions pour chaque textes
+        all_sentiments = sentiment_pipe(texts_to_analyze, truncation=True)
+        all_emotions = emotion_pipe(texts_to_analyze, truncation=True)
+
+        # Boucle sur les textes classés par symbol afin former les résultats
         article_analyse={}
-        symbols=[]
-        symbol_results=[]
-
-        for symbol in article['symbols']:
-            for san in symbols_and_names:
-                if san['symbol'] == symbol:
-                    symbols.append(san)
-                
-        for symbol in symbols:
-            sentences_by_symbol=[]
-            for alias in symbol['aliases']:
-                for sentence in article_blob.sentences:
-                    sentence_lower=str(sentence).lower()
-                    if re.search(rf"\b{re.escape(alias)}\b", sentence_lower, flags=re.IGNORECASE):
-                        sentences_by_symbol.append(str(sentence))
+        symbol_results = []
+        for i, text in enumerate(article_texts_by_symbol):
+            # Récupération de l'émotion dominante
+            emotions_list = all_emotions[i]
+            top_emotion = max(emotions_list, key=lambda x: x['score'])
             
-            
-            text_by_symbol=" ".join(sentences_by_symbol)
-
-            # Sentiment
-            sent=sentiment_pipe(text_by_symbol, truncation=True, max_length=512)[0]
-            
-            # Emotions
-            emotions=emotion_pipe(text_by_symbol, truncation=True, max_length=512)[0]
-
-            # On prend l'émotion dominante
-            top_emotion = max(emotions, key=lambda x: x['score'])
-
             symbol_results.append({
-                "symbol": symbol['symbol'],
-                "sentiment": sent['label'],
-                "confidence": sent['score'],
+                "symbol": text['symbol'],
+                "sentiment": all_sentiments[i]['label'],
+                "confidence": all_sentiments[i]['score'],
                 "emotion": top_emotion['label'],
                 "intensity": top_emotion['score']
             })
-            
-            article_analyse['polarity']=article_blob.sentiment.polarity
-            article_analyse['subjectivity']=article_blob.sentiment.subjectivity
-            article_analyse['symbols']=symbol_results
+        
+        article_analyse['polarity']=article_blob.sentiment.polarity
+        article_analyse['subjectivity']=article_blob.sentiment.subjectivity
+        article_analyse['symbols']=symbol_results
+           
+        print(article_analyse)
 
         # @TODO
         # Set flag articles with calculated features
