@@ -3,6 +3,7 @@ import uvicorn
 
 # Import de la configuration après l'ajout au PYTHONPATH
 from src.config import API_PORT, ENV
+from src.custom_logger import logger
 
 if __name__ == "__main__":
     # Configuration du serveur
@@ -10,9 +11,9 @@ if __name__ == "__main__":
     host = "0.0.0.0" if ENV == 'docker' else "localhost"
     port = int(API_PORT)  # Conversion en entier
     
-    print(f"Démarrage de l'API sur http://{host}:{port}")
-    print(f"Documentation disponible sur http://localhost:{port}/docs")
-    print(f"Alternative: http://localhost:{port}/redoc")
+    logger.info(f"Démarrage de l'API sur http://localhost:{port}")
+    logger.info(f"Documentation disponible sur http://localhost:{port}/docs")
+    logger.info(f"Alternative: http://localhost:{port}/redoc")
     
     # Lancement du serveur
     uvicorn.run(

@@ -4,16 +4,9 @@ import psycopg
 import pandas as pd
 from datetime import datetime
 from typing import Optional, List
-import logging
 
 from src.config import DB_NAME, DB_BOT_USER, DB_BOT_PASSWORD, PG_HOST, PG_DB_PORT
-
-# Configuration du logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s'
-)
-logger = logging.getLogger(__name__)
+from src.custom_logger import logger
 
 app = FastAPI(
     title="DATA API",
