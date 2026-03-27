@@ -126,23 +126,23 @@ services:
   
   # Scraper container
   scraper:
-      build:
-        context: .
-        dockerfile: docker/scraper/Dockerfile
-      container_name: scraper
-      command: sh -c "python -m src.data.scraping.main && sleep infinity"
-      volumes:
-        - ./data/external:/app/data/external
-      env_file:
-        - .env
-      environment:
-        ENV: docker
-      depends_on:
-        mongo:
-          condition: service_started
-        mongo-init:
-          condition: service_completed_successfully
-      restart: unless-stopped
+    build:
+      context: .
+      dockerfile: docker/scraper/Dockerfile
+    container_name: scraper
+    command: sh -c "python -m src.data.scraping.main && sleep infinity"
+    volumes:
+      - ./data/external:/app/data/external
+    env_file:
+      - .env
+    environment:
+      ENV: docker
+    depends_on:
+      mongo:
+        condition: service_started
+      mongo-init:
+        condition: service_completed_successfully
+    restart: unless-stopped
 
   # Streamlit application
   streamlit:
@@ -161,15 +161,39 @@ services:
         condition: service_started
       mongo-init:
         condition: service_completed_successfully
-      postgres:
+      data-api:
         condition: service_healthy
-      postgres-init:
-        condition: service_completed_successfully
     restart: unless-stopped
     volumes:
       # Optionnel : pour le développement, monter le code source en temps réel
       # - ./src:/app/src
       - streamlit_data:/app/data  # Pour persister les données si nécessaire
+
+  # API FastAPI pour les données PostgreSQL
+  data-api:
+    build:
+      context: .
+      dockerfile: docker/python/Dockerfile
+    container_name: data-api
+    command: python -m src.data.api.run_api
+    env_file:
+      - .env
+    environment:
+      ENV: docker
+    ports:
+      - "${API_PORT:-8000}:${API_PORT:-8000}"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      postgres-init:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:${API_PORT:-8000}/health', timeout=5).raise_for_status()"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
 
   # Service pour collecter les données MongoDB (WebSocket Binance)
   data-collector:

@@ -1,17 +1,17 @@
 
 from pymongo import MongoClient
 from pymongo.errors import PyMongoError
-import psycopg
 import pandas as pd
 from datetime import datetime, timedelta
 import logging
+import requests
 
 import streamlit as st
 from streamlit_autorefresh import st_autorefresh
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
-from src.config import DB_NAME, MONGO_DB_PORT, DB_BOT_USER, DB_BOT_PASSWORD, MONGO_HOST, PG_HOST, PG_DB_PORT
+from src.config import DB_NAME, MONGO_DB_PORT, DB_BOT_USER, DB_BOT_PASSWORD, MONGO_HOST, API_PORT, API_HOST
 
 # Configuration de la page
 st.set_page_config(
@@ -42,20 +42,12 @@ def get_mongodb_connection():
         return None
 
 
-@st.cache_resource
-def get_postgresql_connection():
-    try:
-        conn = psycopg.connect(
-            dbname=DB_NAME,
-            user=DB_BOT_USER,
-            password=DB_BOT_PASSWORD,
-            host=PG_HOST,
-            port=PG_DB_PORT
-        )
-        return conn
-    except Exception as e:
-        st.error(f"Erreur de connexion PostgreSQL: {e}")
-        return None
+@st.cache_data(ttl=1)
+def get_api_base_url():
+    """Configuration de l'URL de base de l'API"""
+    # Utilise API_HOST qui s'adapte automatiquement selon l'environnement
+    # localhost pour le développement local, nom du service Docker en production
+    return f"http://{API_HOST}:{API_PORT}"
 
 
 @st.cache_data(ttl=1)
@@ -109,46 +101,55 @@ def load_klines_data_mongodb(collection_name: str, start_date=None, end_date=Non
         st.session_state.loading_data = False
 
 
-@st.cache_data(ttl=1)
-def load_klines_data_postgresql(table_name="klines", start_date=None, end_date=None, limit=1000):
+@st.cache_data(ttl=1)  
+def load_klines_data_api(table_name="klines", start_date=None, end_date=None, limit=1000):
+    """Récupère les données klines via l'API FastAPI"""
     st.session_state.loading_data = True
     
     try:
-        conn = get_postgresql_connection()
-        if conn is None:
+        api_base_url = get_api_base_url()
+        
+        # Construction des paramètres de requête
+        params = {
+            "limit": limit,
+            "table_name": table_name
+        }
+        
+        # Ajout des filtres de date si fournis
+        if start_date:
+            if isinstance(start_date, datetime):
+                params["start_date"] = start_date.strftime("%Y-%m-%d %H:%M:%S")
+            else:
+                params["start_date"] = str(start_date)
+                
+        if end_date:
+            if isinstance(end_date, datetime):
+                params["end_date"] = end_date.strftime("%Y-%m-%d %H:%M:%S")
+            else:
+                params["end_date"] = str(end_date)
+        
+        # Appel à l'API
+        response = requests.get(f"{api_base_url}/klines", params=params, timeout=30)
+        
+        if response.status_code != 200:
+            st.error(f"Erreur API (status {response.status_code}): {response.text}")
             return pd.DataFrame()
         
-        # Construction de la requête SQL
-        base_query = f"""
-            SELECT open_time, close_time, open_price, high_price, low_price, 
-                   close_price, volume, quote_volume, trades_count,
-                   taker_buy_base_volume, taker_buy_quote_volume
-            FROM {table_name}
-        """
+        # Récupération des données JSON
+        data = response.json()
         
-        conditions = []
-        params = []
-        
-        if start_date and end_date:
-            conditions.append("open_time >= %s AND open_time <= %s")
-            params.extend([start_date, end_date])
-        
-        if conditions:
-            base_query += " WHERE " + " AND ".join(conditions)
-        
-        base_query += " ORDER BY open_time DESC LIMIT %s"
-        params.append(limit)
-        
-        # Exécution de la requête
-        df = pd.read_sql_query(base_query, conn, params=params)
-        
-        if df.empty:
-            logger.warning(f"No data found in PostgreSQL table '{table_name}'.")
+        if not data:
+            logger.warning(f"Aucune donnée reçue de l'API pour la table '{table_name}'.")
             return pd.DataFrame()
         
-        # S'assurer que open_time est en datetime
+        # Conversion en DataFrame
+        df = pd.DataFrame(data)
+        
+        # Conversion des colonnes de dates
         if 'open_time' in df.columns:
             df['open_time'] = pd.to_datetime(df['open_time'])
+        if 'close_time' in df.columns:
+            df['close_time'] = pd.to_datetime(df['close_time'])
         
         # Conversion des colonnes numériques
         numeric_columns = ['open_price', 'high_price', 'low_price', 'close_price', 'volume', 'trades_count']
@@ -156,10 +157,20 @@ def load_klines_data_postgresql(table_name="klines", start_date=None, end_date=N
             if col in df.columns:
                 df[col] = pd.to_numeric(df[col], errors='coerce')
         
-        return df[numeric_columns + ['open_time']]
+        # Sélection des colonnes nécessaires
+        available_columns = [col for col in numeric_columns + ['open_time'] if col in df.columns]
+        df = df[available_columns]
         
+        logger.info(f"Récupération de {len(df)} klines via l'API depuis la table '{table_name}'")
+        return df
+        
+    except requests.exceptions.RequestException as e:
+        st.error(f"Erreur de connexion à l'API: {e}")
+        logger.error(f"Erreur de connexion à l'API: {e}")
+        return pd.DataFrame()
     except Exception as e:
-        st.error(f"Erreur lors de la récupération des données PostgreSQL (table '{table_name}'): {e}")
+        st.error(f"Erreur lors de la récupération des données via l'API (table '{table_name}'): {e}")
+        logger.error(f"Erreur lors de la récupération des données via l'API: {e}")
         return pd.DataFrame()
     finally:
         st.session_state.loading_data = False
@@ -244,18 +255,33 @@ def main():
     # Sélection de la source de données
     data_source = st.sidebar.selectbox(
         "Source de données",
-        ["PostgreSQL", "MongoDB"],
+        ["API PostgreSQL", "MongoDB"],
         index=0,
-        help="Choisir entre la base PostgreSQL ou MongoDB"
+        help="Choisir entre l'API FastAPI (données PostgreSQL) ou MongoDB directement"
     )
+    
+    # Test de connexion API si sélectionnée
+    if data_source == "API PostgreSQL":
+        api_url = get_api_base_url()
+        with st.sidebar.expander("ℹ️ Info API", expanded=False):
+            st.write(f"**URL API:** {api_url}")
+            if st.button("Tester la connexion API"):
+                try:
+                    response = requests.get(f"{api_url}/health", timeout=5)
+                    if response.status_code == 200:
+                        st.success("✅ API disponible")
+                    else:
+                        st.error(f"❌ API erreur: {response.status_code}")
+                except Exception as e:
+                    st.error(f"❌ API inaccessible: {e}")
     
     # Configuration selon la source
     table_or_collection_name = None
-    if data_source == "PostgreSQL":
+    if data_source == "API PostgreSQL":
         table_or_collection_name = st.sidebar.text_input(
-            "Nom de la table PostgreSQL", 
+            "Nom de la table PostgreSQL (via API)", 
             value=table_name_default,
-            help="Nom de la table PostgreSQL contenant les données klines"
+            help="Nom de la table PostgreSQL interrogée via l'API FastAPI"
         )
     else:  # MongoDB
         table_or_collection_name = st.sidebar.text_input(
@@ -301,8 +327,8 @@ def main():
     
     with st.spinner("Chargement des données..."):
         try:
-            if data_source == "PostgreSQL":
-                df = load_klines_data_postgresql(table_or_collection_name, start_date, end_date, max_points)
+            if data_source == "API PostgreSQL":
+                df = load_klines_data_api(table_or_collection_name, start_date, end_date, max_points)
             else:  # MongoDB
                 df = load_klines_data_mongodb(table_or_collection_name, start_date, end_date, max_points)
         except Exception as e:
@@ -313,7 +339,7 @@ def main():
         st.warning(f"Aucune donnée trouvée dans la source {data_source} ou erreur de connexion.")
         
 
-    source_info = f"table PostgreSQL: {table_or_collection_name}" if data_source == "PostgreSQL" else f"collection MongoDB: {table_or_collection_name}"
+    source_info = f"table PostgreSQL (via API): {table_or_collection_name}" if data_source == "API PostgreSQL" else f"collection MongoDB: {table_or_collection_name}"
     st.subheader(f"Données de la {source_info}")
     st.info(f"Source active: **{data_source}** | Nom: **{table_or_collection_name}** | Nombre de points chargés: **{len(df)}**")
     st.subheader("Graphique Candlestick")
