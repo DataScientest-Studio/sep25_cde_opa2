@@ -4,7 +4,7 @@ from datetime import datetime
 
 from BinanceDataCollector import BinanceDataCollector, RateLimitExceededException
 
-from src.custom_logger import logger
+from src.common.custom_logger import logger
 from src.config import DB_NAME, MONGO_DB_PORT, DB_BOT_USER, DB_BOT_PASSWORD, MONGO_HOST
 
 def main():

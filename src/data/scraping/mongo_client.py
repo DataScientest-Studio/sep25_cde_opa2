@@ -1,60 +1,17 @@
 
-from src.custom_logger import logger
+from src.common.connectors import MongoConnector
+from src.common.custom_logger import logger
 from typing import Dict, List
 from datetime import datetime
 
-from pymongo import MongoClient as PyMongoClient, UpdateOne
+from pymongo import UpdateOne
 from pymongo.errors import PyMongoError
 from pymongo.cursor import Cursor
 from bson.objectid import ObjectId
 
-class MongoClient:
-    """Classe pour la connection et le stockage dans MongoDB."""
-    
-    def __init__(self, mongodb_config: Dict[str, str]):
-        """
-        Initialise le collecteur de données.
-        
-        Args:
-            mongodb_config: Configuration MongoDB
-        """
-        self.mongo_client = None
-        self.db = None
-        self.mongodb_config = mongodb_config
-        
-    def connect_to_mongodb(self) -> bool:
-        """
-        Établit la connexion à MongoDB.
-        
-        Returns:
-            bool: True si la connexion est réussie, False sinon
-        """
-        try:
-            # Construction de l'URI MongoDB
-            username = self.mongodb_config['username']
-            password = self.mongodb_config['password']
-            host = self.mongodb_config['host']
-            port = self.mongodb_config['port']
-            db_name = self.mongodb_config['db_name']
-            
-            if username and password and host and port and db_name:
-                connection_string = f"mongodb://{username}:{password}@{host}:{port}/{db_name}"
-            else:
-                logger.error("Configuration MongoDB incomplète. Veuillez vérifier les variables d'environnement.")
-                return False
-            
-            self.mongo_client = PyMongoClient(connection_string)
-            self.db = self.mongo_client[db_name]
-            
-            # Test de la connexion
-            self.mongo_client.admin.command('ping')
-            logger.info(f"Connexion réussie à MongoDB: {host}:{port}")
-            return True
-            
-        except PyMongoError as e:
-            logger.error(f"Erreur de connexion MongoDB: {e}")
-            return False
-        
+class MongoClient(MongoConnector):
+    """Classe pour la recherche, l'insertion et la mise à jour des articles scrapés dans MongoDB."""
+
     def get_articles_to_complete(self, collection_name: str, limit: int = 1) -> Cursor:
         """
         Récupère les articles dont le contenu n'a pas encore été récupéré
@@ -277,9 +234,3 @@ class MongoClient:
         except PyMongoError as e:
             logger.error(f"Erreur BulkWrite: {e}")
             return None
-
-    def close_connections(self):
-        """Ferme la connexion à MongoDB."""
-        if self.mongo_client:
-            self.mongo_client.close()
-            logger.info("Connexion fermée")
