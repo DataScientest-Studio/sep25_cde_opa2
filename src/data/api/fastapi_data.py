@@ -6,7 +6,7 @@ from datetime import datetime
 from typing import Optional, List
 
 from src.config import DB_NAME, DB_BOT_USER, DB_BOT_PASSWORD, PG_HOST, PG_DB_PORT
-from src.custom_logger import logger
+from src.common.custom_logger import logger
 
 app = FastAPI(
     title="DATA API",

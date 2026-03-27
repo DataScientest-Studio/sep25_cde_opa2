@@ -3,7 +3,6 @@ from pymongo import MongoClient
 from pymongo.errors import PyMongoError
 import pandas as pd
 from datetime import datetime, timedelta
-import logging
 import requests
 
 import streamlit as st
@@ -12,6 +11,7 @@ import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
 from src.config import DB_NAME, MONGO_DB_PORT, DB_BOT_USER, DB_BOT_PASSWORD, MONGO_HOST, API_PORT, API_HOST
+from src.common.custom_logger import logger
 
 # Configuration de la page
 st.set_page_config(
@@ -20,13 +20,6 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="expanded"
 )
-
-# Configuration du logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s'
-)
-logger = logging.getLogger(__name__)
 
 @st.cache_resource
 def get_mongodb_connection():

@@ -3,7 +3,7 @@ import uvicorn
 
 # Import de la configuration après l'ajout au PYTHONPATH
 from src.config import API_PORT, ENV
-from src.custom_logger import logger
+from src.common.custom_logger import logger
 
 if __name__ == "__main__":
     # Configuration du serveur
