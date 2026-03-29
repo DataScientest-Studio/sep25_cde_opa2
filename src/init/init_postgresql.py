@@ -44,7 +44,7 @@ with psycopg.connect(
         conn.autocommit = True
         with conn.cursor() as cur:
 
-            # Attribue les droit au user DB_BOT_USER
+            # Attribue les droits au user DB_BOT_USER
             cur.execute(f"""
                 GRANT CONNECT ON DATABASE {DB_NAME} TO {DB_BOT_USER};
                 GRANT USAGE, CREATE ON SCHEMA public TO {DB_BOT_USER};
@@ -68,7 +68,7 @@ with psycopg.connect(
             logger.info(f"Permissions accordées au user {DB_BOT_USER} sur la base {DB_NAME}")
 
 
-# Création des tables s'ils n'exsistent oas
+# Création des tables s'elles n'exsistent pas
 with psycopg.connect(
             dbname=DB_NAME,
             user=DB_ROOT_USER,
