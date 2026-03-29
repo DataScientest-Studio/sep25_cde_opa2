@@ -32,7 +32,7 @@ services:
       - "27017:27017"
     restart: unless-stopped
     volumes:
-      - ~/DATAS/datascientest/projet/mongo_data:/data/db # Voir les commentaires à la fin du fichier compose.yml
+      - mongo_data:/data/db
 
   mongo-init:
     build:
@@ -67,10 +67,10 @@ services:
 
   # PostgreSQL containers
   postgres:
-    image: postgres:18.1
+    image: postgres:15
     container_name: postgres
     volumes:
-      - ~/DATAS/datascientest/projet/postgresql_data:/var/lib/postgresql # Voir les commentaires à la fin du fichier compose.yml
+      - postgresql_data:/var/lib/postgresql/data
     env_file:
       - .env
     environment:
@@ -106,7 +106,7 @@ services:
     image: dpage/pgadmin4:latest
     container_name: pgadmin
     volumes:
-      - ~/DATAS/datascientest/projet/pgadmin_data:/var/lib/pgadmin # Voir les commentaires à la fin du fichier compose.yml
+      - pgadmin_data:/var/lib/pgadmin
       - ./docker/pgadmin/servers.json:/pgadmin4/servers.json:ro
     env_file:
       - .env
@@ -228,7 +228,7 @@ services:
       mongo:
         condition: service_started
       mongo-init:
-        condition: service_completed_successfully
+          condition: service_completed_successfully
       postgres:
         condition: service_healthy
       postgres-init:
@@ -258,15 +258,3 @@ volumes:
   postgresql_data:
   pgadmin_data:
   streamlit_data:
-  
-# Pour le montage des volumes locaux, on propose d'utiliser le chemin sur l'hôte : ~/DATAS/datascientest/projet/ (ou autre)
-# Dans lequel il faut créer les dossiers pour les données de MongoDB, PostgreSQL et pgAdmin, comme suit :
-# ~/DATAS/datascientest/projet/
-#                         ├──mongo_data
-#                         ├──postgresql_data
-#                         └──pgadmin_data
-
-# Pour le dossier pgadmin_data
-# Il est nécessaire de lui donner certaines permissions avec la commande : sudo chown -R 5050:5050 ~/DATAS/datascientest/projet/pgadmin_data
-# Voir article : https://www.pgadmin.org/docs/pgadmin4/latest/container_deployment.html#mapped-files-and-directories
-# En tout cas, moi j'ai du le faire pour que cela fonctionne
