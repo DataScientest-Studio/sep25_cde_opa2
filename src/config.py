@@ -35,6 +35,12 @@ if ENV == 'docker':
 BINANCE_API_KEY=os.getenv('BINANCE_API_KEY')
 BINANCE_API_SECRET=os.getenv('BINANCE_API_SECRET')
 
+# API
+API_PORT=os.getenv('API_PORT', '8000')  # Port par défaut: 8000
+API_HOST='localhost'
+if ENV == 'docker':
+    API_HOST=os.getenv('API_HOST', 'data-api')
+
 # Scraper
 SCRAPER_INDEX_LIMIT=os.getenv('SCRAPER_INDEX_LIMIT', 2)
 SCRAPER_ENRICH_LIMIT=os.getenv('SCRAPER_ENRICH_LIMIT', 50)

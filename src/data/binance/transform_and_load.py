@@ -4,7 +4,7 @@ from pymongo.errors import PyMongoError
 from decimal import Decimal
 import time
 
-from src.custom_logger import logger
+from src.common.custom_logger import logger
 from src.config import (
     DB_NAME, DB_BOT_USER, DB_BOT_PASSWORD, PG_DB_PORT, PG_HOST,
     MONGO_HOST, MONGO_DB_PORT

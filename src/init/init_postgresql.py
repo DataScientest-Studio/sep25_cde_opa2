@@ -1,4 +1,5 @@
 from src.config import DB_NAME, DB_ROOT_USER, DB_ROOT_PASSWORD, DB_BOT_USER, DB_BOT_PASSWORD, PG_DB_PORT, PG_HOST
+from src.common.custom_logger import logger
 import psycopg
 
 with psycopg.connect(
@@ -17,9 +18,9 @@ with psycopg.connect(
         existing_db=cur.fetchone()
         if not existing_db:
             cur.execute(f"CREATE DATABASE {DB_NAME};")
-            print(f"La base de données '{DB_NAME}' est créée.")
+            logger.info(f"La base de données '{DB_NAME}' est créée.")
         else:
-            print(f"La base de données '{DB_NAME}' existe déjà.")
+            logger.info(f"La base de données '{DB_NAME}' existe déjà.")
 
         # Creation du user DB_BOT_USER pour manipulation de DB_NAME
         cur.execute(f"SELECT 1 FROM pg_roles WHERE rolname='{DB_BOT_USER}';")
@@ -27,9 +28,9 @@ with psycopg.connect(
         if not existing_user:
             # Creation du user DB_BOT_USER
             cur.execute(f"CREATE USER {DB_BOT_USER} WITH PASSWORD '{DB_BOT_PASSWORD}';")
-            print(f"L'utilisateur {DB_BOT_USER} créé.")
+            logger.info(f"L'utilisateur {DB_BOT_USER} créé.")
         else:
-            print(f"L'utilisateur {DB_BOT_USER} existe déjà.")
+            logger.info(f"L'utilisateur {DB_BOT_USER} existe déjà.")
 
 
 with psycopg.connect(
@@ -64,7 +65,7 @@ with psycopg.connect(
                 GRANT ALL ON FUNCTIONS TO {DB_BOT_USER};
             """)
 
-            print(f"Permissions accordées au user {DB_BOT_USER} sur la base {DB_NAME}")
+            logger.info(f"Permissions accordées au user {DB_BOT_USER} sur la base {DB_NAME}")
 
 
 # Création de la table klines si elle n'existe pas
@@ -123,6 +124,6 @@ with psycopg.connect(
                     GRANT USAGE, SELECT ON SEQUENCE klines_id_seq TO {DB_BOT_USER};
                 """)
                 
-                print("Table 'klines' créée avec succès.")
+                logger.info("Table 'klines' créée avec succès.")
             else:
-                print("La table 'klines' existe déjà.")
+                logger.info("La table 'klines' existe déjà.")

@@ -13,8 +13,8 @@ from pymongo.cursor import Cursor
 
 from sklearn.feature_extraction.text import ENGLISH_STOP_WORDS
 
-from src.config import BINANCE_API_KEY, BINANCE_API_SECRET, DB_BOT_PASSWORD, DB_BOT_USER, DB_NAME, MONGO_DB_PORT, MONGO_HOST, PROJECT_ROOT, SCRAPER_DETECT_LIMIT
-from src.custom_logger import logger
+from src.config import BINANCE_API_KEY, BINANCE_API_SECRET, PROJECT_ROOT, SCRAPER_DETECT_LIMIT
+from src.common.custom_logger import logger
 from src.data.scraping.mongo_client import MongoClient
 
 # Define a default symbols list in case of api error, or file access errors.
@@ -146,26 +146,6 @@ def detect_crypto_symbol_in_articles(articles: Cursor, symbols: list[dict[str, s
     
     return articles_to_update
 
-def connect_to_mongo():
-    # Connect to mongo db and save datas
-    mongodb_config = {
-        'username': DB_BOT_USER,
-        'password': DB_BOT_PASSWORD,
-        'host': MONGO_HOST,
-        'port': MONGO_DB_PORT,
-        'db_name': DB_NAME
-    }       
-
-    # Initialisation du client mongo
-    mongodb_client = MongoClient(mongodb_config)
-
-    # Connexion à MongoDB
-    if not mongodb_client.connect_to_mongodb():
-        logger.error("Impossible de se connecter à MongoDB")
-        sys.exit(1)
-    
-    return mongodb_client
-
 def main():
     args = parse_arguments()
 
@@ -177,7 +157,7 @@ def main():
                 Ainsi, seul le Bitcoin sera évalué dans l'identification des symbols présents dans les articles.
                 """)
 
-        mongodb_client=connect_to_mongo()
+        mongodb_client=MongoClient().connect()
         collection_name='investing_articles'
 
         mongodb_client.db[collection_name].create_index([
@@ -208,7 +188,7 @@ def main():
     finally:
         # Close connexions
         if mongodb_client: 
-            mongodb_client.close_connections()
+            mongodb_client.close()
 
 if __name__ == "__main__":
     main()
