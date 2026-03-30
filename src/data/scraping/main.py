@@ -9,9 +9,8 @@ executor = None
 
 def stop_workers(signum, frame):
     """Interception du signal d'arrêt de docker"""
-    #global executor
+    # global executor
     logger.info(f"Signal {signum} reçu. Fermeture des workers...")
-    logger.warning(f"Arrêt du scraping en cours, cela peut prendre quelques secondes... {executor}")
     if executor:
         # On attend que les script en cours s'arrête correctement, puis stop
         executor.shutdown(wait=True, cancel_futures=True)
@@ -43,7 +42,7 @@ if __name__ == "__main__":
     # Les scripts de scrapping sont lancés en parallèle une première fois.
     # Les commandes de lancement sont stockées dans un tableau et envoyé à un gestionnaires de tâches.
     # Ici ProcessPoolExecutor
-    
+
     tasks = [
         ("Récupération des articles", ["python", "-m", "src.data.scraping.index_articles"]),
         ("Enrichissement des articles", ["python", "-m", "src.data.scraping.enrich_articles"]),
@@ -53,7 +52,6 @@ if __name__ == "__main__":
     logger.info("--- Démarrage du scrapping, de l'enrichissement, et de la détection des symbols au sein des articles ---")
 
     try:
-        
         executor = ProcessPoolExecutor(max_workers=len(tasks))
         with executor:
             executor.map(worker, tasks)
