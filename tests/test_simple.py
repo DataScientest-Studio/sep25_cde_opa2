@@ -1,8 +1,6 @@
 """
 Test simple pour vérifier que le workflow Python fonctionne.
 """
-import sys
-from pathlib import Path
 
 def test_python_basics():
     """Test que Python fonctionne correctement."""
