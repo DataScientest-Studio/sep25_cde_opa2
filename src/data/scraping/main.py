@@ -9,7 +9,7 @@ executor = None
 
 def stop_workers(signum, frame):
     """Interception du signal d'arrêt de docker"""
-    global executor
+
     logger.info(f"Signal {signum} reçu. Fermeture des workers...")
     if executor:
         # On attend que les script en cours s'arrête correctement, puis stop
