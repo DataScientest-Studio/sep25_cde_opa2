@@ -16,7 +16,7 @@ DEFAULT_SYMBOLS = [
     {
         "symbol": "BTC",
         "name": "Bitcoin",
-        "alisases": ["btc", "bitcoin"]
+        "aliases": ["btc", "bitcoin"]
     }
 ]
 
