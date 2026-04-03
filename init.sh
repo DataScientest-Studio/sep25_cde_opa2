@@ -1,6 +1,12 @@
 #!/bin/bash
 
 echo "Install playwright and deps for webscrapping part"
+
+# check venv
+if [ ! -d "venv" ]; then
+    python3 -m venv venv
+fi
+
 # activate venv
 source venv/bin/activate
 # install python deps
@@ -38,7 +44,10 @@ if [ -d $PG_FOLDER ]; then
     echo "Le dossier $PG_FOLDER existe!"
 else
     mkdir -p $PG_FOLDER
-    sudo chown -R 999:999 $PG_FOLDER
+    # Permissions needed only by Linux
+    if [[ "$OSTYPE" != "darwin"* ]]; then
+        sudo chown -R 999:999 $PG_FOLDER
+    fi    
     echo "Dossier $PG_FOLDER créé!"
 fi
 
@@ -48,6 +57,9 @@ if [ -d $PGADMIN_FOLDER ]; then
     echo "Le dossier $PGADMIN_FOLDER existe!"
 else
     mkdir -p $PGADMIN_FOLDER
-    sudo chown -R 5050:5050 $PGADMIN_FOLDER
+    # Permissions needed only by Linux
+    if [[ "$OSTYPE" != "darwin"* ]]; then
+        sudo chown -R 5050:5050 "$PGADMIN_FOLDER"
+    fi
     echo "Dossier $PGADMIN_FOLDER créé!"    
 fi

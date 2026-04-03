@@ -84,7 +84,9 @@ Project Organization
     │   ├── custom_logger.py    <- Create a custom logger  
     │   ├── config              <- Describe the parameters used in train_model.py and predict_model.py
     │   └── scripts.sample      <- Python scripts call examples
-
+    │
+    └── .github
+        └── workflows       <- GitHub Actions workflows.
 --------
 
 <p><small>Project based on the <a target="_blank" href="https://drivendata.github.io/cookiecutter-data-science/">cookiecutter data science project template</a>. #cookiecutterdatascience</small></p>
