@@ -83,7 +83,7 @@ def analyse_articles_sentiment(articles: Cursor, pg_client: PGClient, mongodb_cl
                 nb_failed+=1
                 # Pose d'un flag pour ne pas recalculer les sentiments de l'article lors d'une prochaine execution du script.
                 # 2 = article traité mais aucune crypto trouvée pour le calcul des sentiments
-                mongodb_client.flag_articles(ids=[article['_id']], flag="feature_sentiment_analyzed", value=2, collection_name=collection_name)
+                mongodb_client.common.flag_articles(ids=[article['_id']], flag="feature_sentiment_analyzed", value=2, collection_name=collection_name)
                 continue 
 
             article_analyse={}
@@ -100,7 +100,7 @@ def analyse_articles_sentiment(articles: Cursor, pg_client: PGClient, mongodb_cl
                 nb_succeed+=1
                 # Pose d'un flag pour ne pas recalculer les sentiments de l'article lors d'une prochaine execution du script.
                 # 1 = article traité et cryptos trouvées pour le calcul des sentiments
-                mongodb_client.flag_articles(ids=[article['_id']], flag="feature_sentiment_analyzed", value=1, collection_name=collection_name)
+                mongodb_client.common.flag_articles(ids=[article['_id']], flag="feature_sentiment_analyzed", value=1, collection_name=collection_name)
                 logger.info(f"Article {article['_id']} traité et flaggé.")
             else:
                 nb_failed+=1
@@ -121,8 +121,8 @@ def main():
     global sentiment_pipe, emotion_pipe
 
     try:
-        mongodb_client=MongoClient().connect()
-        pg_client=PGClient().connect()
+        mongodb_client=MongoClient()
+        pg_client=PGClient()
 
         if sentiment_pipe is None:
             sentiment_pipe = pipeline("sentiment-analysis", model="ProsusAI/finbert")

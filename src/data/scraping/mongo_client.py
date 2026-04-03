@@ -8,8 +8,15 @@ from pymongo import UpdateOne
 from pymongo.errors import PyMongoError
 from pymongo.cursor import Cursor
 
+from src.common.mongo import MongoCommon
+
 class MongoClient(MongoConnector):
     """Classe pour la recherche, l'insertion et la mise à jour des articles scrapés dans MongoDB."""
+
+    def __init__(self):
+        super().__init__()
+        self.connect()
+        self.common = MongoCommon(self)    
 
     def get_articles_to_complete(self, collection_name: str, limit: int = 1) -> Cursor:
         """
