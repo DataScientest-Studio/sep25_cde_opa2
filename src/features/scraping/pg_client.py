@@ -9,6 +9,10 @@ from psycopg.errors import DatabaseError, Error
 class PGClient(PostgreSQLConnector):
     """Classe pour la manipulation des données dans la base de données PostgreSQL."""
 
+    def __init__(self):
+        super().__init__()
+        self.connect()
+
     def insert_sentiment_analyse(self, analyse: Dict):
         """
         Insertion du résultat des analyses de sentiments par crypto detetectée au sein d'un article
@@ -52,5 +56,5 @@ class PGClient(PostgreSQLConnector):
             
         except (DatabaseError, Error) as e:
             self.conn.rollback()
-            logger.error(f"DatabaseError lors de l'insertion des résultat de l'analyse': {e}")
+            logger.error(f"DatabaseError lors de l'insertion des résultats de l'analyse': {e}")
             return False

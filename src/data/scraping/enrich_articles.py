@@ -110,7 +110,7 @@ def main():
     args = parse_arguments()
 
     try: 
-        mongodb_client=MongoClient().connect()
+        mongodb_client=MongoClient()
         collection='investing_articles'
 
         articles_to_complete=mongodb_client.get_articles_to_complete(collection, args.limit)

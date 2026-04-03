@@ -5,10 +5,15 @@ from src.common.custom_logger import logger
 from pymongo.errors import PyMongoError
 from pymongo.cursor import Cursor
 
+from src.common.mongo import MongoCommon
 from src.config import SCRAPER_FEATURE_SENTIMENT_LIMIT
 
 class MongoClient(MongoConnector):
-    """Classe pour la récupération d'articles et la pose de flags après calcul des features."""
+    """Classe pour la récupération d'articles."""
+    def __init__(self):
+        super().__init__()
+        self.connect()
+        self.common = MongoCommon(self)
 
     def get_articles(self, collection_name: str) -> Cursor:
         """

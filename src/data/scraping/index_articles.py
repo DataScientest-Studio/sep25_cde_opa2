@@ -205,7 +205,7 @@ def save_to_mongo(client: MongoClient, collection: str, data: List[Dict], close:
 
 def main():
     try:
-        client=MongoClient().connect()
+        client=MongoClient()
         collection='investing_articles'
         articles_data=scrap_pages(client, collection)
 

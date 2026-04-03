@@ -85,7 +85,7 @@ def main():
     try:
         symbols_and_names=get_cryptos_symbols_and_names(force_update=args.force_update)
 
-        mongodb_client=MongoClient().connect()
+        mongodb_client=MongoClient()
         collection_name='investing_articles'
 
         mongodb_client.db[collection_name].create_index([
@@ -102,7 +102,7 @@ def main():
 
         # Flag original articles
         if results and results["original_ids"]:
-            success=mongodb_client.flag_articles(ids=results["original_ids"], flag="crypto_detected", value=True, collection_name="investing_articles")
+            success=mongodb_client.common.flag_articles(ids=results["original_ids"], flag="crypto_detected", value=True, collection_name="investing_articles")
             if success:
                 logger.info(f"Detection de symboles terminée : {len(results['original_ids'])} articles traités et marqués.")
             else:
