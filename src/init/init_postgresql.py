@@ -166,15 +166,20 @@ with psycopg.connect(
                         
             """)
             
-            # Créer un index sur open_time pour optimiser les requêtes temporelles
-            cur.execute("""
-                CREATE INDEX IF NOT EXISTS idx_candles_open_time 
-                ON candles(open_time);
-            """)
-            # Accorder les permissions sur la nouvelle table au user bot
+            # Accorder les permissions sur toutes les tables au user bot
             cur.execute(f"""
+                GRANT SELECT, INSERT, UPDATE, DELETE ON symbols TO {DB_BOT_USER};
                 GRANT SELECT, INSERT, UPDATE, DELETE ON candles TO {DB_BOT_USER};
-                GRANT USAGE, SELECT ON SEQUENCE candles_id_seq TO {DB_BOT_USER};
+                GRANT SELECT, INSERT, UPDATE, DELETE ON features_candles TO {DB_BOT_USER};
+                GRANT SELECT, INSERT, UPDATE, DELETE ON features_orderbook TO {DB_BOT_USER};
+                GRANT SELECT, INSERT, UPDATE, DELETE ON features_ticker_24 TO {DB_BOT_USER};
+                GRANT SELECT, INSERT, UPDATE, DELETE ON labels TO {DB_BOT_USER};
+                GRANT SELECT, INSERT, UPDATE, DELETE ON predictions TO {DB_BOT_USER};
+            """)
+
+            # Accorder les permissions sur toutes les séquences
+            cur.execute(f"""
+                GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO {DB_BOT_USER};
             """)
             
             print("Tables créées avec succès.")
