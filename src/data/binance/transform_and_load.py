@@ -61,32 +61,6 @@ def connect_to_postgresql():
         logger.error(f"Erreur de connexion à PostgreSQL: {e}")
         return None
 
-
-def get_or_create_symbol(conn, symbol_name):
-    """
-    Récupère l'id du symbol dans la table symbols, le crée s'il n'existe pas.
-    """
-    try:
-        with conn.cursor() as cur:
-            cur.execute("SELECT id FROM symbols WHERE symbol = %s;", (symbol_name,))
-            row = cur.fetchone()
-            if row:
-                return row[0]
-            # Création du symbol s'il n'existe pas
-            cur.execute(
-                "INSERT INTO symbols (symbol) VALUES (%s) RETURNING id;",
-                (symbol_name,)
-            )
-            conn.commit()
-            new_id = cur.fetchone()[0]
-            logger.info(f"Symbol '{symbol_name}' créé avec id={new_id}")
-            return new_id
-    except Exception as e:
-        logger.error(f"Erreur lors de la récupération/création du symbol: {e}")
-        conn.rollback()
-        return None
-
-
 def transform_kline_data(mongo_doc, id_symbol, interval):
     """
     Transforme un document MongoDB kline vers le format de la table candles PostgreSQL.
