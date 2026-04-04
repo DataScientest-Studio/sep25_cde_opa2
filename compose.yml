@@ -124,7 +124,9 @@ services:
       - "8080:80"
     restart: unless-stopped
   
-  # Scraper container
+  # Scraper containers
+  # Service pour scraper les news
+  # Le scraping est lancé dès l'execution du script, puis il se met en pause jusqu'a être rappelé par le scheduler ofelia
   scraper:
     build:
       context: .
@@ -141,6 +143,33 @@ services:
       mongo:
         condition: service_started
       mongo-init:
+        condition: service_completed_successfully
+    restart: unless-stopped
+
+  # Service pour l'analyse de sentiment des articles
+  # Analyse de la source provenant de mongoDB
+  # Résultats stockés dans postgreSQL
+  # L'analyse est lancée dès l'execution du script, puis elle se met en pause jusqu'a être rappelée par le scheduler ofelia
+  scraper-feature-sentiment:
+    build:
+      context: .
+      dockerfile: docker/scraper-feature-sentiment/Dockerfile
+    container_name: scraper-feature-sentiment
+    command: sh -c "python -m src.features.scraping.sentiment && sleep infinity"
+    volumes:
+      - ./data/external:/app/data/external    
+    env_file:
+      - .env
+    environment:
+      ENV: docker
+    depends_on:
+      mongo:
+        condition: service_started
+      mongo-init:
+        condition: service_completed_successfully
+      postgres:
+        condition: service_healthy
+      postgres-init:
         condition: service_completed_successfully
     restart: unless-stopped
 
