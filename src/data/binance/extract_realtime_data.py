@@ -5,7 +5,6 @@ from datetime import datetime
 from BinanceDataCollector import BinanceDataCollector, RateLimitExceededException
 
 from src.common.custom_logger import logger
-from src.config import DB_NAME, MONGO_DB_PORT, DB_BOT_USER, DB_BOT_PASSWORD, MONGO_HOST
 
 def main():
     """Fonction principale du script."""
@@ -34,17 +33,8 @@ def main():
     logger.info(f"Début: {datetime.now()}")
     logger.info("=" * 50)
     
-    # Configuration MongoDB
-    mongodb_config = {
-        'username': DB_BOT_USER,
-        'password': DB_BOT_PASSWORD,
-        'host': MONGO_HOST,
-        'port': MONGO_DB_PORT,
-        'db_name': DB_NAME
-    }
-
     # Initialisation du collecteur
-    collector = BinanceDataCollector(mongodb_config)
+    collector = BinanceDataCollector()
     
     # Connexion à MongoDB
     if not collector.connect_to_mongodb():
