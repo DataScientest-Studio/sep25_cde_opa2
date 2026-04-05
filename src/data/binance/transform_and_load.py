@@ -1,28 +1,8 @@
-import psycopg
 from decimal import Decimal
 import time
 
 from src.common.custom_logger import logger
-from src.common.connectors import MongoConnector
-from src.config import (
-    DB_NAME, DB_BOT_USER, DB_BOT_PASSWORD, PG_DB_PORT, PG_HOST
-)
-
-
-def connect_to_postgresql():
-    """Connexion à PostgreSQL"""
-    try:
-        conn = psycopg.connect(
-            dbname=DB_NAME,
-            user=DB_BOT_USER,
-            password=DB_BOT_PASSWORD,
-            host=PG_HOST,
-            port=PG_DB_PORT
-        )
-        return conn
-    except Exception as e:
-        logger.error(f"Erreur de connexion à PostgreSQL: {e}")
-        return None
+from src.common.connectors import MongoConnector, PostgreSQLConnector
 
 
 def load_symbols_from_mongo(mongo_db, pg_conn):
@@ -186,14 +166,8 @@ def transform_and_load_klines_data(batch_size=1000, collection_name='klines_BTCU
     """
     # Connexions
     mongo = MongoConnector().connect()
-    if mongo is None:
-        logger.error("Impossible de se connecter à MongoDB")
-        return
-
-    pg_conn = connect_to_postgresql()
-    if not pg_conn:
-        logger.error("Impossible de se connecter à PostgreSQL")
-        return
+    pg_connector = PostgreSQLConnector().connect()
+    pg_conn = pg_connector.conn
 
     try:
         # Chargement des symboles uniquement si pas déjà fourni
@@ -257,8 +231,7 @@ def transform_and_load_klines_data(batch_size=1000, collection_name='klines_BTCU
     finally:
         # Fermeture des connexions
         mongo.close()
-        if pg_conn:
-            pg_conn.close()
+        pg_connector.close()
 
 
 def init_symbol_map():
@@ -267,16 +240,15 @@ def init_symbol_map():
     et retourne le dict {symbol_name: id}. À appeler une seule fois avant la boucle principale.
     """
     mongo = MongoConnector().connect()
-    pg_conn = connect_to_postgresql()
+    pg_connector = PostgreSQLConnector().connect()
+    pg_conn = pg_connector.conn
     symbol_map = {}
     try:
-        if mongo is not None and pg_conn is not None:
-            symbol_map = load_symbols_from_mongo(mongo.db, pg_conn)
+        symbol_map = load_symbols_from_mongo(mongo.db, pg_conn)
     finally:
         if mongo:
             mongo.close()
-        if pg_conn:
-            pg_conn.close()
+        pg_connector.close()
     return symbol_map
 
 

@@ -1,11 +1,10 @@
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.responses import JSONResponse
-import psycopg
 import pandas as pd
 from datetime import datetime
 from typing import Optional, List
 
-from src.config import DB_NAME, DB_BOT_USER, DB_BOT_PASSWORD, PG_HOST, PG_DB_PORT
+from src.common.connectors import PostgreSQLConnector
 from src.common.custom_logger import logger
 
 app = FastAPI(
@@ -13,21 +12,6 @@ app = FastAPI(
     description="API pour récupérer les données depuis PostgreSQL",
     version="1.0.0"
 )
-
-def get_postgresql_connection():
-    """Établit une connexion à PostgreSQL"""
-    try:
-        conn = psycopg.connect(
-            dbname=DB_NAME,
-            user=DB_BOT_USER,
-            password=DB_BOT_PASSWORD,
-            host=PG_HOST,
-            port=PG_DB_PORT
-        )
-        return conn
-    except Exception as e:
-        logger.error(f"Erreur de connexion PostgreSQL: {e}")
-        raise HTTPException(status_code=500, detail=f"Erreur de connexion à la base de données: {str(e)}")
 
 @app.get("/")
 async def root():
@@ -49,7 +33,8 @@ async def get_candles(
     :return: Liste des candles au format JSON
     """
     try:
-        conn = get_postgresql_connection()
+        pg_connector = PostgreSQLConnector().connect()
+        conn = pg_connector.conn
 
         # Construction de la requête SQL
         base_query = """
@@ -86,8 +71,16 @@ async def get_candles(
         params.append(limit)
 
         # Exécution de la requête
-        df = pd.read_sql_query(base_query, conn, params=params)
-        conn.close()
+        # df = pd.read_sql_query(base_query, conn, params=params)
+        # Suppression du UserWarning: pandas only supports SQLAlchemy connectable (engine/connection) 
+        # or database string URI or sqlite3 DBAPI2 connection. Other DBAPI2 objects are not tested.
+        # Please consider using SQLAlchemy.
+        with conn.cursor() as cur:
+            cur.execute(base_query, params)
+            columns = [desc[0] for desc in cur.description]
+            rows = cur.fetchall()
+        pg_connector.close()
+        df = pd.DataFrame(rows, columns=columns)
 
         if df.empty:
             logger.warning("Aucune donnée trouvée dans la table 'candles'")
@@ -119,7 +112,8 @@ async def get_latest_candle():
     :return: La dernière candle au format JSON
     """
     try:
-        conn = get_postgresql_connection()
+        pg_connector = PostgreSQLConnector().connect()
+        conn = pg_connector.conn
 
         query = """
             SELECT c.id, s.symbol, c.interval, c.open_time, c.close_time,
@@ -128,9 +122,18 @@ async def get_latest_candle():
             JOIN symbols s ON s.id = c.id_symbol
             ORDER BY c.open_time DESC LIMIT 1
         """
-
-        df = pd.read_sql_query(query, conn)
-        conn.close()
+        
+        # Exécution de la requête
+        # df = pd.read_sql_query(base_query, conn, params=params)
+        # Suppression du UserWarning: pandas only supports SQLAlchemy connectable (engine/connection) 
+        # or database string URI or sqlite3 DBAPI2 connection. Other DBAPI2 objects are not tested.
+        # Please consider using SQLAlchemy.
+        with conn.cursor() as cur:
+            cur.execute(query)
+            columns = [desc[0] for desc in cur.description]
+            rows = cur.fetchall()
+        pg_connector.close()
+        df = pd.DataFrame(rows, columns=columns)
 
         if df.empty:
             raise HTTPException(status_code=404, detail="Aucune donnée trouvée dans la table 'candles'")
@@ -155,8 +158,8 @@ async def get_latest_candle():
 async def health_check():
     """Vérification de l'état de l'API et de la connexion à la base de données"""
     try:
-        conn = get_postgresql_connection()
-        conn.close()
+        pg_connector = PostgreSQLConnector().connect()
+        pg_connector.close()
         return {"status": "healthy", "database": "connected", "timestamp": datetime.now().isoformat()}
     except Exception as e:
         logger.error(f"Health check failed: {e}")
