@@ -4,7 +4,6 @@ from datetime import datetime
 
 from src.data.binance.BinanceDataCollector import BinanceDataCollector
 from src.common.custom_logger import logger
-from src.config import DB_NAME, MONGO_DB_PORT, DB_BOT_USER, DB_BOT_PASSWORD, MONGO_HOST
 
 def parse_arguments():
     """Parse les arguments de ligne de commande."""
@@ -40,6 +39,13 @@ def parse_arguments():
         choices=['1m', '3m', '5m', '15m', '30m', '1h', '2h', '4h', '6h', '8h', '12h', '1d'],
         help='Intervalle des données (défaut: 1h)'
     )
+
+    parser.add_argument(
+        '--resume_from_last',
+        action='store_true',
+        default=False,
+        help='Si activé, reprend depuis la dernière kline en base MongoDB plutôt que start_date'
+    )
     
     return parser.parse_args()
 
@@ -51,17 +57,8 @@ def main():
         # Validation de la date
         start_date = datetime.strptime(args.start_date, '%Y-%m-%d')
         
-        # Configuration MongoDB
-        mongodb_config = {
-            'username': DB_BOT_USER,
-            'password': DB_BOT_PASSWORD,
-            'host': MONGO_HOST,
-            'port': MONGO_DB_PORT,
-            'db_name': DB_NAME
-        }       
-        
         # Initialisation du collecteur
-        collector = BinanceDataCollector(mongodb_config)
+        collector = BinanceDataCollector()
         
         # Connexion à MongoDB
         if not collector.connect_to_mongodb():
@@ -74,13 +71,20 @@ def main():
             symbol=args.symbol,
             start_date=start_date,
             days=args.days,
-            interval=args.interval
+            interval=args.interval,
+            resume_from_last=args.resume_from_last
         )
         
         if not formatted_data or not not_formatted_data:
-            logger.error("Problème lors de la récupération des données")
-            sys.exit(1)
-        
+            if args.resume_from_last:
+                logger.info("Aucune nouvelle donnée à récupérer, la base est déjà à jour.")
+                collector.close_connections()
+                sys.exit(0)
+            else:
+                logger.error("Problème lors de la récupération des données")
+                collector.close_connections()
+                sys.exit(1)
+
         formatted_data_collection_name = f"klines_{args.symbol}_{args.interval}"
         not_formatted_data_collection_name = f"klines_raw_data_{args.symbol}_{args.interval}"
 

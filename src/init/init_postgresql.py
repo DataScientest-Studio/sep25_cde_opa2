@@ -95,6 +95,7 @@ with psycopg.connect(**CRYPTOBOT_CONN_INFO) as conn:
                 id_symbol INT NOT NULL,
                 interval VARCHAR(10) NOT NULL,
                 open_time TIMESTAMP NOT NULL,
+                close_time TIMESTAMP NOT NULL,
                 open NUMERIC,
                 high NUMERIC,
                 low NUMERIC,
