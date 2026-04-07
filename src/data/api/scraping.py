@@ -1,9 +1,8 @@
-from fastapi import APIRouter, FastAPI, HTTPException, Query
-from fastapi.responses import JSONResponse
+from fastapi import APIRouter, HTTPException, Query
 
 import pandas as pd
 from datetime import datetime
-from typing import Optional, List
+from typing import Optional
 
 from src.common.connectors import PostgreSQLConnector
 from src.common.custom_logger import logger
