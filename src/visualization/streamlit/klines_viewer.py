@@ -120,7 +120,7 @@ def load_candles_data_api(start_date=None, end_date=None, limit=1000):
                 params["end_date"] = str(end_date)
 
         # Appel à l'API
-        response = requests.get(f"{api_base_url}/candles", params=params, timeout=30)
+        response = requests.get(f"{api_base_url}/market/candles", params=params, timeout=30)
 
         if response.status_code != 200:
             st.error(f"Erreur API (status {response.status_code}): {response.text}")
