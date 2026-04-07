@@ -1,5 +1,4 @@
-from fastapi import APIRouter, FastAPI, HTTPException, Query
-from fastapi.responses import JSONResponse
+from fastapi import APIRouter, HTTPException, Query
 
 import pandas as pd
 from datetime import datetime
@@ -8,7 +7,7 @@ from typing import Optional, List
 from src.common.connectors import PostgreSQLConnector
 from src.common.custom_logger import logger
 
-router = APIRouter(prefix="/market", tags=["market", "candles"])
+router = APIRouter(prefix="/market", tags=["market"])
 
 @router.get("/")
 async def root():

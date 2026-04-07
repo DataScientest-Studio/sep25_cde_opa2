@@ -6,6 +6,7 @@ from src.common.connectors import PostgreSQLConnector
 from src.common.custom_logger import logger
 
 from src.data.api.market import router as market_router
+from src.data.api.scraping import router as scraping_router
 
 app = FastAPI(
     title="DATA API",
@@ -14,6 +15,7 @@ app = FastAPI(
 )
 
 app.include_router(market_router)
+app.include_router(scraping_router)
 
 @app.get("/")
 async def root():
@@ -23,7 +25,9 @@ async def root():
         "endpoints": [
             "/market",
             "/market/candles",
-            "/market/candles/latest"
+            "/market/candles/latest",
+            "/scraping",
+            "/scraping/sentiment",
             "/health"]
     }
 
