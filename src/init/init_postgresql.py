@@ -90,21 +90,21 @@ with psycopg.connect(**CRYPTOBOT_CONN_INFO) as conn:
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
 
-                CREATE TABLE IF NOT EXISTS candles (
-                    id SERIAL PRIMARY KEY,
-                    id_symbol INT NOT NULL,
-                    interval VARCHAR(10) NOT NULL,
-                    open_time TIMESTAMP NOT NULL,
-                    close_time TIMESTAMP NOT NULL,
-                    open NUMERIC,
-                    high NUMERIC,
-                    low NUMERIC,
-                    close NUMERIC,
-                    volume NUMERIC,
-                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                    FOREIGN KEY (id_symbol) REFERENCES symbols(id),
-                    UNIQUE(id_symbol, interval, open_time)
-                );
+            CREATE TABLE IF NOT EXISTS candles (
+                id SERIAL PRIMARY KEY,
+                id_symbol INT NOT NULL,
+                interval VARCHAR(10) NOT NULL,
+                open_time TIMESTAMP NOT NULL,
+                close_time TIMESTAMP NOT NULL,
+                open NUMERIC,
+                high NUMERIC,
+                low NUMERIC,
+                close NUMERIC,
+                volume NUMERIC,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (id_symbol) REFERENCES symbols(id),
+                UNIQUE(id_symbol, interval, open_time)
+            );
 
             CREATE TABLE IF NOT EXISTS features_candles (
                 id SERIAL PRIMARY KEY,
