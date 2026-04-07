@@ -1,112 +1,108 @@
-import psycopg
-from pymongo import MongoClient
-from pymongo.errors import PyMongoError
 from decimal import Decimal
 import time
 
 from src.common.custom_logger import logger
-from src.config import (
-    DB_NAME, DB_BOT_USER, DB_BOT_PASSWORD, PG_DB_PORT, PG_HOST,
-    MONGO_HOST, MONGO_DB_PORT
-)
+from src.common.connectors import MongoConnector, PostgreSQLConnector
 
 
-def connect_to_mongodb():
-    """Connexion directe à MongoDB"""
+def load_symbols_from_mongo(mongo_db, pg_conn):
+    """
+    Charge les symboles depuis la collection MongoDB exchange_info_symbols
+    vers la table symbols de PostgreSQL.
+    Retourne un dict {symbol_name: id} pour les lookups ultérieurs.
+    """
     try:
-        username = DB_BOT_USER
-        password = DB_BOT_PASSWORD
-        host = MONGO_HOST
-        port = MONGO_DB_PORT
-        db_name = DB_NAME
-        
-        if username and password and host and port and db_name:
-            connection_string = f"mongodb://{username}:{password}@{host}:{port}/{db_name}"
-        else:
-            logger.error("Configuration MongoDB incomplète. Veuillez vérifier les variables d'environnement.")
-            return None, None
-        
-        client = MongoClient(connection_string)
-        db = client[db_name]
-        
-        # Test de la connexion
-        client.admin.command('ping')
-        logger.info(f"Connexion réussie à MongoDB: {host}:{port}")
-        return client, db
-        
-    except PyMongoError as e:
-        logger.error(f"Erreur de connexion à MongoDB: {e}")
-        return None, None
+        collection = mongo_db['exchange_info_symbols']
+        documents = list(collection.find({}))
+        logger.info(f"Récupéré {len(documents)} symboles depuis MongoDB exchange_info_symbols")
     except Exception as e:
-        logger.error(f"Erreur lors de la création de la connexion MongoDB: {e}")
-        return None, None
+        logger.error(f"Erreur lors de la récupération des symboles MongoDB: {e}")
+        return {}
 
-
-def connect_to_postgresql():
-    """Connexion à PostgreSQL"""
+    symbol_map = {}
     try:
-        conn = psycopg.connect(
-            dbname=DB_NAME,
-            user=DB_BOT_USER,
-            password=DB_BOT_PASSWORD,
-            host=PG_HOST,
-            port=PG_DB_PORT
-        )
-        return conn
+        with pg_conn.cursor() as cur:
+            for doc in documents:
+                symbol = doc.get('symbol')
+                base_asset = doc.get('baseAsset')
+                quote_asset = doc.get('quoteAsset')
+                if not symbol:
+                    continue
+                cur.execute(
+                    """
+                    INSERT INTO symbols (symbol, base_asset, quote_asset)
+                    VALUES (%s, %s, %s)
+                    ON CONFLICT (symbol) DO UPDATE SET
+                        base_asset = EXCLUDED.base_asset,
+                        quote_asset = EXCLUDED.quote_asset
+                    RETURNING id
+                    """,
+                    (symbol, base_asset, quote_asset)
+                )
+                row = cur.fetchone()
+                if row:
+                    symbol_map[symbol] = row[0]
+            pg_conn.commit()
+        logger.info(f"{len(symbol_map)} symboles chargés/mis à jour dans PostgreSQL")
     except Exception as e:
-        logger.error(f"Erreur de connexion à PostgreSQL: {e}")
+        logger.error(f"Erreur lors du chargement des symboles dans PostgreSQL: {e}")
+        pg_conn.rollback()
+
+    return symbol_map
+
+
+def get_symbol_id(pg_conn, symbol_name):
+    """Retourne l'id du symbole dans la table symbols, ou None s'il n'existe pas."""
+    try:
+        with pg_conn.cursor() as cur:
+            cur.execute("SELECT id FROM symbols WHERE symbol = %s", (symbol_name,))
+            row = cur.fetchone()
+            return row[0] if row else None
+    except Exception as e:
+        logger.error(f"Erreur lors de la récupération de l'id du symbole {symbol_name}: {e}")
         return None
 
 
-def transform_kline_data(mongo_doc):
+def transform_kline_data(mongo_doc, id_symbol, interval):
     """
-    Transforme un document MongoDB kline vers le format PostgreSQL
+    Transforme un document MongoDB kline vers le format PostgreSQL (table candles)
     """
     return {
+        'id_symbol': id_symbol,
+        'interval': interval,
         'open_time': mongo_doc.get('open_time'),
         'close_time': mongo_doc.get('close_time'),
-        'open_price': Decimal(str(mongo_doc.get('open_price', 0))),
-        'high_price': Decimal(str(mongo_doc.get('high_price', 0))),
-        'low_price': Decimal(str(mongo_doc.get('low_price', 0))),
-        'close_price': Decimal(str(mongo_doc.get('close_price', 0))),
-        'volume': Decimal(str(mongo_doc.get('volume', 0))) * 10, # Simulation d'une transformation (ex: conversion d'unités)
-        'quote_volume': Decimal(str(mongo_doc.get('quote_volume', 0))) * 10, # Simulation d'une transformation (ex: conversion d'unités)
-        'trades_count': int(mongo_doc.get('trades_count', 0)),
-        'taker_buy_base_volume': Decimal(str(mongo_doc.get('taker_buy_base_volume', 0))),
-        'taker_buy_quote_volume': Decimal(str(mongo_doc.get('taker_buy_quote_volume', 0))),
-        'ignore': str(mongo_doc.get('ignore', '0'))
+        'open': Decimal(str(mongo_doc.get('open_price', 0))),
+        'high': Decimal(str(mongo_doc.get('high_price', 0))),
+        'low': Decimal(str(mongo_doc.get('low_price', 0))),
+        'close': Decimal(str(mongo_doc.get('close_price', 0))),
+        'volume': Decimal(str(mongo_doc.get('volume', 0))),
     }
 
 
-def load_klines_batch(conn, klines_data):
+def load_candles_batch(conn, candles_data):
     """
-    Insert un batch de klines dans PostgreSQL avec mise à jour si existant
+    Insert un batch de candles dans PostgreSQL avec mise à jour si existant
     """
     try:
         with conn.cursor() as cur:
             insert_query = """
-                INSERT INTO klines (
-                    open_time, close_time, open_price, high_price, low_price,
-                    close_price, volume, quote_volume, trades_count,
-                    taker_buy_base_volume, taker_buy_quote_volume, ignore
+                INSERT INTO candles (
+                    id_symbol, interval, open_time, close_time,
+                    open, high, low, close, volume
                 ) VALUES (
-                    %(open_time)s, %(close_time)s, %(open_price)s, %(high_price)s, %(low_price)s,
-                    %(close_price)s, %(volume)s, %(quote_volume)s, %(trades_count)s,
-                    %(taker_buy_base_volume)s, %(taker_buy_quote_volume)s, %(ignore)s
-                ) ON CONFLICT (open_time, close_time) DO UPDATE SET
-                    open_price = EXCLUDED.open_price,
-                    high_price = EXCLUDED.high_price,
-                    low_price = EXCLUDED.low_price,
-                    close_price = EXCLUDED.close_price,
-                    volume = EXCLUDED.volume,
-                    quote_volume = EXCLUDED.quote_volume,
-                    trades_count = EXCLUDED.trades_count,
-                    taker_buy_base_volume = EXCLUDED.taker_buy_base_volume,
-                    taker_buy_quote_volume = EXCLUDED.taker_buy_quote_volume,
-                    ignore = EXCLUDED.ignore
+                    %(id_symbol)s, %(interval)s, %(open_time)s, %(close_time)s,
+                    %(open)s, %(high)s, %(low)s, %(close)s, %(volume)s
+                ) ON CONFLICT (id_symbol, interval, open_time) DO UPDATE SET
+                    close_time = EXCLUDED.close_time,
+                    open = EXCLUDED.open,
+                    high = EXCLUDED.high,
+                    low = EXCLUDED.low,
+                    close = EXCLUDED.close,
+                    volume = EXCLUDED.volume
             """
-            
-            cur.executemany(insert_query, klines_data)
+
+            cur.executemany(insert_query, candles_data)
             conn.commit()
             return cur.rowcount
     except Exception as e:
@@ -146,91 +142,138 @@ def get_klines_from_mongodb(db, collection_name='klines_BTCUSDT_1m_ws', limit=No
         return []
 
 
-def transform_and_load_klines_data(batch_size=1000, collection_name='klines_BTCUSDT_1m_ws'):
+def _parse_symbol_interval(collection_name):
     """
-    Transformation et chargement des données klines de MongoDB vers PostgreSQL
+    Extrait le symbol et l'interval depuis un nom de collection du type
+    klines_{SYMBOL}_{INTERVAL} ou klines_{SYMBOL}_{INTERVAL}_ws.
+    Retourne (symbol, interval) ou (None, None) en cas d'échec.
+    """
+    name = collection_name
+    if name.startswith('klines_'):
+        name = name[len('klines_'):]
+    if name.endswith('_ws'):
+        name = name[:-3]
+    parts = name.rsplit('_', 1)
+    if len(parts) == 2:
+        return parts[0], parts[1]
+    return None, None
+
+
+def transform_and_load_klines_data(batch_size=1000, collection_name='klines_BTCUSDT_1m_ws', symbol_map=None):
+    """
+    Transformation et chargement des données klines de MongoDB vers la table
+    candles de PostgreSQL.
     """
     # Connexions
-    mongo_client, mongo_db = connect_to_mongodb()
-    if mongo_db is None:
-        logger.error("Impossible de se connecter à MongoDB")
-        return
-    
-    pg_conn = connect_to_postgresql()
-    if not pg_conn:
-        logger.error("Impossible de se connecter à PostgreSQL")
-        return
-    
+    mongo = MongoConnector().connect()
+    pg_connector = PostgreSQLConnector().connect()
+    pg_conn = pg_connector.conn
+
     try:
+        # Chargement des symboles uniquement si pas déjà fourni
+        if symbol_map is None:
+            symbol_map = load_symbols_from_mongo(mongo.db, pg_conn)
+
+        # Extraction du symbol et de l'interval depuis le nom de collection
+        symbol_name, interval = _parse_symbol_interval(collection_name)
+        if not symbol_name or not interval:
+            logger.error(f"Impossible de parser le symbol/interval depuis '{collection_name}'")
+            return
+
+        id_symbol = symbol_map.get(symbol_name) or get_symbol_id(pg_conn, symbol_name)
+        if id_symbol is None:
+            logger.error(f"Le symbole '{symbol_name}' est introuvable dans la table symbols")
+            return
+
+        logger.info(f"Chargement des candles pour symbol={symbol_name} (id={id_symbol}), interval={interval}")
+
         # Récupération des données MongoDB
-        documents = get_klines_from_mongodb(mongo_db, collection_name=collection_name)
+        documents = get_klines_from_mongodb(mongo.db, collection_name=collection_name)
         total_docs = len(documents)
         logger.info(f"Nombre total de documents à traiter: {total_docs}")
-        
+
         if total_docs == 0:
             logger.info("Aucune donnée à traiter")
             return
-        
+
         # Traitement par batches
         processed = 0
         inserted = 0
-               
+
         batch = []
         for doc in documents:
             try:
-                transformed_data = transform_kline_data(doc)
+                transformed_data = transform_kline_data(doc, id_symbol, interval)
                 batch.append(transformed_data)
-                
+
                 if len(batch) >= batch_size:
-                    # Insert du batch
-                    rows_inserted = load_klines_batch(pg_conn, batch)
+                    rows_inserted = load_candles_batch(pg_conn, batch)
                     inserted += rows_inserted
                     processed += len(batch)
-                    
+
                     logger.info(f"Traité: {processed}/{total_docs} - Inséré: {inserted}")
                     batch = []
-                    
+
             except Exception as e:
                 logger.error(f"Erreur lors du traitement du document {doc.get('_id')}: {e}")
                 continue
-        
+
         # Insert du dernier batch s'il reste des données
         if batch:
-            rows_inserted = load_klines_batch(pg_conn, batch)
+            rows_inserted = load_candles_batch(pg_conn, batch)
             inserted += rows_inserted
             processed += len(batch)
-        
+
         logger.info(f"Traitement terminé. Traité: {processed}, Inséré: {inserted}")
         
     except Exception as e:
         logger.error(f"Erreur lors du traitement: {e}")
     finally:
         # Fermeture des connexions
-        if mongo_client:
-            mongo_client.close()
-        if pg_conn:
-            pg_conn.close()
+        mongo.close()
+        pg_connector.close()
+
+
+def init_symbol_map():
+    """
+    Charge la table symbols depuis MongoDB (exchange_info_symbols) vers PostgreSQL
+    et retourne le dict {symbol_name: id}. À appeler une seule fois avant la boucle principale.
+    """
+    mongo = MongoConnector().connect()
+    pg_connector = PostgreSQLConnector().connect()
+    pg_conn = pg_connector.conn
+    symbol_map = {}
+    try:
+        symbol_map = load_symbols_from_mongo(mongo.db, pg_conn)
+    finally:
+        if mongo:
+            mongo.close()
+        pg_connector.close()
+    return symbol_map
 
 
 if __name__ == "__main__":
     delay_seconds = 10
     logger.info("Démarrage du processus de transformation et chargement en continu...")
     logger.info(f"Exécution toutes les {delay_seconds} secondes. Appuyez sur Ctrl+C pour arrêter.")
-    
+
+    # Chargement des symboles une seule fois avant la boucle
+    symbol_map = init_symbol_map()
+
     try:
         while True:
             logger.info("Début du traitement des données klines...")
             start_time = time.time()
-            
-            transform_and_load_klines_data(collection_name='klines_BTCUSDT_1m_ws')
-            
+
+            transform_and_load_klines_data(collection_name='klines_BTCUSDT_1m_ws', symbol_map=symbol_map)
+
             end_time = time.time()
             duration = round(end_time - start_time, 2)
             logger.info(f"Traitement terminé en {duration} secondes.")
-            
+
             logger.info(f"Attente de {delay_seconds} secondes avant le prochain traitement...")
             time.sleep(delay_seconds)
-            
+
     except KeyboardInterrupt:
         logger.info("Arrêt du processus demandé par l'utilisateur (Ctrl+C)")
     except Exception as e:
