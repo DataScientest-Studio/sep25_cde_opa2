@@ -74,7 +74,7 @@ with psycopg.connect(**CRYPTOBOT_CONN_INFO) as conn:
         logger.info(f"Permissions accordées au user {DB_BOT_USER} sur la base {DB_NAME}")
 
 
-# Création de la table klines si elle n'existe pas
+# Création des tables liées aux données market
 with psycopg.connect(**CRYPTOBOT_CONN_INFO) as conn:
 
     conn.autocommit = True
@@ -183,7 +183,7 @@ with psycopg.connect(**CRYPTOBOT_CONN_INFO) as conn:
             GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO {DB_BOT_USER};
         """)
         
-        print("Tables créées avec succès.")
+        logger.info("Tables market créées avec succès.")
     
 
 # Création des tables liées au scraping
