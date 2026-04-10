@@ -204,7 +204,7 @@ services:
       context: .
       dockerfile: docker/python/Dockerfile
     container_name: data-api
-    command: python -m src.data.api.run_api
+    command: python -m src.data.api.run
     env_file:
       - .env
     environment:

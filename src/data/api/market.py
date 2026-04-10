@@ -1,5 +1,5 @@
-from fastapi import FastAPI, HTTPException, Query
-from fastapi.responses import JSONResponse
+from fastapi import APIRouter, HTTPException, Query
+
 import pandas as pd
 from datetime import datetime
 from typing import Optional, List
@@ -7,18 +7,20 @@ from typing import Optional, List
 from src.common.connectors import PostgreSQLConnector
 from src.common.custom_logger import logger
 
-app = FastAPI(
-    title="DATA API",
-    description="API pour récupérer les données depuis PostgreSQL",
-    version="1.0.0"
-)
+router = APIRouter(prefix="/market", tags=["market"])
 
-@app.get("/")
+@router.get("/")
 async def root():
-    """Route d'accueil de l'API"""
-    return {"message": "API DATA - Service de récupération des données PostgreSQL", "endpoints": ["/candles", "/candles/latest", "/health"]}
+    """Route d'accueil de l'API market"""
+    return {
+        "message": "Service de récupération des données market",
+        "endpoints": [
+            "/market/candles",
+            "/market/candles/latest"
+        ]
+    }
 
-@app.get("/candles", response_model=List[dict])
+@router.get("/candles", response_model=List[dict])
 async def get_candles(
     limit: int = Query(default=100, ge=1, le=10000, description="Nombre maximum de candles à récupérer"),
     start_date: Optional[str] = Query(default=None, description="Date de début (format: YYYY-MM-DD HH:MM:SS)"),
@@ -104,7 +106,7 @@ async def get_candles(
         logger.error(f"Erreur lors de la récupération des candles: {e}")
         raise HTTPException(status_code=500, detail=f"Erreur interne du serveur: {str(e)}")
 
-@app.get("/candles/latest", response_model=dict)
+@router.get("/candles/latest", response_model=dict)
 async def get_latest_candle():
     """
     Récupère la dernière candle disponible
@@ -153,17 +155,3 @@ async def get_latest_candle():
     except Exception as e:
         logger.error(f"Erreur lors de la récupération de la dernière candle: {e}")
         raise HTTPException(status_code=500, detail=f"Erreur interne du serveur: {str(e)}")
-
-@app.get("/health")
-async def health_check():
-    """Vérification de l'état de l'API et de la connexion à la base de données"""
-    try:
-        pg_connector = PostgreSQLConnector().connect()
-        pg_connector.close()
-        return {"status": "healthy", "database": "connected", "timestamp": datetime.now().isoformat()}
-    except Exception as e:
-        logger.error(f"Health check failed: {e}")
-        return JSONResponse(
-            status_code=503,
-            content={"status": "unhealthy", "database": "disconnected", "error": str(e), "timestamp": datetime.now().isoformat()}
-        )
