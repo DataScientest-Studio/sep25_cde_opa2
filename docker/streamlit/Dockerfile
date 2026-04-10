@@ -6,8 +6,8 @@ ENV PYTHONPATH=$PYTHONPATH
 WORKDIR /app
 
 # Copier les requirements et installer les dépendances Python
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+COPY requirements/streamlit.txt requirements/streamlit.txt
+RUN pip install --no-cache-dir -r requirements/streamlit.txt
 
 # Copier le code source
 COPY src/ src/
