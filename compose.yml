@@ -38,6 +38,8 @@ services:
     build:
       context: .
       dockerfile: docker/python/Dockerfile
+      args:
+        REQUIREMENTS_FILE: requirements/db.txt
     command: python -m src.init.init_mongo
     env_file:
       - .env
@@ -92,6 +94,8 @@ services:
     build:
       context: .
       dockerfile: docker/python/Dockerfile
+      args:
+        REQUIREMENTS_FILE: requirements/db.txt
     command: python -m src.init.init_postgresql
     env_file:
       - .env
@@ -203,6 +207,8 @@ services:
     build:
       context: .
       dockerfile: docker/python/Dockerfile
+      args:
+        REQUIREMENTS_FILE: requirements/api.txt
     container_name: data-api
     command: python -m src.data.api.run_api
     env_file:
@@ -229,6 +235,8 @@ services:
     build:
       context: .
       dockerfile: docker/python/Dockerfile
+      args:
+        REQUIREMENTS_FILE: requirements/binance.txt
     container_name: data-collector
     command: python -m src.data.binance.extract_kline_data_ws --symbol BTCUSDT --interval 1m
     env_file:
@@ -247,6 +255,8 @@ services:
     build:
       context: .
       dockerfile: docker/python/Dockerfile
+      args:
+        REQUIREMENTS_FILE: requirements/db.txt
     container_name: data-transformer
     command: python -m src.data.binance.transform_and_load
     env_file:
@@ -269,6 +279,8 @@ services:
     build:
       context: .
       dockerfile: docker/python/Dockerfile
+      args:
+        REQUIREMENTS_FILE: requirements/binance.txt
     container_name: get-historical-data
     command: bash src/data/binance/extract_historical_data.sh
     env_file:
