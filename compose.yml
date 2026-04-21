@@ -38,6 +38,8 @@ services:
     build:
       context: .
       dockerfile: docker/python/Dockerfile
+      args:
+        REQUIREMENTS_FILE: requirements/db.txt
     command: python -m src.init.init_mongo
     env_file:
       - .env
@@ -92,6 +94,8 @@ services:
     build:
       context: .
       dockerfile: docker/python/Dockerfile
+      args:
+        REQUIREMENTS_FILE: requirements/db.txt
     command: python -m src.init.init_postgresql
     env_file:
       - .env
@@ -124,7 +128,9 @@ services:
       - "8080:80"
     restart: unless-stopped
   
-  # Scraper container
+  # Scraper containers
+  # Service pour scraper les news
+  # Le scraping est lancé dès l'execution du script, puis il se met en pause jusqu'a être rappelé par le scheduler ofelia
   scraper:
     build:
       context: .
@@ -141,6 +147,33 @@ services:
       mongo:
         condition: service_started
       mongo-init:
+        condition: service_completed_successfully
+    restart: unless-stopped
+
+  # Service pour l'analyse de sentiment des articles
+  # Analyse de la source provenant de mongoDB
+  # Résultats stockés dans postgreSQL
+  # L'analyse est lancée dès l'execution du script, puis elle se met en pause jusqu'a être rappelée par le scheduler ofelia
+  scraper-feature-sentiment:
+    build:
+      context: .
+      dockerfile: docker/scraper-feature-sentiment/Dockerfile
+    container_name: scraper-feature-sentiment
+    command: sh -c "python -m src.features.scraping.sentiment && sleep infinity"
+    volumes:
+      - ./data/external:/app/data/external    
+    env_file:
+      - .env
+    environment:
+      ENV: docker
+    depends_on:
+      mongo:
+        condition: service_started
+      mongo-init:
+        condition: service_completed_successfully
+      postgres:
+        condition: service_healthy
+      postgres-init:
         condition: service_completed_successfully
     restart: unless-stopped
 
@@ -174,8 +207,10 @@ services:
     build:
       context: .
       dockerfile: docker/python/Dockerfile
+      args:
+        REQUIREMENTS_FILE: requirements/api.txt
     container_name: data-api
-    command: python -m src.data.api.run_api
+    command: python -m src.data.api.run
     env_file:
       - .env
     environment:
@@ -200,6 +235,8 @@ services:
     build:
       context: .
       dockerfile: docker/python/Dockerfile
+      args:
+        REQUIREMENTS_FILE: requirements/binance.txt
     container_name: data-collector
     command: python -m src.data.binance.extract_kline_data_ws --symbol BTCUSDT --interval 1m
     env_file:
@@ -218,6 +255,8 @@ services:
     build:
       context: .
       dockerfile: docker/python/Dockerfile
+      args:
+        REQUIREMENTS_FILE: requirements/db.txt
     container_name: data-transformer
     command: python -m src.data.binance.transform_and_load
     env_file:
@@ -240,6 +279,8 @@ services:
     build:
       context: .
       dockerfile: docker/python/Dockerfile
+      args:
+        REQUIREMENTS_FILE: requirements/binance.txt
     container_name: get-historical-data
     command: bash src/data/binance/extract_historical_data.sh
     env_file:

@@ -1,0 +1,6 @@
+# Dépendances pour les services de collecte de données Binance (data-collector, get-historical-data)
+pymongo==4.16.0
+psycopg==3.3.2
+psycopg-binary==3.3.2
+python_binance==1.0.35
+python-dotenv==1.2.1

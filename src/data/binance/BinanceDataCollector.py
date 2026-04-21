@@ -4,9 +4,9 @@ from datetime import datetime, timedelta
 
 from binance.client import Client
 from binance.exceptions import BinanceAPIException
-from pymongo import MongoClient
 from pymongo.errors import PyMongoError
 
+from src.common.connectors import MongoConnector
 from src.common.custom_logger import logger
 
 # Exception personnalisée pour le rate limiting
@@ -33,17 +33,14 @@ interval_mapping = {
 class BinanceDataCollector:
     """Classe pour collecter des données depuis l'API Binance et les stocker dans MongoDB."""
     
-    def __init__(self, mongodb_config: Dict[str, str]):
+    def __init__(self):
         """
         Initialise le collecteur de données.
-        
-        Args:
-            mongodb_config: Configuration MongoDB
         """
         self.binance_client = Client()  # Client en lecture seule (pas besoin d'API keys)
+        self._connector = None
         self.mongo_client = None
         self.db = None
-        self.mongodb_config = mongodb_config
         
     def connect_to_mongodb(self) -> bool:
         """
@@ -52,38 +49,19 @@ class BinanceDataCollector:
         Returns:
             bool: True si la connexion est réussie, False sinon
         """
-        try:
-            # Construction de l'URI MongoDB
-            username = self.mongodb_config['username']
-            password = self.mongodb_config['password']
-            host = self.mongodb_config['host']
-            port = self.mongodb_config['port']
-            db_name = self.mongodb_config['db_name']
-            
-            if username and password and host and port and db_name:
-                connection_string = f"mongodb://{username}:{password}@{host}:{port}/{db_name}"
-            else:
-                logger.error("Configuration MongoDB incomplète. Veuillez vérifier les variables d'environnement.")
-                return False
-            
-            self.mongo_client = MongoClient(connection_string)
-            self.db = self.mongo_client[db_name]
-            
-            # Test de la connexion
-            self.mongo_client.admin.command('ping')
-            logger.info(f"Connexion réussie à MongoDB: {host}:{port}")
-            return True
-            
-        except PyMongoError as e:
-            logger.error(f"Erreur de connexion MongoDB: {e}")
-            return False
+        self._connector = MongoConnector().connect()
+        self.mongo_client = self._connector.mongo_client
+        self.db = self._connector.db
+        return True
 
     def get_klines_data(
         self, 
         symbol: str, 
         start_date: datetime, 
         days: int = 60,
-        interval: str = '1h'
+        interval: str = '1h',
+        resume_from_last: bool = False,
+        collection_name: Optional[str] = None
     ) -> List[Dict]:
         """
         Récupère les données Klines depuis l'API Binance.
@@ -93,24 +71,49 @@ class BinanceDataCollector:
             start_date: Date de début
             days: Nombre de jours à récupérer (défaut: 60 jours = ~2 mois)
             interval: Intervalle des données (défaut: 1h)
+            resume_from_last: Si True, vérifie la dernière kline en MongoDB et démarre
+                              depuis celle-ci si elle est plus récente que start_date (défaut: False)
+            collection_name: Nom de la collection MongoDB à interroger pour resume_from_last.
+                             Par défaut: klines_{symbol}_{interval}
             
         Returns:
             List[Dict]: Liste des données Kline
         """
         try:
             end_date = start_date + timedelta(days=days)
-            
-            logger.info(f"Récupération des données {symbol} du {start_date.date()} au {end_date.date()}")
+            effective_start = start_date
+            logger.info(f"Préparation de la récupération des données Klines pour {symbol} de {start_date} à {end_date} avec intervalle {interval}")
+
+            if resume_from_last:
+                if self.db is None:
+                    logger.warning("resume_from_last activé mais aucune connexion MongoDB active. Utilisation de start_date.")
+                else:
+                    col_name = collection_name or f"klines_{symbol}_{interval}"
+                    last_kline = self.db[col_name].find_one(sort=[('open_time', -1)])
+                    if last_kline and last_kline['open_time'] > start_date:
+                        effective_start = last_kline['open_time']
+                        logger.info(f"resume_from_last: reprise depuis la dernière kline en base ({effective_start})")
+
+            if effective_start >= end_date:
+                logger.info(f"Aucune nouvelle donnée à récupérer pour {symbol}: la base est déjà à jour jusqu'au {effective_start}")
+                return [], []
+
+            logger.info(f"Récupération des données {symbol} du {effective_start} au {end_date}")
             
             # Conversion en timestamps
-            start_str = start_date.strftime('%Y-%m-%d')
+            # Si effective_start a une composante horaire précise (resume_from_last), on passe
+            # le timestamp en millisecondes pour ne pas tronquer l'heure à minuit UTC
+            if effective_start.hour or effective_start.minute or effective_start.second:
+                start_ts = int(effective_start.timestamp() * 1000)
+            else:
+                start_ts = effective_start.strftime('%Y-%m-%d')
             end_str = end_date.strftime('%Y-%m-%d')
             
             # Récupération des données depuis Binance
             klines = self.binance_client.get_historical_klines(
                 symbol=symbol,
                 interval=interval_mapping[interval],
-                start_str=start_str,
+                start_str=start_ts,
                 end_str=end_str
             )
             
@@ -469,6 +472,5 @@ class BinanceDataCollector:
         
     def close_connections(self):
         """Ferme la connexion à MongoDB."""
-        if self.mongo_client:
-            self.mongo_client.close()
-            logger.info("Connexion fermée")
+        if self._connector:
+            self._connector.close()

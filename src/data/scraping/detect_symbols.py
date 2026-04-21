@@ -1,30 +1,15 @@
 import argparse
-import json
 import re
 import sys
-import time
 
-from pathlib import Path
-from typing import cast
-
-from binance.client import Client
-from binance.exceptions import BinanceAPIException, BinanceRequestException
 from pymongo.cursor import Cursor
 
 from sklearn.feature_extraction.text import ENGLISH_STOP_WORDS
 
+from src.common.get_symbols_and_names import get_cryptos_symbols_and_names
 from src.config import BINANCE_API_KEY, BINANCE_API_SECRET, PROJECT_ROOT, SCRAPER_DETECT_LIMIT
 from src.common.custom_logger import logger
 from src.data.scraping.mongo_client import MongoClient
-
-# Define a default symbols list in case of api error, or file access errors.
-DEFAULT_SYMBOLS = [
-    {
-        "symbol": "BTC",
-        "name": "Bitcoin",
-        "alisases": ["btc", "bitcoin"]
-    }
-]
 
 CRYPTO_SYMBOL_BLACKLIST = {
     "ONE","KEY","DATA","HIGH","LOW","TOP","NEW","ALL","WIN",
@@ -56,56 +41,6 @@ def parse_arguments():
     
     return parser.parse_args()
 
-def get_cryptos_symbols_and_names(force_update=False) -> list[dict[str, str]] | None:
-    file_name = "mapping_cryptos_symbol_name.json"
-    path_to_symbols_and_names = Path(f"{PROJECT_ROOT}/data/external/{file_name}")
-
-    # If file exist, return the data, except when force_update is set to True
-    if not force_update and path_to_symbols_and_names.exists():
-        try:
-            with open(path_to_symbols_and_names, "r", encoding="utf-8") as f:
-                return cast(list[dict[str, str]], json.load(f))
-        except json.JSONDecodeError as e:
-            logger.error(f"Erreur lors de la lecture du JSON: {e.msg}")
-            logger.warning(f"Le fichier va être remplacé par un nouveau")
-
-    # Call binance api if force_update is set to True, or if file doesn't exist.
-    logger.info(f"Appel api afin de générer le fichier de mapping entre un symbole crypto et son nom")
-    try:
-        mapping_cryptos=list()
-        binance_client = Client(api_key=BINANCE_API_KEY, api_secret=BINANCE_API_SECRET)
-        server_time = binance_client.get_server_time()
-        binance_client.timestamp_offset = server_time['serverTime'] - int(time.time() * 1000)
-        coins_list=binance_client._request('get', f'{binance_client.MARGIN_API_URL}/v1/capital/config/getall', signed=True, data={})
-        
-        # Keep only used attributes
-        for coin in coins_list:
-            mapping_cryptos.append({
-                "symbol": coin['coin'],
-                "name": coin['name'],
-                "aliases": [str.lower(coin['coin']), str.lower(coin['name'])]
-            })
-        
-        # Save file
-        try:
-            with open(path_to_symbols_and_names, "w", encoding="utf-8") as f:
-                json.dump(mapping_cryptos, f, indent=4, ensure_ascii=False)
-        except Exception as e:
-            logger.error(f"Erreur lors de l'écriture du fichier: {e}")
-            return None
-            
-        return mapping_cryptos
-
-    except BinanceAPIException as e:
-        logger.error(f"Erreur API Binance: {e.code} - {e.message}")
-        return None
-    except BinanceRequestException as e:
-        logger.error(f"Erreur Request Binance: {e.message}")
-        return None  
-    except Exception as e:
-        logger.error(f"Erreur lors de la récupération des données Binance: {e}")
-        return None
-
 def detect_crypto_symbol_in_article(article, symbols: list[dict[str, str]]):
     original_article_id=article.pop("_id")
     article_with_symbols=dict(article)
@@ -134,10 +69,8 @@ def detect_crypto_symbol_in_article(article, symbols: list[dict[str, str]]):
 
     return article_with_symbols
 
-def detect_crypto_symbol_in_articles(articles: Cursor, symbols: list[dict[str, str]] | None = None):
+def detect_crypto_symbol_in_articles(articles: Cursor, symbols: list[dict[str, str]]):
     articles_to_update = list()
-    if not symbols:
-        symbols = DEFAULT_SYMBOLS
 
     for article in articles:
         article_to_update = detect_crypto_symbol_in_article(article, symbols)
@@ -151,13 +84,8 @@ def main():
 
     try:
         symbols_and_names=get_cryptos_symbols_and_names(force_update=args.force_update)
-        if not symbols_and_names:
-            logger.warning(
-                """La récupération du mapping entre le symbol d'une crypto et son nom n'a pas été possible.
-                Ainsi, seul le Bitcoin sera évalué dans l'identification des symbols présents dans les articles.
-                """)
 
-        mongodb_client=MongoClient().connect()
+        mongodb_client=MongoClient()
         collection_name='investing_articles'
 
         mongodb_client.db[collection_name].create_index([
@@ -174,7 +102,7 @@ def main():
 
         # Flag original articles
         if results and results["original_ids"]:
-            success=mongodb_client.flag_articles(ids=results["original_ids"], flag="crypto_detected", value=True, collection_name="investing_articles")
+            success=mongodb_client.common.flag_articles(ids=results["original_ids"], flag="crypto_detected", value=True, collection_name="investing_articles")
             if success:
                 logger.info(f"Detection de symboles terminée : {len(results['original_ids'])} articles traités et marqués.")
             else:
