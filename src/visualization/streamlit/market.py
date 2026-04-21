@@ -1,4 +1,3 @@
-
 from pymongo.errors import PyMongoError
 import pandas as pd
 from datetime import datetime, timedelta
@@ -236,8 +235,7 @@ def main():
     collection_name_default = "klines_BTCUSDT_1m_ws"
 
     # Titre principal
-    st.title("Visualisation Candles BTCUSDT")
-    st.markdown("---")
+    st.header("Visualisation Candles BTCUSDT", divider="gray")
     
     # Sidebar pour les contrôles
     st.sidebar.title("Paramètres")
