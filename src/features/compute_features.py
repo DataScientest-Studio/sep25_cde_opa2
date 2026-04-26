@@ -1,12 +1,10 @@
 import time
+import argparse
 import pandas as pd
 import ta
 
 from src.common.connectors import PostgreSQLConnector
 from src.common.custom_logger import logger
-
-SYMBOL_NAME = 'BTCUSDT'
-INTERVAL = '1m'
 
 
 def get_symbol_id(pg_conn, symbol_name):
@@ -21,7 +19,7 @@ def get_symbol_id(pg_conn, symbol_name):
         return None
 
 
-def load_candles(pg_conn, id_symbol, interval):
+def get_candles(pg_conn, id_symbol, interval):
     # On récupère toutes les candles du symbol depuis PostgreSQL
     # et on les met dans un DataFrame pour pouvoir calculer les indicateurs
     try:
@@ -125,17 +123,17 @@ def load_features(pg_conn, df, id_symbol):
         return 0
 
 
-def compute_and_load_features():
+def compute_and_load_features(symbol, interval):
     pg_connector = PostgreSQLConnector().connect()
     pg_conn = pg_connector.conn
 
     try:
-        id_symbol = get_symbol_id(pg_conn, SYMBOL_NAME)
+        id_symbol = get_symbol_id(pg_conn, symbol)
         if id_symbol is None:
-            logger.error(f"Symbol '{SYMBOL_NAME}' introuvable dans la table symbols.")
+            logger.error(f"Symbol '{symbol}' introuvable dans la table symbols.")
             return
 
-        df = load_candles(pg_conn, id_symbol, INTERVAL)
+        df = get_candles(pg_conn, id_symbol, interval)
         if df.empty:
             return
 
@@ -149,8 +147,15 @@ def compute_and_load_features():
 
 
 if __name__ == "__main__":
+    # Récupération des arguments passés en ligne de commande
+    # Exemple : python -m src.features.compute_features --symbol BTCUSDT --interval 1m
+    parser = argparse.ArgumentParser(description="Calcul des indicateurs techniques depuis les candles PostgreSQL.")
+    parser.add_argument("--symbol",   type=str, default="BTCUSDT", help="Symbol à traiter (ex: BTCUSDT, ETHUSDT)")
+    parser.add_argument("--interval", type=str, default="1m",      help="Intervalle des candles (ex: 1m, 5m, 1h)")
+    args = parser.parse_args()
+
     delay_seconds = 60
-    logger.info("Démarrage du calcul des indicateurs techniques...")
+    logger.info(f"Démarrage du calcul des indicateurs techniques pour {args.symbol} ({args.interval})...")
     logger.info(f"Exécution toutes les {delay_seconds} secondes.")
 
     try:
@@ -158,7 +163,7 @@ if __name__ == "__main__":
             logger.info("Début du calcul des features...")
             start_time = time.time()
 
-            compute_and_load_features()
+            compute_and_load_features(symbol=args.symbol, interval=args.interval)
 
             duration = round(time.time() - start_time, 2)
             logger.info(f"Calcul terminé en {duration} secondes.")
