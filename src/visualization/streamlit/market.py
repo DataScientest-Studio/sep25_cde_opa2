@@ -8,6 +8,7 @@ from streamlit_autorefresh import st_autorefresh
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
+from src.common.api import get_api_base_url
 from src.config import API_PORT, API_HOST
 from src.common.connectors import MongoConnector
 from src.common.custom_logger import logger
@@ -27,14 +28,6 @@ def get_mongodb_connection():
     except SystemExit:
         st.error("Erreur de connexion MongoDB")
         return None
-
-
-@st.cache_data(ttl=1)
-def get_api_base_url():
-    """Configuration de l'URL de base de l'API"""
-    # Utilise API_HOST qui s'adapte automatiquement selon l'environnement
-    # localhost pour le développement local, nom du service Docker en production
-    return f"http://{API_HOST}:{API_PORT}"
 
 
 @st.cache_data(ttl=1)
@@ -331,7 +324,7 @@ def main():
     
     fig = create_candlestick_chart(df)
     if fig:
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width="stretch")
     
 
 if __name__ == "__main__":
