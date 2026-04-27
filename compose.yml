@@ -238,7 +238,7 @@ services:
       args:
         REQUIREMENTS_FILE: requirements/binance.txt
     container_name: data-collector
-    command: python -m src.data.binance.extract_kline_data_ws --symbol BTCUSDT --interval 1m
+    command: python -m src.data.binance.extract_kline_data_ws --symbol BTCUSDT ETHUSDT --interval 1m 5m 1h 1d 1w 1M
     env_file:
       - .env
     environment:
@@ -272,16 +272,18 @@ services:
         condition: service_healthy
       postgres-init:
         condition: service_completed_successfully
+      data-get-historic:
+        condition: service_completed_successfully
     restart: unless-stopped
 
   # Service pour collecter les données historiques Binance
-  get-historical-data:
+  data-get-historic:
     build:
       context: .
       dockerfile: docker/python/Dockerfile
       args:
         REQUIREMENTS_FILE: requirements/binance.txt
-    container_name: get-historical-data
+    container_name: data-get-historic
     command: bash src/data/binance/extract_historical_data.sh
     env_file:
       - .env
