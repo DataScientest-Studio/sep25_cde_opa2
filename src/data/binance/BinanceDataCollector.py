@@ -28,6 +28,9 @@ interval_mapping = {
     '8h': Client.KLINE_INTERVAL_8HOUR,
     '12h': Client.KLINE_INTERVAL_12HOUR,
     '1d': Client.KLINE_INTERVAL_1DAY,
+    '3d': Client.KLINE_INTERVAL_3DAY,
+    '1w': Client.KLINE_INTERVAL_1WEEK,
+    '1M': Client.KLINE_INTERVAL_1MONTH
 }
 
 class BinanceDataCollector:

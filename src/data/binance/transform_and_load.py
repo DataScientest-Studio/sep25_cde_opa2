@@ -1,8 +1,29 @@
 from decimal import Decimal
+import math
 import time
 
 from src.common.custom_logger import logger
 from src.common.connectors import MongoConnector, PostgreSQLConnector
+
+# Durée en secondes de chaque interval Binance
+_INTERVAL_SECONDS = {
+    '1s': 1,
+    '1m': 60,
+    '3m': 180,
+    '5m': 300,
+    '15m': 900,
+    '30m': 1800,
+    '1h': 3600,
+    '2h': 7200,
+    '4h': 14400,
+    '6h': 21600,
+    '8h': 28800,
+    '12h': 43200,
+    '1d': 86400,
+    '3d': 259200,
+    '1w': 604800,
+    '1M': 2592000,
+}
 
 
 def load_symbols_from_mongo(mongo_db, pg_conn):
@@ -111,7 +132,7 @@ def load_candles_batch(conn, candles_data):
         return 0
 
 
-def get_klines_from_mongodb(db, collection_name='klines_BTCUSDT_1m_ws', limit=None, sort_by='open_time'):
+def get_klines_from_mongodb(db, collection_name='klines_BTCUSDT_1m_ws', limit=None, sort_by='open_time', sort_order=1):
     """
     Récupère des données klines depuis MongoDB
     
@@ -120,6 +141,7 @@ def get_klines_from_mongodb(db, collection_name='klines_BTCUSDT_1m_ws', limit=No
         collection_name: Nom de la collection MongoDB
         limit: Nombre maximum de documents à récupérer (None = tous)
         sort_by: Champ pour trier les résultats
+        sort_order: 1 pour ascendant, -1 pour descendant
     
     Returns:
         List[Dict]: Liste des documents klines
@@ -129,7 +151,7 @@ def get_klines_from_mongodb(db, collection_name='klines_BTCUSDT_1m_ws', limit=No
         
         query = collection.find({})
         if sort_by:
-            query = query.sort(sort_by, 1)
+            query = query.sort(sort_by, sort_order)
         if limit:
             query = query.limit(limit)
         
@@ -159,10 +181,29 @@ def _parse_symbol_interval(collection_name):
     return None, None
 
 
-def transform_and_load_klines_data(batch_size=1000, collection_name='klines_BTCUSDT_1m_ws', symbol_map=None):
+def _compute_limit(interval, delay_seconds):
+    """
+    Calcule le nombre de klines à récupérer en mode incrémental.
+    N = ceil(delay_seconds / interval_seconds) + 1 (marge d'une kline en cours).
+    Retourne None si l'interval est inconnu (traitement complet en fallback).
+    """
+    interval_secs = _INTERVAL_SECONDS.get(interval)
+    if not interval_secs:
+        logger.warning(f"Interval '{interval}' inconnu, fallback vers le mode complet")
+        return None
+    return math.ceil(delay_seconds / interval_secs) + 1
+
+
+def transform_and_load_klines_data(batch_size=1000, collection_name='klines_BTCUSDT_1m_ws', symbol_map=None, mode='full', delay_seconds=10):
     """
     Transformation et chargement des données klines de MongoDB vers la table
     candles de PostgreSQL.
+
+    Args:
+        mode: 'full' pour traiter toutes les klines de la source,
+              'incremental' pour ne traiter que les N plus récentes,
+              où N = ceil(delay_seconds / interval_seconds) + 1.
+        delay_seconds: Fréquence de mise à jour en secondes (utilisé en mode 'incremental').
     """
     # Connexions
     mongo = MongoConnector().connect()
@@ -187,8 +228,19 @@ def transform_and_load_klines_data(batch_size=1000, collection_name='klines_BTCU
 
         logger.info(f"Chargement des candles pour symbol={symbol_name} (id={id_symbol}), interval={interval}")
 
-        # Récupération des données MongoDB
-        documents = get_klines_from_mongodb(mongo.db, collection_name=collection_name)
+        # Récupération des données MongoDB selon le mode
+        if mode == 'incremental':
+            limit = _compute_limit(interval, delay_seconds)
+            if limit is not None:
+                logger.info(f"Mode incrémental: récupération des {limit} klines les plus récentes (interval={interval}, delay={delay_seconds}s)")
+            documents = get_klines_from_mongodb(
+                mongo.db,
+                collection_name=collection_name,
+                limit=limit,
+                sort_order=-1,
+            )
+        else:
+            documents = get_klines_from_mongodb(mongo.db, collection_name=collection_name)
         total_docs = len(documents)
         logger.info(f"Nombre total de documents à traiter: {total_docs}")
 
@@ -254,18 +306,39 @@ def init_symbol_map():
 
 if __name__ == "__main__":
     delay_seconds = 10
+    symbols = ['BTCUSDT', 'ETHUSDT']
+    intervals = ['1m', '5m', '1h', '1d', '1w', '1M']  # Intervalles à traiter
+
     logger.info("Démarrage du processus de transformation et chargement en continu...")
     logger.info(f"Exécution toutes les {delay_seconds} secondes. Appuyez sur Ctrl+C pour arrêter.")
 
     # Chargement des symboles une seule fois avant la boucle
     symbol_map = init_symbol_map()
 
+    # Chargement complet initial des données historiques
+    logger.info("Chargement complet initial des collections historiques...")
+    for symbol in symbols:
+        for interval in intervals:
+            transform_and_load_klines_data(
+                collection_name=f'klines_{symbol}_{interval}',
+                symbol_map=symbol_map,
+                mode='full',
+            )
+    logger.info("Chargement initial terminé.")
+
     try:
         while True:
             logger.info("Début du traitement des données klines...")
             start_time = time.time()
 
-            transform_and_load_klines_data(collection_name='klines_BTCUSDT_1m_ws', symbol_map=symbol_map)
+            for symbol in symbols:
+                for interval in intervals:
+                    transform_and_load_klines_data(
+                        collection_name=f'klines_{symbol}_{interval}_ws',
+                        symbol_map=symbol_map,
+                        mode='incremental',
+                        delay_seconds=delay_seconds,
+                    )
 
             end_time = time.time()
             duration = round(end_time - start_time, 2)
