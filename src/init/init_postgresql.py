@@ -110,6 +110,7 @@ with psycopg.connect(**CRYPTOBOT_CONN_INFO) as conn:
                 id SERIAL PRIMARY KEY,
                 id_symbol INT NOT NULL,
                 id_candle INT,
+                interval VARCHAR(10),
                 timestamp_candle TIMESTAMP,
                 rsi_14 NUMERIC,
                 macd NUMERIC,

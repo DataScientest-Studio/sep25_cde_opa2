@@ -8,7 +8,7 @@ from src.common.custom_logger import logger
 
 
 def get_symbol_id(pg_conn, symbol_name):
-    # On cherche l'id du symbol en base, on en a besoin pour toutes les requêtes
+    # On cherche l'id du symbol en base vu qu'on en a besoin pour toutes les requêtes
     try:
         with pg_conn.cursor() as cur:
             cur.execute("SELECT id FROM symbols WHERE symbol = %s", (symbol_name,))
@@ -21,7 +21,7 @@ def get_symbol_id(pg_conn, symbol_name):
 
 def get_candles(pg_conn, id_symbol, interval):
     # On récupère toutes les candles du symbol depuis PostgreSQL
-    # et on les met dans un DataFrame pour pouvoir calculer les indicateurs
+    # on les met dans un DataFrame pour pouvoir calculer les indicateurs
     try:
         with pg_conn.cursor() as cur:
             cur.execute("""
@@ -38,7 +38,7 @@ def get_candles(pg_conn, id_symbol, interval):
 
         df = pd.DataFrame(rows, columns=['id_candle', 'open_time', 'open', 'high', 'low', 'close', 'volume'])
 
-        # la librairie ta a besoin de floats, pas de Decimal
+        # la librairie ta a besoin de floats pour calculer les indicateurs, alors on convertit les colonnes concernées 
         df[['open', 'high', 'low', 'close', 'volume']] = df[['open', 'high', 'low', 'close', 'volume']].astype(float)
         logger.info(f"{len(df)} candles chargées depuis PostgreSQL.")
         return df
@@ -56,7 +56,7 @@ def compute_indicators(df):
     df['macd'] = ta.trend.MACD(close=df['close']).macd()
 
     # EMA 20, 50, 100 — moyennes mobiles exponentielles sur différentes périodes
-    # Plus la période est longue, plus la tendance est lissée
+    # Plus la période est longue plus la tendance est lissée
     df['ema_20']  = ta.trend.EMAIndicator(close=df['close'], window=20).ema_indicator()
     df['ema_50']  = ta.trend.EMAIndicator(close=df['close'], window=50).ema_indicator()
     df['ema_100'] = ta.trend.EMAIndicator(close=df['close'], window=100).ema_indicator()
@@ -65,9 +65,9 @@ def compute_indicators(df):
     return df
 
 
-def load_features(pg_conn, df, id_symbol):
+def load_features(pg_conn, df, id_symbol, interval):
     # On ignore les premières lignes où les indicateurs sont NaN
-    # C'est normal : EMA(100) a besoin de 100 candles avant de pouvoir calculer quelque chose
+    # EMA(100) a besoin de 100 candles avant de pouvoir calculer quelque chose
     df_valid = df.dropna(subset=['rsi_14', 'macd', 'ema_20', 'ema_50', 'ema_100'])
 
     if df_valid.empty:
@@ -79,12 +79,12 @@ def load_features(pg_conn, df, id_symbol):
         with pg_conn.cursor() as cur:
             for _, row in df_valid.iterrows():
 
-                # features_candles n'a pas de contrainte UNIQUE, donc on vérifie
+                # features_candles n'a pas de contrainte UNIQUE donc on vérifie
                 # manuellement avant d'insérer pour ne pas créer de doublons
                 cur.execute("""
                     SELECT id FROM features_candles
-                    WHERE id_symbol = %s AND id_candle = %s;
-                """, (id_symbol, int(row['id_candle'])))
+                    WHERE id_symbol = %s AND id_candle = %s AND interval = %s;
+                """, (id_symbol, int(row['id_candle']), interval))
 
                 existing = cur.fetchone()
 
@@ -93,21 +93,21 @@ def load_features(pg_conn, df, id_symbol):
                     cur.execute("""
                         UPDATE features_candles
                         SET rsi_14 = %s, macd = %s, ema_20 = %s, ema_50 = %s, ema_100 = %s
-                        WHERE id_symbol = %s AND id_candle = %s;
+                        WHERE id_symbol = %s AND id_candle = %s AND interval = %s;
                     """, (
                         float(row['rsi_14']), float(row['macd']),
                         float(row['ema_20']), float(row['ema_50']), float(row['ema_100']),
-                        id_symbol, int(row['id_candle'])
+                        id_symbol, int(row['id_candle']), interval
                     ))
                 else:
-                    # Nouvelle candle, on insère
+                    # Nouvelle candle on insère
                     cur.execute("""
                         INSERT INTO features_candles (
-                            id_symbol, id_candle, timestamp_candle,
+                            id_symbol, id_candle, interval, timestamp_candle,
                             rsi_14, macd, ema_20, ema_50, ema_100
-                        ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s);
+                        ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s);
                     """, (
-                        id_symbol, int(row['id_candle']), row['open_time'],
+                        id_symbol, int(row['id_candle']), interval, row['open_time'],
                         float(row['rsi_14']), float(row['macd']),
                         float(row['ema_20']), float(row['ema_50']), float(row['ema_100'])
                     ))
@@ -138,7 +138,7 @@ def compute_and_load_features(symbol, interval):
             return
 
         df = compute_indicators(df)
-        load_features(pg_conn, df, id_symbol)
+        load_features(pg_conn, df, id_symbol, interval)
 
     except Exception as e:
         logger.error(f"Erreur inattendue: {e}")
@@ -147,7 +147,6 @@ def compute_and_load_features(symbol, interval):
 
 
 if __name__ == "__main__":
-    # Récupération des arguments passés en ligne de commande
     # Exemple : python -m src.features.compute_features --symbol BTCUSDT --interval 1m
     parser = argparse.ArgumentParser(description="Calcul des indicateurs techniques depuis les candles PostgreSQL.")
     parser.add_argument("--symbol",   type=str, default="BTCUSDT", help="Symbol à traiter (ex: BTCUSDT, ETHUSDT)")
