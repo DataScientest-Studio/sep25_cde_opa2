@@ -88,7 +88,7 @@ def load_klines_data_mongodb(collection_name: str, start_date=None, end_date=Non
 
 
 @st.cache_data(ttl=1)  
-def load_candles_data_api(start_date=None, end_date=None, limit=1000):
+def load_candles_data_api(start_date=None, end_date=None, limit=1000, interval="1m", symbol="BTCUSDT"):
     """Récupère les données candles via l'API FastAPI"""
     st.session_state.loading_data = True
 
@@ -96,7 +96,7 @@ def load_candles_data_api(start_date=None, end_date=None, limit=1000):
         api_base_url = get_api_base_url()
 
         # Construction des paramètres de requête
-        params = {"limit": limit}
+        params = {"limit": limit, "interval": interval, "symbol": symbol}
 
         # Ajout des filtres de date si fournis
         if start_date:
@@ -159,7 +159,7 @@ def load_candles_data_api(start_date=None, end_date=None, limit=1000):
         st.session_state.loading_data = False
 
 
-def create_candlestick_chart(df):
+def create_candlestick_chart(df, symbol="BTCUSDT", interval="1m"):
 
     if df.empty:
         return None
@@ -169,7 +169,7 @@ def create_candlestick_chart(df):
         rows=2, cols=1,
         shared_xaxes=True,
         vertical_spacing=0.03,
-        subplot_titles=('Prix BTCUSDT', 'Volume'),
+        subplot_titles=(f'Prix {symbol}', 'Volume'),
         row_width=[0.7, 0.3]
     )
     
@@ -181,7 +181,7 @@ def create_candlestick_chart(df):
             high=df['high'],
             low=df['low'],
             close=df['close'],
-            name="BTCUSDT",
+            name=symbol,
             increasing_line_color='#00ff88',
             decreasing_line_color='#ff4444'
         ),
@@ -205,7 +205,7 @@ def create_candlestick_chart(df):
     
     # Mise en forme
     fig.update_layout(
-        title="Graphique BTCUSDT (1 minute)",
+        title=f"Graphique {symbol} ({interval})",
         yaxis_title="Prix (USDT)",
         yaxis2_title="Volume",
         template="plotly_dark",
@@ -225,10 +225,9 @@ count = st_autorefresh(interval=3000, limit=500, key="fizzbuzzcounter")
 
 def main():
     """Fonction principale de l'application Streamlit."""
-    collection_name_default = "klines_BTCUSDT_1m_ws"
 
     # Titre principal
-    st.header("Visualisation Candles BTCUSDT", divider="gray")
+    st.header("Visualisation Candles", divider="gray")
     
     # Sidebar pour les contrôles
     st.sidebar.title("Paramètres")
@@ -258,12 +257,26 @@ def main():
     
     # Configuration selon la source
     collection_name = None
+    symbol = "BTCUSDT"
+    interval = "1m"
     if data_source == "API PostgreSQL":
+        symbol = st.sidebar.selectbox(
+            "Symbole",
+            options=["BTCUSDT", "ETHUSDT"],
+            index=0,
+            help="Symbole de trading à afficher"
+        )
+        interval = st.sidebar.selectbox(
+            "Intervalle",
+            options=["1m", "5m", "1h", "1d", "1w", "1M"],
+            index=0,
+            help="Intervalle des candles"
+        )
         st.sidebar.info("Source : table **candles** (PostgreSQL via API)")
     else:  # MongoDB
         collection_name = st.sidebar.text_input(
             "Nom de la collection MongoDB",
-            value=collection_name_default,
+            value=f"klines_{symbol}_1m_ws",
             help="Nom de la collection MongoDB contenant les données klines"
         )
     
@@ -278,7 +291,7 @@ def main():
     )
     
     # Bouton de rafraîchissement
-    st.sidebar.button("Rafraîchir les données", type="primary")
+    # st.sidebar.button("Rafraîchir les données", type="primary")
 
     # Filtres temporels
     use_date_filter = st.sidebar.checkbox("Activer le filtre par date", value=False)
@@ -305,7 +318,7 @@ def main():
     with st.spinner("Chargement des données..."):
         try:
             if data_source == "API PostgreSQL":
-                df = load_candles_data_api(start_date, end_date, max_points)
+                df = load_candles_data_api(start_date, end_date, max_points, interval, symbol)
             else:  # MongoDB
                 df = load_klines_data_mongodb(collection_name, start_date, end_date, max_points)
         except Exception as e:
@@ -322,7 +335,7 @@ def main():
     st.info(f"Source active: **{data_source}** | Nom: **{name_display}** | Nombre de points chargés: **{len(df)}**")
     st.subheader("Graphique Candlestick")
     
-    fig = create_candlestick_chart(df)
+    fig = create_candlestick_chart(df, symbol, interval)
     if fig:
         st.plotly_chart(fig, width="stretch")
     
