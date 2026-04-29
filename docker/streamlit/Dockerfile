@@ -1,4 +1,4 @@
-FROM python:3.11-slim
+FROM python:3.14.4-slim
 ARG PYTHONPATH="."
 ENV PYTHONPATH=$PYTHONPATH
 
@@ -23,4 +23,4 @@ EXPOSE 8501
 WORKDIR /app
 
 # Commande par défaut pour lancer Streamlit
-CMD ["streamlit", "run", "src/visualization/streamlit/klines_viewer.py", "--server.port=8501", "--server.address=0.0.0.0", "--server.headless=true", "--server.enableCORS=false", "--server.enableXsrfProtection=false"]
+CMD ["streamlit", "run", "src/visualization/streamlit/app.py", "--server.port=8501", "--server.address=0.0.0.0", "--server.headless=true", "--server.enableCORS=false", "--server.enableXsrfProtection=false"]
