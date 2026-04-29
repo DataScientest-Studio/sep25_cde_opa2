@@ -128,66 +128,79 @@ def load_sentiments(start_date=None, end_date=None, limit=None, base_asset=None)
     finally:
         st.session_state.loading_data = False
 
-# @TODO: Cette fonction devra utiliser les données provenant d'une api postgres lorsqu'elle sera disponible.
-# Elle devra également utiliser les klines ayant un interval de 24h lorsqu'elles seront récupérées.
-@st.cache_data(ttl=1)
-def load_klines_data_from_mongodb(collection_name: str, start_date=None, end_date=None, limit=1000):
+@st.cache_data(ttl=1)  
+def load_candles(base_asset=None, interval="1d", start_date=None, end_date=None, limit=1000):
+    """
+        Récupère les candles.
+        Dans le cadre du projet, les candles avec interval de 24h sont recupérées.
+    """
     st.session_state.loading_data = True
-    
-    try:
-        connector = MongoConnector().connect()
-        if connector is None:
-            return pd.DataFrame()
-        
-        db = connector.db
-        collection = db[collection_name]
-        
-        # Construction de la requête
-        start_date = datetime.combine(start_date, datetime.min.time())
-        end_date = datetime.combine(end_date, datetime.max.time())
 
-        query = {}
-        if start_date and end_date:
-            query['open_time'] = {
-                '$gte': start_date,
-                '$lte': end_date
-            }
-        
-        # Récupération des données des limit derniers points
-        cursor = collection.find(query).sort('open_time', -1).limit(limit)
-        data = list(cursor)
-        
-        if not data:
-            logger.warning("Aucune données trouvées")
+    try:
+        api_base_url = get_api_base_url()
+
+        # Construction des paramètres de requête
+        params = {"limit": limit, "symbol": f"{base_asset}USDT", "interval": interval}
+
+        # Ajout des filtres de date si fournis
+        if start_date:
+            if isinstance(start_date, datetime):
+                params["start_date"] = start_date.strftime("%Y-%m-%d %H:%M:%S")
+            else:
+                params["start_date"] = str(start_date)
+
+        if end_date:
+            if isinstance(end_date, datetime):
+                params["end_date"] = end_date.strftime("%Y-%m-%d %H:%M:%S")
+            else:
+                params["end_date"] = str(end_date)
+
+        # Appel à l'API
+        response = requests.get(f"{api_base_url}/market/candles", params=params, timeout=30)
+
+        if response.status_code != 200:
+            st.error(f"Erreur API (status {response.status_code}): {response.text}")
             return pd.DataFrame()
-        
+
+        # Récupération des données JSON
+        data = response.json()
+
+        if not data:
+            logger.warning("Aucune donnée reçue de l'API.")
+            return pd.DataFrame()
+
         # Conversion en DataFrame
         df = pd.DataFrame(data)
-        if 'open_time' in df.columns:
-            df['open_time'] = pd.to_datetime(df['open_time'], unit='ms')
 
-        numeric_columns = ['open_price', 'high_price', 'low_price', 'close_price', 'volume']
+        # Conversion des colonnes de dates
+        if 'open_time' in df.columns:
+            df['open_time'] = pd.to_datetime(df['open_time'])
+        if 'close_time' in df.columns:
+            df['close_time'] = pd.to_datetime(df['close_time'])
+
+        # Conversion des colonnes numériques
+        numeric_columns = ['open', 'high', 'low', 'close', 'volume']
         for col in numeric_columns:
             if col in df.columns:
                 df[col] = pd.to_numeric(df[col], errors='coerce')
-        df = df[numeric_columns + ['open_time']]
-        df = df.rename(columns={
-            'open_price': 'open',
-            'high_price': 'high',
-            'low_price': 'low',
-            'close_price': 'close'
-        })
 
+        # Sélection des colonnes nécessaires
+        available_columns = [col for col in numeric_columns + ['open_time', 'symbol', 'interval'] if col in df.columns]
+        df = df[available_columns]
+
+        logger.info(f"Récupération de {len(df)} candles via l'API")
         return df
         
-    except PyMongoError as e:
-        st.error(f"Erreur lors de la récupération des données MongoDB: {e}")
+    except requests.exceptions.RequestException as e:
+        st.error(f"Erreur de connexion à l'API: {e}")
+        logger.error(f"Erreur de connexion à l'API: {e}")
         return pd.DataFrame()
     except Exception as e:
-        st.error(f"Erreur inattendue: {e}")
+        st.error(f"Erreur lors de la récupération des données via l'API: {e}")
+        logger.error(f"Erreur lors de la récupération des données via l'API: {e}")
         return pd.DataFrame()
     finally:
-        st.session_state.loading_data = False
+        st.session_state.loading_data = False        
 
 def showArticlesByDay(df: pd.DataFrame):
     # Aggrégation et comptage le nombre d'articles par date et par crypto
@@ -228,24 +241,15 @@ def showMeanScoreByDay(df: pd.DataFrame) -> pd.DataFrame:
 
     return daily_sentiment
 
-def showScoreVsPrice(df_sentiments: pd.DataFrame, df_klines: pd.DataFrame):
+def showScoreVsPrice(symbol: str, df_sentiments: pd.DataFrame, df_klines: pd.DataFrame):
     if df_klines.empty:
         return False
 
     # Convertion en objet datetime de la date.
     df_sentiments['date_dt'] = pd.to_datetime(df_sentiments['date'])
 
-    # Aggregation des données klines sur une journée
-    df_klines_daily = df_klines.resample('D', on='open_time').agg({
-        'open': 'first',
-        'high': 'max',
-        'low': 'min',
-        'close': 'last',
-        'volume': 'sum'
-    }).reset_index()
-
     # Merge des dataframes sentiments, et klines
-    merged_df = pd.merge(df_sentiments, df_klines_daily, left_on='date_dt', right_on='open_time', how='inner')
+    merged_df = pd.merge(df_sentiments, df_klines, left_on='date_dt', right_on='open_time', how='inner')
 
     # Calcul de la moyenne mobile sur 3 jours pour lisser le sentiment
     merged_df['sentiment_smooth'] = merged_df['sentiment_score'].rolling(window=3, min_periods=1).mean()
@@ -269,7 +273,7 @@ def showScoreVsPrice(df_sentiments: pd.DataFrame, df_klines: pd.DataFrame):
         go.Scatter(
             x=merged_df['date_dt'], 
             y=merged_df['close'], 
-            name="Prix BTC (USDT)",
+            name=f"Prix {symbol}USDT",
             line=dict(color='firebrick', width=2)
         ),
         secondary_y=True,
@@ -277,7 +281,7 @@ def showScoreVsPrice(df_sentiments: pd.DataFrame, df_klines: pd.DataFrame):
 
     # Mise en page
     fig.update_layout(
-        title_text="Sentiment Journalier vs Prix",
+        title_text=f"{symbol}USDT",
         hovermode="x unified"
     )
 
@@ -285,6 +289,7 @@ def showScoreVsPrice(df_sentiments: pd.DataFrame, df_klines: pd.DataFrame):
     fig.update_yaxes(title_text="Score Sentiment (-1 à 1)", secondary_y=False)
     fig.update_yaxes(title_text="Prix", secondary_y=True)
 
+    st.subheader("Corrélation sentiment journalier et prix")
     st.plotly_chart(fig)          
     
 
@@ -324,9 +329,10 @@ def main():
             try:
                 start_date, end_date = dates
                 df_sentiments = load_sentiments(start_date, end_date, base_asset=selected_symbols)
-                df_klines_1h = pd.DataFrame()
-                if len(selected_symbols) == 1 and selected_symbols[0] == 'BTC':
-                    df_klines_1h = load_klines_data_from_mongodb(collection_name="klines_BTCUSDT_1h", start_date=start_date, end_date=end_date)
+                df_klines_by_symbol=dict()
+                for symbol in selected_symbols:
+                    df_klines_by_symbol[symbol]= load_candles(base_asset=symbol, interval="1d", start_date=start_date, end_date=end_date)
+
             except Exception as e:
                 st.error(f"Erreur lors du chargement: {e}")
                 df_sentiments = pd.DataFrame()
@@ -344,9 +350,13 @@ def main():
             # Affichage d'un graphique montrant la moyenne du score de sentiment par jour
             daily_sentiment = showMeanScoreByDay(df=df_sentiments)
 
-            # Affichage d'un graphique surperposant la tendance du score de sentiment vs le prix de la crypto
+            # Affichage d'un graphique superposant la tendance du score de sentiment vs le prix de la crypto
             # Ce graphique ne s'affiche que si la crypto possède des données de type klines.
-            showScoreVsPrice(df_sentiments=daily_sentiment, df_klines=df_klines_1h)
+            daily_sentiment.set_index('base_asset', inplace=True)
+            for symbol, df_klines in df_klines_by_symbol.items():
+                symbol_daily_sentiment = daily_sentiment.loc[symbol]
+                showScoreVsPrice(symbol=symbol, df_sentiments=symbol_daily_sentiment, df_klines=df_klines)
+
 
     else:
         st.warning("Sélectionnez au moins une crypto et une date de début et de fin de période afin de générer les graphiques.")
