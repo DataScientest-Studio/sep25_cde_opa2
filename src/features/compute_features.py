@@ -1,7 +1,7 @@
 import time
 import argparse
 import pandas as pd
-import ta
+import pandas_ta as ta
 
 from src.common.connectors import PostgreSQLConnector
 from src.common.custom_logger import logger
