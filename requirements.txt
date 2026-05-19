@@ -16,7 +16,7 @@ uvicorn==0.42.0
 
 # Traitement de données
 pandas==3.0.2
-pandas-ta==0.3.14b
+pandas-ta==0.4.71b0
 
 # Web scraping
 playwright==1.58.0
