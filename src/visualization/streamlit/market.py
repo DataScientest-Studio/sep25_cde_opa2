@@ -1,14 +1,13 @@
-
 from pymongo.errors import PyMongoError
 import pandas as pd
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 import requests
 
 import streamlit as st
-from streamlit_autorefresh import st_autorefresh
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
+from src.common.api import get_api_base_url
 from src.config import API_PORT, API_HOST
 from src.common.connectors import MongoConnector
 from src.common.custom_logger import logger
@@ -28,14 +27,6 @@ def get_mongodb_connection():
     except SystemExit:
         st.error("Erreur de connexion MongoDB")
         return None
-
-
-@st.cache_data(ttl=1)
-def get_api_base_url():
-    """Configuration de l'URL de base de l'API"""
-    # Utilise API_HOST qui s'adapte automatiquement selon l'environnement
-    # localhost pour le développement local, nom du service Docker en production
-    return f"http://{API_HOST}:{API_PORT}"
 
 
 @st.cache_data(ttl=1)
@@ -96,7 +87,7 @@ def load_klines_data_mongodb(collection_name: str, start_date=None, end_date=Non
 
 
 @st.cache_data(ttl=1)  
-def load_candles_data_api(start_date=None, end_date=None, limit=1000):
+def load_candles_data_api(start_date=None, end_date=None, limit=1000, interval="1m", symbol="BTCUSDT"):
     """Récupère les données candles via l'API FastAPI"""
     st.session_state.loading_data = True
 
@@ -104,7 +95,7 @@ def load_candles_data_api(start_date=None, end_date=None, limit=1000):
         api_base_url = get_api_base_url()
 
         # Construction des paramètres de requête
-        params = {"limit": limit}
+        params = {"limit": limit, "interval": interval, "symbol": symbol}
 
         # Ajout des filtres de date si fournis
         if start_date:
@@ -120,7 +111,7 @@ def load_candles_data_api(start_date=None, end_date=None, limit=1000):
                 params["end_date"] = str(end_date)
 
         # Appel à l'API
-        response = requests.get(f"{api_base_url}/candles", params=params, timeout=30)
+        response = requests.get(f"{api_base_url}/market/candles", params=params, timeout=30)
 
         if response.status_code != 200:
             st.error(f"Erreur API (status {response.status_code}): {response.text}")
@@ -167,8 +158,7 @@ def load_candles_data_api(start_date=None, end_date=None, limit=1000):
         st.session_state.loading_data = False
 
 
-def create_candlestick_chart(df):
-
+def create_candlestick_chart(df, symbol="BTCUSDT", interval="1m"):
     if df.empty:
         return None
     
@@ -177,7 +167,7 @@ def create_candlestick_chart(df):
         rows=2, cols=1,
         shared_xaxes=True,
         vertical_spacing=0.03,
-        subplot_titles=('Prix BTCUSDT', 'Volume'),
+        subplot_titles=(f'Prix {symbol}', 'Volume'),
         row_width=[0.7, 0.3]
     )
     
@@ -189,7 +179,7 @@ def create_candlestick_chart(df):
             high=df['high'],
             low=df['low'],
             close=df['close'],
-            name="BTCUSDT",
+            name=symbol,
             increasing_line_color='#00ff88',
             decreasing_line_color='#ff4444'
         ),
@@ -213,7 +203,7 @@ def create_candlestick_chart(df):
     
     # Mise en forme
     fig.update_layout(
-        title="Graphique BTCUSDT (1 minute)",
+        title=f"Graphique {symbol} ({interval})",
         yaxis_title="Prix (USDT)",
         yaxis2_title="Volume",
         template="plotly_dark",
@@ -226,18 +216,37 @@ def create_candlestick_chart(df):
     
     return fig
 
+@st.fragment(run_every="3s")
+def show_candlestick_chart(data_source: str, collection_name: str, symbol: str, interval: str, start_date: date, end_date: date, max_points: int):
+    with st.spinner("Chargement des données..."):
+        try:
+            if data_source == "API PostgreSQL":
+                df = load_candles_data_api(start_date, end_date, max_points, interval, symbol)
+            else:  # MongoDB
+                df = load_klines_data_mongodb(collection_name, start_date, end_date, max_points)
+        except Exception as e:
+            st.error(f"Erreur lors du chargement: {e}")
+            df = pd.DataFrame()
+      
+    if df.empty:
+        st.warning(f"Aucune donnée trouvée dans la source {data_source} ou erreur de connexion.")
+        
 
-
-# Paramètrage de l'auto-refresh
-count = st_autorefresh(interval=3000, limit=500, key="fizzbuzzcounter")
+    source_info = "table PostgreSQL 'candles' (via API)" if data_source == "API PostgreSQL" else f"collection MongoDB: {collection_name}"
+    st.subheader(f"Données de la {source_info}")
+    name_display = "candles" if data_source == "API PostgreSQL" else collection_name
+    st.info(f"Source active: **{data_source}** | Nom: **{name_display}** | Nombre de points chargés: **{len(df)}**")
+    st.subheader("Graphique Candlestick")
+    
+    fig = create_candlestick_chart(df, symbol, interval)
+    if fig:
+        st.plotly_chart(fig, width="stretch")    
 
 def main():
-    """Fonction principale de l'application Streamlit."""
-    collection_name_default = "klines_BTCUSDT_1m_ws"
+    """Fonction principale de l'application Streamlit"""
 
     # Titre principal
-    st.title("Visualisation Candles BTCUSDT")
-    st.markdown("---")
+    st.header("Visualisation Candles", divider="gray")
     
     # Sidebar pour les contrôles
     st.sidebar.title("Paramètres")
@@ -267,12 +276,26 @@ def main():
     
     # Configuration selon la source
     collection_name = None
+    symbol = "BTCUSDT"
+    interval = "1m"
     if data_source == "API PostgreSQL":
+        symbol = st.sidebar.selectbox(
+            "Symbole",
+            options=["BTCUSDT", "ETHUSDT"],
+            index=0,
+            help="Symbole de trading à afficher"
+        )
+        interval = st.sidebar.selectbox(
+            "Intervalle",
+            options=["1m", "5m", "1h", "1d", "1w", "1M"],
+            index=0,
+            help="Intervalle des candles"
+        )
         st.sidebar.info("Source : table **candles** (PostgreSQL via API)")
     else:  # MongoDB
         collection_name = st.sidebar.text_input(
             "Nom de la collection MongoDB",
-            value=collection_name_default,
+            value=f"klines_{symbol}_1m_ws",
             help="Nom de la collection MongoDB contenant les données klines"
         )
     
@@ -287,7 +310,7 @@ def main():
     )
     
     # Bouton de rafraîchissement
-    st.sidebar.button("Rafraîchir les données", type="primary")
+    # st.sidebar.button("Rafraîchir les données", type="primary")
 
     # Filtres temporels
     use_date_filter = st.sidebar.checkbox("Activer le filtre par date", value=False)
@@ -311,30 +334,8 @@ def main():
         end_date = datetime.combine(end_date, datetime.max.time())
 
     
-    with st.spinner("Chargement des données..."):
-        try:
-            if data_source == "API PostgreSQL":
-                df = load_candles_data_api(start_date, end_date, max_points)
-            else:  # MongoDB
-                df = load_klines_data_mongodb(collection_name, start_date, end_date, max_points)
-        except Exception as e:
-            st.error(f"Erreur lors du chargement: {e}")
-            df = pd.DataFrame()
-      
-    if df.empty:
-        st.warning(f"Aucune donnée trouvée dans la source {data_source} ou erreur de connexion.")
-        
-
-    source_info = "table PostgreSQL 'candles' (via API)" if data_source == "API PostgreSQL" else f"collection MongoDB: {collection_name}"
-    st.subheader(f"Données de la {source_info}")
-    name_display = "candles" if data_source == "API PostgreSQL" else collection_name
-    st.info(f"Source active: **{data_source}** | Nom: **{name_display}** | Nombre de points chargés: **{len(df)}**")
-    st.subheader("Graphique Candlestick")
-    
-    fig = create_candlestick_chart(df)
-    if fig:
-        st.plotly_chart(fig, use_container_width=True)
-    
+    # Affichage du graphique des candles
+    show_candlestick_chart(data_source, collection_name, symbol, interval, start_date, end_date, max_points)
 
 if __name__ == "__main__":
     main()

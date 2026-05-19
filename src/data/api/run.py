@@ -17,7 +17,7 @@ if __name__ == "__main__":
     
     # Lancement du serveur
     uvicorn.run(
-        "src.data.api.fastapi_data:app",
+        "src.data.api.app:app",
         host=host,
         port=port,
         reload=False,

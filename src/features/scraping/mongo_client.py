@@ -26,9 +26,7 @@ class MongoClient(MongoConnector):
         try:
             collection = self.db[collection_name]
             articles=collection.find(
-                {
-                    "feature_sentiment_analyzed": 0
-                },
+                {"feature_sentiment_analyzed": {"$in": [0, None]}},
                 limit=int(SCRAPER_FEATURE_SENTIMENT_LIMIT)
             )
             return articles
