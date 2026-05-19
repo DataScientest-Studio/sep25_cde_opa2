@@ -50,16 +50,18 @@ def get_candles(pg_conn, id_symbol, interval):
 
 def compute_indicators(df):
     # RSI sur 14 périodes — mesure si le marché est suracheté ou survendu
-    df['rsi_14'] = ta.momentum.RSIIndicator(close=df['close'], window=14).rsi()
+    df['rsi_14'] = ta.rsi(close=df['close'], length=14)
 
     # MACD — mesure la convergence/divergence de deux moyennes mobiles
-    df['macd'] = ta.trend.MACD(close=df['close']).macd()
+    df_macd = ta.macd(close=df['close'], fast=12, slow=26, signal=9)
+    df['macd']        = df_macd['MACD_12_26_9']   # La ligne MACD
+    df['macd_signal'] = df_macd['MACDs_12_26_9']  # La ligne Signal
 
     # EMA 20, 50, 100 — moyennes mobiles exponentielles sur différentes périodes
     # Plus la période est longue plus la tendance est lissée
-    df['ema_20']  = ta.trend.EMAIndicator(close=df['close'], window=20).ema_indicator()
-    df['ema_50']  = ta.trend.EMAIndicator(close=df['close'], window=50).ema_indicator()
-    df['ema_100'] = ta.trend.EMAIndicator(close=df['close'], window=100).ema_indicator()
+    df['ema_20']  = ta.ema(close=df['close'], length=20)
+    df['ema_50']  = ta.ema(close=df['close'], length=50)
+    df['ema_100'] = ta.ema(close=df['close'], length=100)    
 
     logger.info("Indicateurs calculés : RSI(14), MACD, EMA(20/50/100).")
     return df
@@ -68,7 +70,7 @@ def compute_indicators(df):
 def load_features(pg_conn, df, id_symbol, interval):
     # On ignore les premières lignes où les indicateurs sont NaN
     # EMA(100) a besoin de 100 candles avant de pouvoir calculer quelque chose
-    df_valid = df.dropna(subset=['rsi_14', 'macd', 'ema_20', 'ema_50', 'ema_100'])
+    df_valid = df.dropna(subset=['rsi_14', 'macd', 'macd_signal', 'ema_20', 'ema_50', 'ema_100'])
 
     if df_valid.empty:
         logger.info("Pas assez de données pour calculer les indicateurs (trop peu de candles).")
@@ -92,10 +94,10 @@ def load_features(pg_conn, df, id_symbol, interval):
                     # La ligne existe déjà, on met juste à jour les valeurs
                     cur.execute("""
                         UPDATE features_candles
-                        SET rsi_14 = %s, macd = %s, ema_20 = %s, ema_50 = %s, ema_100 = %s
+                        SET rsi_14 = %s, macd = %s, macd_signal = %s, ema_20 = %s, ema_50 = %s, ema_100 = %s
                         WHERE id_symbol = %s AND id_candle = %s AND interval = %s;
                     """, (
-                        float(row['rsi_14']), float(row['macd']),
+                        float(row['rsi_14']), float(row['macd']), float(row['macd_signal']),
                         float(row['ema_20']), float(row['ema_50']), float(row['ema_100']),
                         id_symbol, int(row['id_candle']), interval
                     ))
@@ -104,11 +106,11 @@ def load_features(pg_conn, df, id_symbol, interval):
                     cur.execute("""
                         INSERT INTO features_candles (
                             id_symbol, id_candle, interval, timestamp_candle,
-                            rsi_14, macd, ema_20, ema_50, ema_100
-                        ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s);
+                            rsi_14, macd, macd_signal, ema_20, ema_50, ema_100
+                        ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s);
                     """, (
                         id_symbol, int(row['id_candle']), interval, row['open_time'],
-                        float(row['rsi_14']), float(row['macd']),
+                        float(row['rsi_14']), float(row['macd']), float(row['macd_signal']),
                         float(row['ema_20']), float(row['ema_50']), float(row['ema_100'])
                     ))
                     inserted += 1

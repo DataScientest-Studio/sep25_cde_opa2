@@ -114,6 +114,7 @@ with psycopg.connect(**CRYPTOBOT_CONN_INFO) as conn:
                 timestamp_candle TIMESTAMP,
                 rsi_14 NUMERIC,
                 macd NUMERIC,
+                macd_signal NUMERIC,
                 ema_20 NUMERIC,
                 ema_50 NUMERIC,
                 ema_100 NUMERIC,
