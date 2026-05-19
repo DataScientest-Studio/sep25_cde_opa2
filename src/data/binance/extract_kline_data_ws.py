@@ -86,5 +86,8 @@ async def main():
 
 if __name__ == "__main__":
 
-    loop = asyncio.get_event_loop()
-    loop.run_until_complete(main())
+    try:
+        asyncio.run(main())
+    except KeyboardInterrupt:
+        logger.info("Arrêt manuel par l'utilisateur.")
+        sys.exit(0)

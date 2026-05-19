@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException, Query
 
 import pandas as pd
 from datetime import datetime
-from typing import Optional
+from typing import List, Optional
 
 from src.common.connectors import PostgreSQLConnector
 from src.common.custom_logger import logger
@@ -21,8 +21,8 @@ async def root():
 
 @router.get("/sentiment")
 async def scraping_sentiment(
-    limit: int = Query(default=100, ge=1, le=10000, description="Nombre maximum de sentiments à récupérer"),
-    base_asset: Optional[str] = Query(default=None, description="Symbol crypto (format: BTC, ETH, ...)"),
+    limit: int = Query(default=10000, ge=1, le=10000, description="Nombre maximum de sentiments à récupérer"),
+    base_asset: Optional[List[str]] = Query(default=None, description="Liste des symbols (format: ['BTC', 'ETH', ...])"),
     start_date: Optional[str] = Query(default=None, description="Date de début (format: YYYY-MM-DD HH:MM:SS)"),
     end_date: Optional[str] = Query(default=None, description="Date de fin (format: YYYY-MM-DD HH:MM:SS)")
 ):
@@ -30,7 +30,7 @@ async def scraping_sentiment(
     Récupère les sentiments des articles scrapés pour une crypto.
 
     :param limit: Nombre maximum de sentiments à récupérer
-    :base_asset limit: Symbol crypto optionnel (format: BTC, ETH, ...)
+    :param base_asset: Liste des symbols optionnelle (format: ['BTC', 'ETH', ...])
     :param start_date: Date de début optionnelle
     :param end_date: Date de fin optionnelle
     :return: Liste des sentiments au format JSON
@@ -50,7 +50,7 @@ async def scraping_sentiment(
 
         # Ajout du symbol
         if base_asset:
-            conditions.append("fss.base_asset = %s")
+            conditions.append("fss.base_asset = ANY(%s)")
             params.append(base_asset)
 
         # Ajout des filtres de date si fournis

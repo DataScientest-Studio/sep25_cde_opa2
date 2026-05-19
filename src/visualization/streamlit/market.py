@@ -1,14 +1,13 @@
-
 from pymongo.errors import PyMongoError
 import pandas as pd
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 import requests
 
 import streamlit as st
-from streamlit_autorefresh import st_autorefresh
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
+from src.common.api import get_api_base_url
 from src.config import API_PORT, API_HOST
 from src.common.connectors import MongoConnector
 from src.common.custom_logger import logger
@@ -28,14 +27,6 @@ def get_mongodb_connection():
     except SystemExit:
         st.error("Erreur de connexion MongoDB")
         return None
-
-
-@st.cache_data(ttl=1)
-def get_api_base_url():
-    """Configuration de l'URL de base de l'API"""
-    # Utilise API_HOST qui s'adapte automatiquement selon l'environnement
-    # localhost pour le développement local, nom du service Docker en production
-    return f"http://{API_HOST}:{API_PORT}"
 
 
 @st.cache_data(ttl=1)
@@ -168,7 +159,6 @@ def load_candles_data_api(start_date=None, end_date=None, limit=1000, interval="
 
 
 def create_candlestick_chart(df, symbol="BTCUSDT", interval="1m"):
-
     if df.empty:
         return None
     
@@ -226,17 +216,37 @@ def create_candlestick_chart(df, symbol="BTCUSDT", interval="1m"):
     
     return fig
 
+@st.fragment(run_every="3s")
+def show_candlestick_chart(data_source: str, collection_name: str, symbol: str, interval: str, start_date: date, end_date: date, max_points: int):
+    with st.spinner("Chargement des données..."):
+        try:
+            if data_source == "API PostgreSQL":
+                df = load_candles_data_api(start_date, end_date, max_points, interval, symbol)
+            else:  # MongoDB
+                df = load_klines_data_mongodb(collection_name, start_date, end_date, max_points)
+        except Exception as e:
+            st.error(f"Erreur lors du chargement: {e}")
+            df = pd.DataFrame()
+      
+    if df.empty:
+        st.warning(f"Aucune donnée trouvée dans la source {data_source} ou erreur de connexion.")
+        
 
-
-# Paramètrage de l'auto-refresh
-count = st_autorefresh(interval=3000, limit=500, key="fizzbuzzcounter")
+    source_info = "table PostgreSQL 'candles' (via API)" if data_source == "API PostgreSQL" else f"collection MongoDB: {collection_name}"
+    st.subheader(f"Données de la {source_info}")
+    name_display = "candles" if data_source == "API PostgreSQL" else collection_name
+    st.info(f"Source active: **{data_source}** | Nom: **{name_display}** | Nombre de points chargés: **{len(df)}**")
+    st.subheader("Graphique Candlestick")
+    
+    fig = create_candlestick_chart(df, symbol, interval)
+    if fig:
+        st.plotly_chart(fig, width="stretch")    
 
 def main():
-    """Fonction principale de l'application Streamlit."""
+    """Fonction principale de l'application Streamlit"""
 
     # Titre principal
-    st.title("Visualisation Candles")
-    st.markdown("---")
+    st.header("Visualisation Candles", divider="gray")
     
     # Sidebar pour les contrôles
     st.sidebar.title("Paramètres")
@@ -324,30 +334,8 @@ def main():
         end_date = datetime.combine(end_date, datetime.max.time())
 
     
-    with st.spinner("Chargement des données..."):
-        try:
-            if data_source == "API PostgreSQL":
-                df = load_candles_data_api(start_date, end_date, max_points, interval, symbol)
-            else:  # MongoDB
-                df = load_klines_data_mongodb(collection_name, start_date, end_date, max_points)
-        except Exception as e:
-            st.error(f"Erreur lors du chargement: {e}")
-            df = pd.DataFrame()
-      
-    if df.empty:
-        st.warning(f"Aucune donnée trouvée dans la source {data_source} ou erreur de connexion.")
-        
-
-    source_info = "table PostgreSQL 'candles' (via API)" if data_source == "API PostgreSQL" else f"collection MongoDB: {collection_name}"
-    st.subheader(f"Données de la {source_info}")
-    name_display = "candles" if data_source == "API PostgreSQL" else collection_name
-    st.info(f"Source active: **{data_source}** | Nom: **{name_display}** | Nombre de points chargés: **{len(df)}**")
-    st.subheader("Graphique Candlestick")
-    
-    fig = create_candlestick_chart(df, symbol, interval)
-    if fig:
-        st.plotly_chart(fig, use_container_width=True)
-    
+    # Affichage du graphique des candles
+    show_candlestick_chart(data_source, collection_name, symbol, interval, start_date, end_date, max_points)
 
 if __name__ == "__main__":
     main()
