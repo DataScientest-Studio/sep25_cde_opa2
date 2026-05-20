@@ -23,6 +23,8 @@ async def root():
 @router.get("/candles", response_model=List[dict])
 async def get_candles(
     limit: int = Query(default=100, ge=1, le=10000, description="Nombre maximum de candles à récupérer"),
+    interval: str = Query(default="1m", description="Interval des candles (ex: 1m, 5m, 1h, 1d, 1w, 1M)"),
+    symbol: Optional[str] = Query(default=None, description="Symbole de trading (ex: BTCUSDT, ETHUSDT)"),
     start_date: Optional[str] = Query(default=None, description="Date de début (format: YYYY-MM-DD HH:MM:SS)"),
     end_date: Optional[str] = Query(default=None, description="Date de fin (format: YYYY-MM-DD HH:MM:SS)")
 ):
@@ -30,6 +32,8 @@ async def get_candles(
     Récupère les N dernières candles de la table PostgreSQL
 
     :param limit: Nombre maximum de candles à récupérer (1-10000)
+    :param interval: Interval des candles (ex: 1m, 5m, 1h, 1d, 1w, 1M)
+    :param symbol: Symbole de trading optionnel (ex: BTCUSDT, ETHUSDT)
     :param start_date: Date de début optionnelle
     :param end_date: Date de fin optionnelle
     :return: Liste des candles au format JSON
@@ -46,8 +50,12 @@ async def get_candles(
             JOIN symbols s ON s.id = c.id_symbol
         """
 
-        conditions = []
-        params = []
+        conditions = ["c.interval = %s"]
+        params = [interval]
+
+        if symbol:
+            conditions.append("s.symbol = %s")
+            params.append(symbol)
 
         # Ajout des filtres de date si fournis
         if start_date:
@@ -97,7 +105,7 @@ async def get_candles(
         # Conversion en dictionnaire pour JSON
         result = df.to_dict('records')
 
-        logger.info(f"Récupération de {len(result)} candles depuis la table 'candles'")
+        logger.info(f"Récupération de {len(result)} candles (interval={interval}, symbol={symbol}) depuis la table 'candles'")
         return result
 
     except HTTPException:
@@ -107,21 +115,34 @@ async def get_candles(
         raise HTTPException(status_code=500, detail=f"Erreur interne du serveur: {str(e)}")
 
 @router.get("/candles/latest", response_model=dict)
-async def get_latest_candle():
+async def get_latest_candle(
+    interval: str = Query(default="1m", description="Interval des candles (ex: 1m, 5m, 1h, 1d)"),
+    symbol: Optional[str] = Query(default=None, description="Symbole de trading (ex: BTCUSDT, ETHUSDT)")
+):
     """
     Récupère la dernière candle disponible
 
+    :param interval: Interval des candles (ex: 1m, 5m, 1h, 1d, 1w, 1M)
+    :param symbol: Symbole de trading optionnel (ex: BTCUSDT, ETHUSDT)
     :return: La dernière candle au format JSON
     """
     try:
         pg_connector = PostgreSQLConnector().connect()
         conn = pg_connector.conn
 
+        conditions = ["c.interval = %s"]
+        params = [interval]
+
+        if symbol:
+            conditions.append("s.symbol = %s")
+            params.append(symbol)
+
         query = """
             SELECT c.id, s.symbol, c.interval, c.open_time, c.close_time,
                    c.open, c.high, c.low, c.close, c.volume
             FROM candles c
             JOIN symbols s ON s.id = c.id_symbol
+            WHERE """ + " AND ".join(conditions) + """
             ORDER BY c.open_time DESC LIMIT 1
         """
         
@@ -131,14 +152,14 @@ async def get_latest_candle():
         # or database string URI or sqlite3 DBAPI2 connection. Other DBAPI2 objects are not tested.
         # Please consider using SQLAlchemy.
         with conn.cursor() as cur:
-            cur.execute(query)
+            cur.execute(query, params)
             columns = [desc[0] for desc in cur.description]
             rows = cur.fetchall()
         pg_connector.close()
         df = pd.DataFrame(rows, columns=columns)
 
         if df.empty:
-            raise HTTPException(status_code=404, detail="Aucune donnée trouvée dans la table 'candles'")
+            raise HTTPException(status_code=404, detail=f"Aucune donnée trouvée pour l'interval '{interval}'")
 
         # Conversion des timestamps
         if 'open_time' in df.columns:

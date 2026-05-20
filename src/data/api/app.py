@@ -1,6 +1,11 @@
-from fastapi import FastAPI, Query
+from typing import List
+
+from fastapi import FastAPI, HTTPException, Query
 from fastapi.responses import JSONResponse
 from datetime import datetime
+from psycopg.rows import dict_row
+
+import pandas as pd
 
 from src.common.connectors import PostgreSQLConnector
 from src.common.custom_logger import logger
@@ -28,7 +33,8 @@ async def root():
             "/market/candles/latest",
             "/scraping",
             "/scraping/sentiment",
-            "/health"]
+            "/health",
+            "/symbols"]
     }
 
 
@@ -45,3 +51,35 @@ async def health_check():
             status_code=503,
             content={"status": "unhealthy", "database": "disconnected", "error": str(e), "timestamp": datetime.now().isoformat()}
         )
+
+@app.get("/symbols", response_model=List[dict])
+def symbols():
+    """Retourne la liste des crypto monnaies disponibles"""
+    try:
+        pg_connector = PostgreSQLConnector().connect()
+        conn = pg_connector.conn
+
+        query = """
+            SELECT DISTINCT ON (s.symbol)
+                s.id, s.symbol, s.base_asset, s.quote_asset
+                FROM symbols s
+                ORDER BY s.symbol, s.id
+        """
+        
+        # Exécution de la requête
+        with conn.cursor(row_factory=dict_row) as cur:
+            cur.execute(query)
+            result = cur.fetchall()
+
+        if not result:
+            raise HTTPException(status_code=404, detail="Aucune donnée trouvée dans la table 'symbols'")
+
+        return result
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Erreur lors de la récupération des symbols: {e}")
+        raise HTTPException(status_code=500, detail=f"Erreur interne du serveur: {str(e)}")
+    finally:
+        pg_connector.close()
