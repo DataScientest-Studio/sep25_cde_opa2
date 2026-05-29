@@ -118,12 +118,14 @@ def chart_distribution(df: pd.DataFrame):
         values=counts.values,
         marker=dict(colors=colors),
         hole=0.4,
-        textinfo="label+percent+value"
+        textinfo="label+percent+value",
+        textposition="inside",
+        insidetextorientation="horizontal"
     ))
     fig.update_layout(
         title="Distribution des classes",
         template="plotly_dark",
-        height=400
+        height=550
     )
     return fig
 
@@ -321,18 +323,10 @@ def main():
         )
         fig_hist.add_vline(x=threshold,  line_dash="dash", line_color="#00ff88", annotation_text=f"+{threshold*100:.2f}%")
         fig_hist.add_vline(x=-threshold, line_dash="dash", line_color="#ff4444", annotation_text=f"-{threshold*100:.2f}%")
-        fig_hist.update_layout(height=400)
+        fig_hist.update_layout(height=550)
         st.plotly_chart(fig_hist, use_container_width=True)
 
     st.plotly_chart(chart_labels_over_time(df, symbol), use_container_width=True)
-
-    # --- Tableau ---
-    with st.expander("Données brutes"):
-        display_df = df.copy()
-        display_df["label_return"] = (display_df["label_return"] * 100).round(4).astype(str) + "%"
-        display_df["label_up_down"] = display_df["label_up_down"].map(LABEL_NAMES)
-        st.dataframe(display_df, use_container_width=True)
-
 
 if __name__ == "__main__":
     main()
