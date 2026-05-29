@@ -151,11 +151,15 @@ with psycopg.connect(**CRYPTOBOT_CONN_INFO) as conn:
             CREATE TABLE IF NOT EXISTS labels (
                 id SERIAL PRIMARY KEY,
                 id_symbol INT NOT NULL,
+                interval VARCHAR(10) NOT NULL,
+                horizon INT NOT NULL,
+                threshold NUMERIC NOT NULL,
                 timestamp TIMESTAMP NOT NULL,
                 label_up_down INT,
                 label_return NUMERIC,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                FOREIGN KEY (id_symbol) REFERENCES symbols(id)
+                FOREIGN KEY (id_symbol) REFERENCES symbols(id),
+                UNIQUE(id_symbol, interval, horizon, threshold, timestamp)
             );
 
             CREATE TABLE IF NOT EXISTS predictions (
