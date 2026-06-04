@@ -50,18 +50,16 @@ def get_candles(pg_conn, id_symbol, interval):
 
 def compute_indicators(df):
     # RSI sur 14 périodes — mesure si le marché est suracheté ou survendu
-    df['rsi_14'] = ta.rsi(close=df['close'], length=14)
+    df['rsi_14'] = ta.rsi(df['close'], length=14)
 
-    # MACD — mesure la convergence/divergence de deux moyennes mobiles
-    df_macd = ta.macd(close=df['close'], fast=12, slow=26, signal=9)
-    df['macd']        = df_macd['MACD_12_26_9']   # La ligne MACD
-    df['macd_signal'] = df_macd['MACDs_12_26_9']  # La ligne Signal
+    # MACD — retourne None si pas assez de données, on gère ce cas
+    macd = ta.macd(df['close'])
+    df['macd'] = macd['MACD_12_26_9'] if macd is not None else None
 
     # EMA 20, 50, 100 — moyennes mobiles exponentielles sur différentes périodes
-    # Plus la période est longue plus la tendance est lissée
-    df['ema_20']  = ta.ema(close=df['close'], length=20)
-    df['ema_50']  = ta.ema(close=df['close'], length=50)
-    df['ema_100'] = ta.ema(close=df['close'], length=100)    
+    df['ema_20']  = ta.ema(df['close'], length=20)
+    df['ema_50']  = ta.ema(df['close'], length=50)
+    df['ema_100'] = ta.ema(df['close'], length=100)
 
     logger.info("Indicateurs calculés : RSI(14), MACD, EMA(20/50/100).")
     return df
