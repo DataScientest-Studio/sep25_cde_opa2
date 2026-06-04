@@ -31,6 +31,8 @@ jobs:
         file: docker/python/Dockerfile
         push: true
         tags: ${{ secrets.DOCKERHUB_USERNAME }}/cryptobot-python-base:latest
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
 
     # Build et Push de l'image du Scraper
     - name: Build and push Scraper
@@ -40,6 +42,8 @@ jobs:
         file: docker/scraper/Dockerfile
         push: true
         tags: ${{ secrets.DOCKERHUB_USERNAME }}/cryptobot-scraper:latest
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
 
     # Build et Push de l'image d'Analyse de Sentiment
     - name: Build and push Sentiment Scraper
@@ -49,6 +53,8 @@ jobs:
         file: docker/scraper-feature-sentiment/Dockerfile
         push: true
         tags: ${{ secrets.DOCKERHUB_USERNAME }}/cryptobot-sentiment:latest
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
 
     # Build et Push de l'image de l'application Streamlit
     - name: Build and push Streamlit
@@ -58,3 +64,5 @@ jobs:
         file: docker/streamlit/Dockerfile
         push: true
         tags: ${{ secrets.DOCKERHUB_USERNAME }}/cryptobot-streamlit:latest
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
