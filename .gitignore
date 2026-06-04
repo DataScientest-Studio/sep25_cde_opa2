@@ -62,6 +62,8 @@ docker/pgadmin/servers.json
 
 # DotEnv configuration
 .env
+.env.prod
+.env.dev
 
 # Database
 *.db
