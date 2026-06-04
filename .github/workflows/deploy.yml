@@ -22,6 +22,16 @@ jobs:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
 
+    # Creation d'un requirement commun pour l'image python de base
+    - name: Combine all requirements for Production
+      run: |
+        mkdir -p requirements
+        touch requirements/prod.txt
+        echo "-r db.txt" >> requirements/prod.txt
+        echo "-r api.txt" >> requirements/prod.txt
+        echo "-r binance.txt" >> requirements/prod.txt
+        echo "✅ Fichier requirements/prod.txt créé avec succès !"
+
     # Build et Push de l'image Python commune à plusieurs containers :
     # mongo-init, postgres-init, data-api, data-collector, data-transformer, data-get-historic
     - name: Build and push Python Base Image
@@ -30,6 +40,8 @@ jobs:
         context: .
         file: docker/python/Dockerfile
         push: true
+        build-args: |
+          REQUIREMENTS_FILE=requirements/prod.txt
         tags: ${{ secrets.DOCKERHUB_USERNAME }}/cryptobot-python-base:latest
         cache-from: type=gha
         cache-to: type=gha,mode=max
