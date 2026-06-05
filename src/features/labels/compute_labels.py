@@ -17,16 +17,24 @@ def get_symbol_id(pg_conn, symbol_name):
         return None
 
 
-def get_candles(pg_conn, id_symbol, interval):
-    # Récupère toutes les candles du symbol triées chronologiquement
+def get_candles(pg_conn, id_symbol, interval, horizon, threshold):
+    # Récupère uniquement les candles postérieures au dernier label calculé
+    # pour cet (id_symbol, interval, horizon, threshold).
+    # Si aucun label n'existe encore, toutes les candles sont chargées.
     try:
         with pg_conn.cursor() as cur:
             cur.execute("""
                 SELECT id, open_time, close
                 FROM candles
                 WHERE id_symbol = %s AND interval = %s
+                  AND open_time > (
+                      SELECT COALESCE(MAX(timestamp), '-infinity'::timestamp)
+                      FROM labels
+                      WHERE id_symbol = %s AND interval = %s
+                        AND horizon = %s AND threshold = %s
+                  )
                 ORDER BY open_time ASC;
-            """, (id_symbol, interval))
+            """, (id_symbol, interval, id_symbol, interval, horizon, float(threshold)))
             rows = cur.fetchall()
 
         if not rows:
@@ -116,8 +124,9 @@ def compute_and_load_labels(symbol, interval, horizon, threshold):
             logger.error(f"Symbol '{symbol}' introuvable dans la table symbols.")
             return
 
-        df = get_candles(pg_conn, id_symbol, interval)
+        df = get_candles(pg_conn, id_symbol, interval, horizon, threshold)
         if df.empty:
+            logger.info("Aucune nouvelle candle à labelliser.")
             return
 
         df = compute_labels(df, horizon=horizon, threshold=threshold)
