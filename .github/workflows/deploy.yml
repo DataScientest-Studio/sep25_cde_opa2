@@ -30,6 +30,7 @@ jobs:
         echo "-r db.txt" >> requirements/prod.txt
         echo "-r api.txt" >> requirements/prod.txt
         echo "-r binance.txt" >> requirements/prod.txt
+        echo "-r features.txt" >> requirements/prod.txt
         echo "✅ Fichier requirements/prod.txt créé avec succès !"
 
     # Build et Push de l'image Python commune à plusieurs containers :

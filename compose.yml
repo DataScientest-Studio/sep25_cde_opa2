@@ -307,8 +307,9 @@ services:
 
   # Service pour calculer les labels d'apprentissage supervisé
   features-compute-labels:
+    image: ${DOCKER_REGISTRY}${IMG_COMPUTE_LABELS}
     build:
-      context: .
+      context: ${BUILD_CONTEXT_DEV:-.}
       dockerfile: docker/python/Dockerfile
       args:
         REQUIREMENTS_FILE: requirements/features.txt
