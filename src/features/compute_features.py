@@ -19,17 +19,34 @@ def get_symbol_id(pg_conn, symbol_name):
         return None
 
 
-def get_candles(pg_conn, id_symbol, interval):
+def get_candles(pg_conn, id_symbol, interval, limit=None):
     # On récupère toutes les candles du symbol depuis PostgreSQL
     # on les met dans un DataFrame pour pouvoir calculer les indicateurs
     try:
         with pg_conn.cursor() as cur:
-            cur.execute("""
-                SELECT id, open_time, open, high, low, close, volume
-                FROM candles
-                WHERE id_symbol = %s AND interval = %s
-                ORDER BY open_time ASC;
-            """, (id_symbol, interval))
+            if limit:
+                # En mode test on ne prend que les candles pas encore dans features_candles
+                # pour avoir de nouvelles données à chaque itération du while
+                cur.execute("""
+                    SELECT c.id, c.open_time, c.open, c.high, c.low, c.close, c.volume
+                    FROM candles c
+                    WHERE c.id_symbol = %s AND c.interval = %s
+                      AND NOT EXISTS (
+                          SELECT 1 FROM features_candles fc
+                          WHERE fc.id_candle = c.id
+                            AND fc.id_symbol = c.id_symbol
+                            AND fc.interval  = c.interval
+                      )
+                    ORDER BY c.open_time ASC
+                    LIMIT %s;
+                """, (id_symbol, interval, limit))
+            else:
+                cur.execute("""
+                    SELECT id, open_time, open, high, low, close, volume
+                    FROM candles
+                    WHERE id_symbol = %s AND interval = %s
+                    ORDER BY open_time ASC;
+                """, (id_symbol, interval))
             rows = cur.fetchall()
 
         if not rows:
@@ -125,7 +142,7 @@ def load_features(pg_conn, df, id_symbol, interval):
         return 0
 
 
-def compute_and_load_features(symbol, interval):
+def compute_and_load_features(symbol, interval, limit=None):
     pg_connector = PostgreSQLConnector().connect()
     pg_conn = pg_connector.conn
 
@@ -135,7 +152,7 @@ def compute_and_load_features(symbol, interval):
             logger.error(f"Symbol '{symbol}' introuvable dans la table symbols.")
             return
 
-        df = get_candles(pg_conn, id_symbol, interval)
+        df = get_candles(pg_conn, id_symbol, interval, limit=limit)
         if df.empty:
             return
 
@@ -151,8 +168,9 @@ def compute_and_load_features(symbol, interval):
 if __name__ == "__main__":
     # Exemple : python -m src.features.compute_features --symbol BTCUSDT --interval 1m
     parser = argparse.ArgumentParser(description="Calcul des indicateurs techniques depuis les candles PostgreSQL.")
-    parser.add_argument("--symbol",   type=str, default="BTCUSDT", help="Symbol à traiter (ex: BTCUSDT, ETHUSDT)")
-    parser.add_argument("--interval", type=str, default="1m",      help="Intervalle des candles (ex: 1m, 5m, 1h)")
+    parser.add_argument("--symbol",   type=str,          default="BTCUSDT", help="Symbol à traiter (ex: BTCUSDT, ETHUSDT)")
+    parser.add_argument("--interval", type=str,          default="1m",      help="Intervalle des candles (ex: 1m, 5m, 1h)")
+    parser.add_argument("--limit",    type=int,          default=None,      help="Limite le nombre de candles chargées (ex: 500 pour tester)")
     args = parser.parse_args()
 
     delay_seconds = 60
@@ -164,7 +182,7 @@ if __name__ == "__main__":
             logger.info("Début du calcul des features...")
             start_time = time.time()
 
-            compute_and_load_features(symbol=args.symbol, interval=args.interval)
+            compute_and_load_features(symbol=args.symbol, interval=args.interval, limit=args.limit)
 
             duration = round(time.time() - start_time, 2)
             logger.info(f"Calcul terminé en {duration} secondes.")

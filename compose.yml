@@ -305,6 +305,28 @@ services:
         condition: service_completed_successfully
     restart: "no"
 
+  # Service pour calculer les labels d'apprentissage supervisé
+  features-compute-labels:
+    build:
+      context: .
+      dockerfile: docker/python/Dockerfile
+      args:
+        REQUIREMENTS_FILE: requirements/features.txt
+    container_name: features-compute-labels
+    command: bash src/features/labels/compute_labels.sh
+    env_file:
+      - .env
+    environment:
+      ENV: docker
+    depends_on:
+      postgres:
+        condition: service_healthy
+      postgres-init:
+        condition: service_completed_successfully
+      data-transformer:
+        condition: service_started
+    restart: "no"
+
 volumes:
   mongo_data:
   postgresql_data:
