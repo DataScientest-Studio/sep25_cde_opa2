@@ -67,12 +67,16 @@ def compute_labels(df, horizon, threshold):
     # Distribution des classes
     counts = df_valid['label_up_down'].value_counts().sort_index()
     total = len(df_valid)
-    logger.info(
-        f"Labels calculés (horizon={horizon}, seuil={threshold*100:.1f}%) — "
-        f"SELL(-1): {counts.get(-1, 0)} ({counts.get(-1, 0)/total*100:.1f}%), "
-        f"HOLD(0): {counts.get(0, 0)} ({counts.get(0, 0)/total*100:.1f}%), "
-        f"BUY(+1): {counts.get(1, 0)} ({counts.get(1, 0)/total*100:.1f}%)"
-    )
+    if(total > 0) :
+        logger.info(
+            f"Labels calculés (horizon={horizon}, seuil={threshold*100:.1f}%) — "
+            f"SELL(-1): {counts.get(-1, 0)} ({counts.get(-1, 0)/total*100:.1f}%), "
+            f"HOLD(0): {counts.get(0, 0)} ({counts.get(0, 0)/total*100:.1f}%), "
+            f"BUY(+1): {counts.get(1, 0)} ({counts.get(1, 0)/total*100:.1f}%)"
+        )
+    else :
+        logger.info(f"Aucun label à calculer.")
+
     return df_valid
 
 

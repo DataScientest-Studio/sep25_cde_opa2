@@ -6,26 +6,19 @@ Pipeline d'entraînement supervisé pour les données de marché crypto.
 Étapes :
     1. Chargement des données depuis PostgreSQL (candles, features_candles, labels)
     2. Fusion et préparation des features/labels
-    3. Entraînement d'un RandomForestClassifier avec validation croisée temporelle
+    3. Entraînement d'un RandomForestClassifier
     4. Évaluation et sauvegarde du modèle
-
-Usage :
-    python -m src.models.train_model \
-        --symbol BTCUSDT --interval 1h \
-        --horizon 24 --threshold 0.02
 """
 
 import argparse
-import os
 import pickle
 from pathlib import Path
 
-import numpy as np
 import pandas as pd
-from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import classification_report
-from sklearn.model_selection import TimeSeriesSplit
 from sklearn.preprocessing import StandardScaler
+from sklearn.ensemble import HistGradientBoostingClassifier
+from sklearn.utils.class_weight import compute_sample_weight
 
 from src.common.connectors import PostgreSQLConnector
 from src.common.custom_logger import logger
@@ -173,6 +166,7 @@ def build_dataset(
 
     Retourne (X, y) prêts pour l'entraînement.
     """
+    logger.info(f"Période d'entraînement : {train_from} - {train_until}")
     df_candles = load_candles(pg_conn, id_symbol, interval, train_from, train_until)
     df_features = load_features(pg_conn, id_symbol, interval, train_from, train_until)
     df_labels = load_labels(pg_conn, id_symbol, interval, horizon, threshold, train_from, train_until)
@@ -223,13 +217,12 @@ def build_dataset(
 # Entraînement et évaluation
 # ---------------------------------------------------------------------------
 
-def train_and_evaluate(X: pd.DataFrame, y: pd.Series, n_splits: int = 5) -> tuple:
+def train_and_evaluate(X: pd.DataFrame, y: pd.Series) -> tuple:
     """
-    Entraîne un RandomForestClassifier avec validation croisée temporelle.
+    Entraîne un RandomForestClassifier
 
-    - Les 80% les plus anciens servent au TimeSeriesSplit (évaluation CV)
-      puis à l'entraînement du modèle final.
-    - Les 20% les plus récents constituent un holdout de test final.
+    - Les 80% les plus anciens servent à l'entraînement du modèle final.
+    - Les 20% les plus récents constituent le test final.
 
     Retourne (modèle entraîné sur les 80%, scaler).
     """
@@ -239,28 +232,32 @@ def train_and_evaluate(X: pd.DataFrame, y: pd.Series, n_splits: int = 5) -> tupl
     y_train_full, y_test = y.iloc[:split_idx], y.iloc[split_idx:]
     logger.info(
         f"Découpage 80/20 — train: {len(X_train_full)} échantillons "
-        f"| test holdout: {len(X_test)} échantillons"
+        f"| test : {len(X_test)} échantillons"
     )
 
-    # --- Entraînement final sur les 80% + évaluation sur le holdout 20% ---
+    # --- Entraînement final sur les 80% + évaluation sur 20% ---
     scaler_final = StandardScaler()
     X_train_scaled = scaler_final.fit_transform(X_train_full)
-    final_model = RandomForestClassifier(
-        n_estimators=200,
-        max_depth=10,
-        min_samples_leaf=20,
+    
+    weights = compute_sample_weight(
         class_weight="balanced",
-        random_state=42,
-        n_jobs=-1,
+        y=y_train_full
     )
-    final_model.fit(X_train_scaled, y_train_full)
+
+    final_model = HistGradientBoostingClassifier(
+        learning_rate=0.03,
+        max_depth=6,
+        max_iter=500,
+        random_state=42
+    )
+    final_model.fit(X_train_scaled, y_train_full, sample_weight=weights)
 
     X_test_scaled = scaler_final.transform(X_test)
     y_test_pred = final_model.predict(X_test_scaled)
     test_report = classification_report(y_test, y_test_pred, zero_division=0)
     test_report_dict = classification_report(y_test, y_test_pred, output_dict=True, zero_division=0)
     logger.info(
-        f"Évaluation holdout (20% les plus récents) — "
+        f"Évaluation (20% les plus récents) — "
         f"accuracy: {test_report_dict['accuracy']:.4f} | "
         f"f1 weighted: {test_report_dict['weighted avg']['f1-score']:.4f}\n{test_report}"
     )

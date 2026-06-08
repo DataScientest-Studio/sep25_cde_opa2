@@ -8,13 +8,6 @@ Génère des prédictions à partir d'un modèle entraîné et les stocke en bas
     2. Chargement des dernières données (candles + features) depuis PostgreSQL
     3. Génération des prédictions
     4. Insertion des prédictions dans la table predictions
-
-Usage :
-    python -m src.models.predict_model \
-        --symbol BTCUSDT --interval 1h \
-        --horizon 24 --threshold 0.02\
-        [--n_candles 100]
-        [--loop]
 """
 
 import argparse
@@ -155,13 +148,8 @@ def run(
 
         X = scaler.transform(df[feature_cols])
         predictions = model.predict(X)
-        probabilities = model.predict_proba(X)
 
         df["predicted_up_down"] = predictions.astype(int)  # -1 SELL | 0 HOLD | 1 BUY
-
-        # Probabilités par classe (utile pour le sizing ou les filtres de confiance)
-        for i, cls in enumerate(model.classes_):
-            df[f"proba_class_{int(cls)}"] = probabilities[:, i]
 
         logger.info(
             f"Prédictions générées — distribution : "
@@ -169,11 +157,6 @@ def run(
         )
 
         save_predictions(pg.conn, id_symbol, interval, horizon, threshold, df[["open_time", "predicted_up_down"]])
-
-        return df[
-            ["open_time", "predicted_up_down"]
-            + [f"proba_class_{int(c)}" for c in model.classes_]
-        ]
 
     finally:
         pg.close()
