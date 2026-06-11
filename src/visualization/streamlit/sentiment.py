@@ -221,7 +221,10 @@ def showArticlesByDay(df: pd.DataFrame):
 
 def showMeanScoreByDay(df: pd.DataFrame) -> pd.DataFrame:
     # Agrégation et calcul de la moyenne du score par jour
-    daily_sentiment = df.groupby(['base_asset', 'date'])['sentiment_score'].mean().reset_index()
+    daily_sentiment = df.groupby(['date', 'base_asset']).agg(
+        sentiment_score=('sentiment_score', 'mean'), # Calcule la moyenne du sentiment
+        article_count=('sentiment_score', 'size')    # Compte le nombre d'articles
+    ).reset_index()         
 
     fig = px.line(
         daily_sentiment, 
@@ -290,7 +293,77 @@ def showScoreVsPrice(symbol: str, df_sentiments: pd.DataFrame, df_klines: pd.Dat
     fig.update_yaxes(title_text="Prix", secondary_y=True)
 
     st.subheader("Corrélation sentiment journalier et prix")
-    st.plotly_chart(fig)          
+    st.plotly_chart(fig)
+
+def showCorrelationMatrix(symbol: str, df_sentiments: pd.DataFrame, df_klines: pd.DataFrame):
+    if df_klines.empty:
+        return False
+
+    # Convertion en objet datetime de la date.
+    df_sentiments['date_dt'] = pd.to_datetime(df_sentiments['date'])  
+
+    # Merge des dataframes sentiments, et klines
+    merged_df = pd.merge(df_sentiments, df_klines, left_on='date_dt', right_on='open_time', how='inner')
+
+    # On trie le DataFrame par date pour être sûr que le shift se fasse dans le bon ordre
+    merged_df = merged_df.sort_values('date_dt').reset_index(drop=True)
+
+    # Calcul de la moyenne mobile sur 3 jours pour lisser le sentiment
+    merged_df['sentiment_smooth'] = merged_df['sentiment_score'].rolling(window=3, min_periods=1).mean()
+
+    # Calcul du sentiment pondéré par le volume d'articles
+    # On multiplie le sentiment brut par le nombre d'articles du jour
+    merged_df['sentiment_weighted'] = merged_df['sentiment_score'] * merged_df['article_count']
+    
+    # On applique aussi le lissage sur ce sentiment pondéré
+    merged_df['sentiment_weighted_smooth'] = merged_df['sentiment_weighted'].rolling(window=3, min_periods=1).mean()     
+
+    # Rendements journaliers (% de variation)
+    merged_df['return_J'] = merged_df['close'].pct_change()
+
+    # Création des rendements décalés pour les horizons futurs
+    merged_df['return_J+1'] = merged_df['return_J'].shift(-1)
+    merged_df['return_J+2'] = merged_df['return_J'].shift(-2)
+    merged_df['return_J+3'] = merged_df['return_J'].shift(-3)
+    merged_df['return_J+4'] = merged_df['return_J'].shift(-4)
+    merged_df['return_J+5'] = merged_df['return_J'].shift(-5)
+    merged_df['return_J+6'] = merged_df['return_J'].shift(-6)
+    merged_df['return_J+7'] = merged_df['return_J'].shift(-7)
+
+    # Sélection des variables pour la matrice returns avec volume articles
+    columns_for_predictive_return_vol_corr = [
+        'sentiment_score',
+        'sentiment_smooth',
+        'sentiment_weighted',
+        'sentiment_weighted_smooth',
+        'return_J',
+        'return_J+1',
+        'return_J+2',
+        'return_J+3',
+        'return_J+4',
+        'return_J+5',
+        'return_J+6',
+        'return_J+7'
+        
+    ]  
+
+    # On filtre uniquement les colonnes qui existent pour éviter les KeyError accidentelles
+    columns_return_vol_to_use = [col for col in columns_for_predictive_return_vol_corr if col in merged_df.columns]
+
+    # Calcul de la matrice de corrélation
+    predictive_returns_vol_corr = merged_df[columns_return_vol_to_use].corr()
+
+    fig_predictive_return_vol = px.imshow(
+        predictive_returns_vol_corr,
+        text_auto=".2f",
+        aspect="auto",
+        color_continuous_scale="RdBu_r", # Rouge = Négatif, Bleu = Positif
+        range_color=[-1, 1],
+        title=f"Matrice de Corrélation Prédictive (Sentiment pondéré par le volume vs Rendement Futurs) pour {symbol}USDT"
+    )    
+
+    st.subheader("Analyse Prédictive du Sentiment")
+    st.plotly_chart(fig_predictive_return_vol, use_container_width=True)
     
 
 def main():
@@ -356,6 +429,7 @@ def main():
             for symbol, df_klines in df_klines_by_symbol.items():
                 symbol_daily_sentiment = daily_sentiment.loc[symbol]
                 showScoreVsPrice(symbol=symbol, df_sentiments=symbol_daily_sentiment, df_klines=df_klines)
+                showCorrelationMatrix(symbol=symbol, df_sentiments=symbol_daily_sentiment, df_klines=df_klines)
 
 
     else:
