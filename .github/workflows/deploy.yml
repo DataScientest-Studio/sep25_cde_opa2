@@ -3,7 +3,7 @@ name: Build and Push Cryptobot Images
 # Build automatique lors d'un push sur les branches concernées.
 on:
   push:
-    branches: [ "features/deploy" ]
+    branches: [ "master" ]
 
 jobs:
   build-and-push:
