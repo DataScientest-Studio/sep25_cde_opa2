@@ -66,4 +66,5 @@ for SYMBOL in "${SYMBOLS[@]}"; do
     done
 done
 
-echo "Calcul des labels terminé."
+# Script pour calculer les labels avec les paramètres courants (.env) sur les données les plus récentes
+python -m src.features.labels.compute_labels --symbol $MODEL_SYMBOL --interval $MODEL_INTERVAL --horizon $MODEL_HORIZON --threshold $MODEL_THRESHOLD --loop || true

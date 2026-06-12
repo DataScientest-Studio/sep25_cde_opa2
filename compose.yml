@@ -328,6 +328,54 @@ services:
         condition: service_started
     restart: "no"
 
+  # Service pour calculer les labels d'apprentissage supervisé
+  features-compute-features:
+    image: ${DOCKER_REGISTRY}${IMG_COMPUTE_FEATURES}
+    build:
+      context: ${BUILD_CONTEXT_DEV:-.}
+      dockerfile: docker/python/Dockerfile
+      args:
+        REQUIREMENTS_FILE: requirements/features.txt
+    container_name: features-compute-features
+    command: bash src/features/compute_features.sh
+    env_file:
+      - .env
+    environment:
+      ENV: docker
+    depends_on:
+      postgres:
+        condition: service_healthy
+      postgres-init:
+        condition: service_completed_successfully
+      data-transformer:
+        condition: service_started
+    restart: "no"
+
+  # Service pour prédire avec les modèles entraînés
+  models-predict:
+    image: ${DOCKER_REGISTRY}${IMG_MODELS_PREDICT}
+    build:
+      context: ${BUILD_CONTEXT_DEV:-.}
+      dockerfile: docker/python/Dockerfile
+      args:
+        REQUIREMENTS_FILE: requirements/models.txt
+    container_name: models-predict
+    command: bash src/models/predict_model.sh
+    env_file:
+      - .env
+    environment:
+      ENV: docker
+    depends_on:
+      postgres:
+        condition: service_healthy
+      postgres-init:
+        condition: service_completed_successfully
+      features-compute-features:
+        condition: service_started
+      features-compute-labels:
+        condition: service_started
+    restart: "no"
+
 volumes:
   mongo_data:
   postgresql_data:
