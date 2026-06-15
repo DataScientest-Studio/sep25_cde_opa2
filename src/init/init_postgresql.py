@@ -120,7 +120,8 @@ with psycopg.connect(**CRYPTOBOT_CONN_INFO) as conn:
                 ema_100 NUMERIC,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 FOREIGN KEY (id_symbol) REFERENCES symbols(id),
-                FOREIGN KEY (id_candle) REFERENCES candles(id)
+                FOREIGN KEY (id_candle) REFERENCES candles(id),
+                UNIQUE (id_symbol, id_candle, interval)
             );
 
             CREATE TABLE IF NOT EXISTS features_orderbook (
@@ -165,10 +166,14 @@ with psycopg.connect(**CRYPTOBOT_CONN_INFO) as conn:
             CREATE TABLE IF NOT EXISTS predictions (
                 id SERIAL PRIMARY KEY,
                 id_symbol INT NOT NULL,
+                interval VARCHAR(10) NOT NULL,
+                horizon INT NOT NULL,
+                threshold NUMERIC NOT NULL,
                 timestamp TIMESTAMP NOT NULL,
-                predicted_value NUMERIC,
+                predicted_up_down INT,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                FOREIGN KEY (id_symbol) REFERENCES symbols(id)
+                FOREIGN KEY (id_symbol) REFERENCES symbols(id),
+                UNIQUE(id_symbol, interval, horizon, threshold, timestamp)
             );
                     
         """)
@@ -189,6 +194,22 @@ with psycopg.connect(**CRYPTOBOT_CONN_INFO) as conn:
             GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO {DB_BOT_USER};
         """)
         
+        # Migration : ajoute la contrainte UNIQUE sur les tables existantes si elle est absente
+        cur.execute("""
+            DO $$
+            BEGIN
+                IF NOT EXISTS (
+                    SELECT 1 FROM pg_constraint
+                    WHERE conname = 'features_candles_id_symbol_id_candle_interval_key'
+                ) THEN
+                    ALTER TABLE features_candles
+                    ADD CONSTRAINT features_candles_id_symbol_id_candle_interval_key
+                    UNIQUE (id_symbol, id_candle, interval);
+                END IF;
+            END;
+            $$;
+        """)
+
         logger.info("Tables market créées avec succès.")
     
 
