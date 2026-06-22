@@ -236,55 +236,7 @@ services:
       start_period: 40s
     restart: unless-stopped
 
-  # Service pour collecter les données MongoDB (WebSocket Binance)
-  data-collector:
-    image: ${DOCKER_REGISTRY}${IMG_COLLECTOR}
-    build:
-      context: ${BUILD_CONTEXT_DEV:-.}
-      dockerfile: docker/python/Dockerfile
-      args:
-        REQUIREMENTS_FILE: requirements/binance.txt
-    container_name: data-collector
-    command: python -m src.data.binance.extract_kline_data_ws --symbol BTCUSDT ETHUSDT --interval 1m 5m 1h 1d 1w 1M
-    env_file:
-      - .env
-    environment:
-      ENV: docker
-    depends_on:
-      mongo:
-        condition: service_started
-      mongo-init:
-        condition: service_completed_successfully
-    restart: unless-stopped
-
-  # Service pour synchroniser MongoDB vers PostgreSQL
-  data-transformer:
-    image: ${DOCKER_REGISTRY}${IMG_TRANSFORMER}
-    build:
-      context: ${BUILD_CONTEXT_DEV:-.}
-      dockerfile: docker/python/Dockerfile
-      args:
-        REQUIREMENTS_FILE: requirements/db.txt
-    container_name: data-transformer
-    command: python -m src.data.binance.transform_and_load
-    env_file:
-      - .env
-    environment:
-      ENV: docker
-    depends_on:
-      mongo:
-        condition: service_started
-      mongo-init:
-        condition: service_completed_successfully
-      postgres:
-        condition: service_healthy
-      postgres-init:
-        condition: service_completed_successfully
-      data-get-historic:
-        condition: service_completed_successfully
-    restart: unless-stopped
-
-  # Service pour collecter les données historiques Binance
+  # Service pour collecter les données Binance (historiques) vers MongoDB
   data-get-historic:
     image: ${DOCKER_REGISTRY}${IMG_HISTORIC}
     build:
@@ -305,6 +257,105 @@ services:
         condition: service_completed_successfully
     restart: "no"
 
+  # Service pour collecter les données Binance (WebSocket Binance) vers MongoDB
+  data-collector:
+    image: ${DOCKER_REGISTRY}${IMG_COLLECTOR}
+    build:
+      context: ${BUILD_CONTEXT_DEV:-.}
+      dockerfile: docker/python/Dockerfile
+      args:
+        REQUIREMENTS_FILE: requirements/binance.txt
+    container_name: data-collector
+    command: python -m src.data.binance.extract_kline_data_ws --symbol BTCUSDT ETHUSDT --interval 1m 5m 1h 1d 1w 1M
+    env_file:
+      - .env
+    environment:
+      ENV: docker
+    depends_on:
+      mongo:
+        condition: service_started
+      mongo-init:
+        condition: service_completed_successfully
+    restart: unless-stopped
+
+  # Service pour synchroniser les données Binance (historiques) de MongoDB vers PostgreSQL
+  data-transformer-historic:
+    image: ${DOCKER_REGISTRY}${IMG_TRANSFORMER}
+    build:
+      context: ${BUILD_CONTEXT_DEV:-.}
+      dockerfile: docker/python/Dockerfile
+      args:
+        REQUIREMENTS_FILE: requirements/db.txt
+    container_name: data-transformer-historic
+    command: python -m src.data.binance.transform_and_load --full
+    env_file:
+      - .env
+    environment:
+      ENV: docker
+    depends_on:
+      mongo:
+        condition: service_started
+      mongo-init:
+        condition: service_completed_successfully
+      postgres:
+        condition: service_healthy
+      postgres-init:
+        condition: service_completed_successfully
+      data-get-historic:
+        condition: service_completed_successfully
+    restart: "no"
+
+  # Service pour synchroniser les données Binance (WebSocket) de MongoDB vers PostgreSQL
+  data-transformer:
+    image: ${DOCKER_REGISTRY}${IMG_TRANSFORMER}
+    build:
+      context: ${BUILD_CONTEXT_DEV:-.}
+      dockerfile: docker/python/Dockerfile
+      args:
+        REQUIREMENTS_FILE: requirements/db.txt
+    container_name: data-transformer
+    command: sh -c "python -m src.data.binance.transform_and_load --incremental && sleep infinity"
+    env_file:
+      - .env
+    environment:
+      ENV: docker
+    depends_on:
+      mongo:
+        condition: service_started
+      mongo-init:
+        condition: service_completed_successfully
+      postgres:
+        condition: service_healthy
+      postgres-init:
+        condition: service_completed_successfully
+      data-transformer-historic:
+        condition: service_completed_successfully
+
+    restart: unless-stopped
+
+  # Service pour calculer les features pour l'apprentissage supervisé
+  features-compute-features:
+    image: ${DOCKER_REGISTRY}${IMG_COMPUTE_FEATURES}
+    build:
+      context: ${BUILD_CONTEXT_DEV:-.}
+      dockerfile: docker/python/Dockerfile
+      args:
+        REQUIREMENTS_FILE: requirements/features.txt
+    container_name: features-compute-features
+    command: sh -c "bash src/features/compute_features.sh && sleep infinity"
+    env_file:
+      - .env
+    environment:
+      ENV: docker
+    depends_on:
+      postgres:
+        condition: service_healthy
+      postgres-init:
+        condition: service_completed_successfully
+      data-transformer:
+        condition: service_started
+    restart: unless-stopped
+
   # Service pour calculer les labels d'apprentissage supervisé
   features-compute-labels:
     image: ${DOCKER_REGISTRY}${IMG_COMPUTE_LABELS}
@@ -314,7 +365,7 @@ services:
       args:
         REQUIREMENTS_FILE: requirements/features.txt
     container_name: features-compute-labels
-    command: bash src/features/labels/compute_labels.sh
+    command: sh -c "bash src/features/labels/compute_labels.sh && sleep infinity"
     env_file:
       - .env
     environment:
@@ -326,30 +377,7 @@ services:
         condition: service_completed_successfully
       data-transformer:
         condition: service_started
-    restart: "no"
-
-  # Service pour calculer les labels d'apprentissage supervisé
-  features-compute-features:
-    image: ${DOCKER_REGISTRY}${IMG_COMPUTE_FEATURES}
-    build:
-      context: ${BUILD_CONTEXT_DEV:-.}
-      dockerfile: docker/python/Dockerfile
-      args:
-        REQUIREMENTS_FILE: requirements/features.txt
-    container_name: features-compute-features
-    command: bash src/features/compute_features.sh
-    env_file:
-      - .env
-    environment:
-      ENV: docker
-    depends_on:
-      postgres:
-        condition: service_healthy
-      postgres-init:
-        condition: service_completed_successfully
-      data-transformer:
-        condition: service_started
-    restart: "no"
+    restart: unless-stopped
 
   # Service pour prédire avec les modèles entraînés
   models-predict:
@@ -360,7 +388,7 @@ services:
       args:
         REQUIREMENTS_FILE: requirements/models.txt
     container_name: models-predict
-    command: bash src/models/predict_model.sh
+    command: sh -c "bash src/models/predict_model.sh && sleep infinity"
     env_file:
       - .env
     environment:
@@ -374,7 +402,7 @@ services:
         condition: service_started
       features-compute-labels:
         condition: service_started
-    restart: "no"
+    restart: unless-stopped
 
 volumes:
   mongo_data:
