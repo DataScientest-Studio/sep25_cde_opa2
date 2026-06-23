@@ -1,0 +1,7 @@
+# Dépendances pour les modèles d'apprentissage supervisé
+psycopg==3.3.2
+psycopg-binary==3.3.2
+python-dotenv==1.2.1
+pymongo==4.16.0
+pandas==3.0.2
+scikit-learn==1.8.0

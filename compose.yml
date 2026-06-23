@@ -35,8 +35,9 @@ services:
       - ~/DATAS/datascientest/projet/mongo_data:/data/db # Voir les commentaires à la fin du fichier compose.yml
 
   mongo-init:
+    image: ${DOCKER_REGISTRY}${IMG_MONGO_INIT}
     build:
-      context: .
+      context: ${BUILD_CONTEXT_DEV:-.}
       dockerfile: docker/python/Dockerfile
       args:
         REQUIREMENTS_FILE: requirements/db.txt
@@ -91,8 +92,9 @@ services:
       retries: 5
 
   postgres-init:
+    image: ${DOCKER_REGISTRY}${IMG_POSTGRES_INIT}
     build:
-      context: .
+      context: ${BUILD_CONTEXT_DEV:-.}
       dockerfile: docker/python/Dockerfile
       args:
         REQUIREMENTS_FILE: requirements/db.txt
@@ -132,8 +134,9 @@ services:
   # Service pour scraper les news
   # Le scraping est lancé dès l'execution du script, puis il se met en pause jusqu'a être rappelé par le scheduler ofelia
   scraper:
+    image: ${DOCKER_REGISTRY}cryptobot-scraper:latest
     build:
-      context: .
+      context: ${BUILD_CONTEXT_DEV:-.}
       dockerfile: docker/scraper/Dockerfile
     container_name: scraper
     command: sh -c "python -m src.data.scraping.main && sleep infinity"
@@ -155,8 +158,9 @@ services:
   # Résultats stockés dans postgreSQL
   # L'analyse est lancée dès l'execution du script, puis elle se met en pause jusqu'a être rappelée par le scheduler ofelia
   scraper-feature-sentiment:
+    image: ${DOCKER_REGISTRY}cryptobot-sentiment:latest
     build:
-      context: .
+      context: ${BUILD_CONTEXT_DEV:-.}
       dockerfile: docker/scraper-feature-sentiment/Dockerfile
     container_name: scraper-feature-sentiment
     command: sh -c "python -m src.features.scraping.sentiment && sleep infinity"
@@ -179,8 +183,9 @@ services:
 
   # Streamlit application
   streamlit:
+    image: ${DOCKER_REGISTRY}cryptobot-streamlit:latest
     build:
-      context: .
+      context: ${BUILD_CONTEXT_DEV:-.}
       dockerfile: docker/streamlit/Dockerfile
     container_name: streamlit-app
     env_file:
@@ -204,8 +209,9 @@ services:
 
   # API FastAPI pour les données PostgreSQL
   data-api:
+    image: ${DOCKER_REGISTRY}${IMG_API}
     build:
-      context: .
+      context: ${BUILD_CONTEXT_DEV:-.}
       dockerfile: docker/python/Dockerfile
       args:
         REQUIREMENTS_FILE: requirements/api.txt
@@ -232,8 +238,9 @@ services:
 
   # Service pour collecter les données MongoDB (WebSocket Binance)
   data-collector:
+    image: ${DOCKER_REGISTRY}${IMG_COLLECTOR}
     build:
-      context: .
+      context: ${BUILD_CONTEXT_DEV:-.}
       dockerfile: docker/python/Dockerfile
       args:
         REQUIREMENTS_FILE: requirements/binance.txt
@@ -252,8 +259,9 @@ services:
 
   # Service pour synchroniser MongoDB vers PostgreSQL
   data-transformer:
+    image: ${DOCKER_REGISTRY}${IMG_TRANSFORMER}
     build:
-      context: .
+      context: ${BUILD_CONTEXT_DEV:-.}
       dockerfile: docker/python/Dockerfile
       args:
         REQUIREMENTS_FILE: requirements/db.txt
@@ -278,8 +286,9 @@ services:
 
   # Service pour collecter les données historiques Binance
   data-get-historic:
+    image: ${DOCKER_REGISTRY}${IMG_HISTORIC}
     build:
-      context: .
+      context: ${BUILD_CONTEXT_DEV:-.}
       dockerfile: docker/python/Dockerfile
       args:
         REQUIREMENTS_FILE: requirements/binance.txt
@@ -294,6 +303,77 @@ services:
         condition: service_started
       mongo-init:
         condition: service_completed_successfully
+    restart: "no"
+
+  # Service pour calculer les labels d'apprentissage supervisé
+  features-compute-labels:
+    image: ${DOCKER_REGISTRY}${IMG_COMPUTE_LABELS}
+    build:
+      context: ${BUILD_CONTEXT_DEV:-.}
+      dockerfile: docker/python/Dockerfile
+      args:
+        REQUIREMENTS_FILE: requirements/features.txt
+    container_name: features-compute-labels
+    command: bash src/features/labels/compute_labels.sh
+    env_file:
+      - .env
+    environment:
+      ENV: docker
+    depends_on:
+      postgres:
+        condition: service_healthy
+      postgres-init:
+        condition: service_completed_successfully
+      data-transformer:
+        condition: service_started
+    restart: "no"
+
+  # Service pour calculer les labels d'apprentissage supervisé
+  features-compute-features:
+    image: ${DOCKER_REGISTRY}${IMG_COMPUTE_FEATURES}
+    build:
+      context: ${BUILD_CONTEXT_DEV:-.}
+      dockerfile: docker/python/Dockerfile
+      args:
+        REQUIREMENTS_FILE: requirements/features.txt
+    container_name: features-compute-features
+    command: bash src/features/compute_features.sh
+    env_file:
+      - .env
+    environment:
+      ENV: docker
+    depends_on:
+      postgres:
+        condition: service_healthy
+      postgres-init:
+        condition: service_completed_successfully
+      data-transformer:
+        condition: service_started
+    restart: "no"
+
+  # Service pour prédire avec les modèles entraînés
+  models-predict:
+    image: ${DOCKER_REGISTRY}${IMG_MODELS_PREDICT}
+    build:
+      context: ${BUILD_CONTEXT_DEV:-.}
+      dockerfile: docker/python/Dockerfile
+      args:
+        REQUIREMENTS_FILE: requirements/models.txt
+    container_name: models-predict
+    command: bash src/models/predict_model.sh
+    env_file:
+      - .env
+    environment:
+      ENV: docker
+    depends_on:
+      postgres:
+        condition: service_healthy
+      postgres-init:
+        condition: service_completed_successfully
+      features-compute-features:
+        condition: service_started
+      features-compute-labels:
+        condition: service_started
     restart: "no"
 
 volumes:
