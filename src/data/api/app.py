@@ -12,6 +12,8 @@ from src.common.custom_logger import logger
 
 from src.data.api.market import router as market_router
 from src.data.api.scraping import router as scraping_router
+from src.data.api.labels import router as labels_router
+from src.data.api.predictions import router as predictions_router
 
 app = FastAPI(
     title="DATA API",
@@ -21,6 +23,8 @@ app = FastAPI(
 
 app.include_router(market_router)
 app.include_router(scraping_router)
+app.include_router(labels_router)
+app.include_router(predictions_router)
 
 @app.get("/")
 async def root():
@@ -33,6 +37,12 @@ async def root():
             "/market/candles/latest",
             "/scraping",
             "/scraping/sentiment",
+            "/labels/params",
+            "/labels",
+            "/predictions/symbols",
+            "/predictions/intervals",
+            "/predictions/versions",
+            "/predictions",
             "/health",
             "/symbols"]
     }

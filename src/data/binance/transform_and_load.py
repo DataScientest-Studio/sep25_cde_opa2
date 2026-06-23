@@ -305,32 +305,60 @@ def init_symbol_map():
 
 
 if __name__ == "__main__":
+    import argparse
+    parser = argparse.ArgumentParser(description="Transformation et chargement des klines MongoDB vers PostgreSQL.")
+    parser.add_argument("--full",        action="store_true", help="Exécuter le chargement complet des collections historiques")
+    parser.add_argument("--incremental", action="store_true", help="Exécuter le traitement incrémental (WebSocket)")
+    parser.add_argument("--loop",        action="store_true", help="Exécuter le bloc incrémental en boucle toutes les 10 secondes (mode production)")
+    args = parser.parse_args()
+
     delay_seconds = 10
     symbols = ['BTCUSDT', 'ETHUSDT']
-    intervals = ['1m', '5m', '1h', '1d', '1w', '1M']  # Intervalles à traiter
+    intervals = ['1m', '5m', '1h', '1d', '1w', '1M']
 
-    logger.info("Démarrage du processus de transformation et chargement en continu...")
-    logger.info(f"Exécution toutes les {delay_seconds} secondes. Appuyez sur Ctrl+C pour arrêter.")
-
-    # Chargement des symboles une seule fois avant la boucle
+    # Chargement des symboles une seule fois
     symbol_map = init_symbol_map()
 
-    # Chargement complet initial des données historiques
-    logger.info("Chargement complet initial des collections historiques...")
-    for symbol in symbols:
-        for interval in intervals:
-            transform_and_load_klines_data(
-                collection_name=f'klines_{symbol}_{interval}',
-                symbol_map=symbol_map,
-                mode='full',
-            )
-    logger.info("Chargement initial terminé.")
+    if args.full:
+        logger.info("Chargement complet des collections historiques...")
+        for symbol in symbols:
+            for interval in intervals:
+                transform_and_load_klines_data(
+                    collection_name=f'klines_{symbol}_{interval}',
+                    symbol_map=symbol_map,
+                    mode='full',
+                )
+        logger.info("Chargement complet terminé.")
 
-    try:
-        while True:
-            logger.info("Début du traitement des données klines...")
+    if args.incremental:
+        if args.loop:
+            logger.info("Démarrage du processus incrémental en continu...")
+            logger.info(f"Exécution toutes les {delay_seconds} secondes.")
+            try:
+                while True:
+                    logger.info("Début du traitement des données klines...")
+                    start_time = time.time()
+                    for symbol in symbols:
+                        for interval in intervals:
+                            transform_and_load_klines_data(
+                                collection_name=f'klines_{symbol}_{interval}_ws',
+                                symbol_map=symbol_map,
+                                mode='incremental',
+                                delay_seconds=delay_seconds,
+                            )
+                    duration = round(time.time() - start_time, 2)
+                    logger.info(f"Traitement terminé en {duration} secondes.")
+                    logger.info(f"Attente de {delay_seconds} secondes avant le prochain traitement...")
+                    time.sleep(delay_seconds)
+            except KeyboardInterrupt:
+                logger.info("Arrêt du processus demandé par l'utilisateur (Ctrl+C)")
+            except Exception as e:
+                logger.error(f"Erreur inattendue dans la boucle principale: {e}")
+            finally:
+                logger.info("Processus de transformation et chargement arrêté.")
+        else:
+            logger.info("Début du traitement incrémental des données klines...")
             start_time = time.time()
-
             for symbol in symbols:
                 for interval in intervals:
                     transform_and_load_klines_data(
@@ -339,17 +367,5 @@ if __name__ == "__main__":
                         mode='incremental',
                         delay_seconds=delay_seconds,
                     )
-
-            end_time = time.time()
-            duration = round(end_time - start_time, 2)
+            duration = round(time.time() - start_time, 2)
             logger.info(f"Traitement terminé en {duration} secondes.")
-
-            logger.info(f"Attente de {delay_seconds} secondes avant le prochain traitement...")
-            time.sleep(delay_seconds)
-
-    except KeyboardInterrupt:
-        logger.info("Arrêt du processus demandé par l'utilisateur (Ctrl+C)")
-    except Exception as e:
-        logger.error(f"Erreur inattendue dans la boucle principale: {e}")
-    finally:
-        logger.info("Processus de transformation et chargement arrêté.")

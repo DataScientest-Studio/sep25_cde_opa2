@@ -1,9 +1,10 @@
 import pandas as pd
 import plotly.graph_objects as go
+import requests
 import streamlit as st
 from plotly.subplots import make_subplots
 
-from src.common.connectors import PostgreSQLConnector
+from src.common.api import get_api_base_url
 from src.common.custom_logger import logger
 
 st.set_page_config(
@@ -20,32 +21,15 @@ CLASS_META = {
 }
 
 
-@st.cache_resource
-def get_pg_connection():
-    try:
-        return PostgreSQLConnector().connect()
-    except SystemExit:
-        st.error("Erreur de connexion PostgreSQL")
-        return None
-
-
 @st.cache_data(ttl=60)
 def get_available_symbols() -> list[str]:
     try:
-        connector = get_pg_connection()
-        if connector is None:
+        api_base_url = get_api_base_url()
+        response = requests.get(f"{api_base_url}/predictions/symbols", timeout=10)
+        if response.status_code != 200:
+            logger.error(f"Erreur API /predictions/symbols (status {response.status_code}): {response.text}")
             return []
-
-        with connector.conn.cursor() as cur:
-            cur.execute(
-                """
-                SELECT DISTINCT s.symbol
-                FROM predictions p
-                JOIN symbols s ON s.id = p.id_symbol
-                ORDER BY s.symbol;
-                """
-            )
-            return [row[0] for row in cur.fetchall()]
+        return response.json()
     except Exception as e:
         logger.error(f"Erreur get_available_symbols: {e}")
         return []
@@ -54,22 +38,16 @@ def get_available_symbols() -> list[str]:
 @st.cache_data(ttl=60)
 def get_available_intervals(symbol: str) -> list[str]:
     try:
-        connector = get_pg_connection()
-        if connector is None:
+        api_base_url = get_api_base_url()
+        response = requests.get(
+            f"{api_base_url}/predictions/intervals",
+            params={"symbol": symbol},
+            timeout=10,
+        )
+        if response.status_code != 200:
+            logger.error(f"Erreur API /predictions/intervals (status {response.status_code}): {response.text}")
             return []
-
-        with connector.conn.cursor() as cur:
-            cur.execute(
-                """
-                SELECT DISTINCT p.interval
-                FROM predictions p
-                JOIN symbols s ON s.id = p.id_symbol
-                WHERE s.symbol = %s
-                ORDER BY p.interval;
-                """,
-                (symbol,),
-            )
-            return [row[0] for row in cur.fetchall()]
+        return response.json()
     except Exception as e:
         logger.error(f"Erreur get_available_intervals: {e}")
         return []
@@ -79,23 +57,17 @@ def get_available_intervals(symbol: str) -> list[str]:
 def get_available_versions(symbol: str, interval: str) -> list[tuple[int, float]]:
     """Version de modele/labels disponible, representee par (horizon, threshold)."""
     try:
-        connector = get_pg_connection()
-        if connector is None:
+        api_base_url = get_api_base_url()
+        response = requests.get(
+            f"{api_base_url}/predictions/versions",
+            params={"symbol": symbol, "interval": interval},
+            timeout=10,
+        )
+        if response.status_code != 200:
+            logger.error(f"Erreur API /predictions/versions (status {response.status_code}): {response.text}")
             return []
-
-        with connector.conn.cursor() as cur:
-            cur.execute(
-                """
-                SELECT DISTINCT p.horizon, p.threshold
-                FROM predictions p
-                JOIN symbols s ON s.id = p.id_symbol
-                WHERE s.symbol = %s
-                  AND p.interval = %s
-                ORDER BY p.horizon, p.threshold;
-                """,
-                (symbol, interval),
-            )
-            return [(int(row[0]), float(row[1])) for row in cur.fetchall()]
+        data = response.json()
+        return [(int(item["horizon"]), float(item["threshold"])) for item in data]
     except Exception as e:
         logger.error(f"Erreur get_available_versions: {e}")
         return []
@@ -110,49 +82,27 @@ def load_predictions_history(
     limit: int = 1000,
 ) -> pd.DataFrame:
     try:
-        connector = get_pg_connection()
-        if connector is None:
-            return pd.DataFrame()
-
-        with connector.conn.cursor() as cur:
-            cur.execute(
-                """
-                SELECT
-                    p.timestamp,
-                    p.predicted_up_down,
-                    p.created_at,
-                    c.close,
-                    l.label_up_down
-                FROM predictions p
-                JOIN symbols s ON s.id = p.id_symbol
-                LEFT JOIN candles c
-                    ON c.id_symbol = p.id_symbol
-                    AND c.interval = p.interval
-                    AND c.open_time = p.timestamp
-                LEFT JOIN labels l
-                    ON l.id_symbol = p.id_symbol
-                    AND l.interval = p.interval
-                    AND l.horizon = p.horizon
-                    AND l.threshold = p.threshold
-                    AND l.timestamp = p.timestamp
-                WHERE s.symbol = %s
-                  AND p.interval = %s
-                  AND p.horizon = %s
-                  AND p.threshold = %s
-                ORDER BY p.timestamp DESC
-                LIMIT %s;
-                """,
-                (symbol, interval, horizon, threshold, limit),
-            )
-            rows = cur.fetchall()
-
-        if not rows:
-            return pd.DataFrame()
-
-        df = pd.DataFrame(
-            rows,
-            columns=["timestamp", "predicted_up_down", "created_at", "close", "label_up_down"],
+        api_base_url = get_api_base_url()
+        response = requests.get(
+            f"{api_base_url}/predictions",
+            params={
+                "symbol": symbol,
+                "interval": interval,
+                "horizon": horizon,
+                "threshold": threshold,
+                "limit": limit,
+            },
+            timeout=30,
         )
+        if response.status_code != 200:
+            st.error(f"Erreur API /predictions (status {response.status_code}): {response.text}")
+            return pd.DataFrame()
+
+        data = response.json()
+        if not data:
+            return pd.DataFrame()
+
+        df = pd.DataFrame(data)
         df["timestamp"] = pd.to_datetime(df["timestamp"])
         df["created_at"] = pd.to_datetime(df["created_at"])
         df["close"] = pd.to_numeric(df["close"], errors="coerce")
@@ -160,6 +110,11 @@ def load_predictions_history(
         df["label_up_down"] = pd.to_numeric(df["label_up_down"], errors="coerce").astype("Int64")
 
         return df.sort_values("timestamp").reset_index(drop=True)
+
+    except requests.exceptions.RequestException as e:
+        st.error(f"Erreur de connexion à l'API: {e}")
+        logger.error(f"Erreur load_predictions_history (connexion): {e}")
+        return pd.DataFrame()
     except Exception as e:
         logger.error(f"Erreur load_predictions_history: {e}")
         st.error(f"Erreur lors du chargement des prédictions: {e}")
