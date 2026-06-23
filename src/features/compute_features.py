@@ -93,48 +93,37 @@ def load_features(pg_conn, df, id_symbol, interval):
         logger.info("Pas assez de données pour calculer les indicateurs (trop peu de candles).")
         return 0
 
-    inserted = 0
     try:
+        # Construction du batch en une seule passe — un seul aller-retour réseau
+        records = [
+            (
+                id_symbol, int(row['id_candle']), interval, row['open_time'],
+                float(row['rsi_14']), float(row['macd']), float(row['macd_signal']),
+                float(row['ema_20']), float(row['ema_50']), float(row['ema_100']),
+            )
+            for _, row in df_valid.iterrows()
+        ]
+
         with pg_conn.cursor() as cur:
-            for _, row in df_valid.iterrows():
-
-                # features_candles n'a pas de contrainte UNIQUE donc on vérifie
-                # manuellement avant d'insérer pour ne pas créer de doublons
-                cur.execute("""
-                    SELECT id FROM features_candles
-                    WHERE id_symbol = %s AND id_candle = %s AND interval = %s;
-                """, (id_symbol, int(row['id_candle']), interval))
-
-                existing = cur.fetchone()
-
-                if existing:
-                    # La ligne existe déjà, on met juste à jour les valeurs
-                    cur.execute("""
-                        UPDATE features_candles
-                        SET rsi_14 = %s, macd = %s, macd_signal = %s, ema_20 = %s, ema_50 = %s, ema_100 = %s
-                        WHERE id_symbol = %s AND id_candle = %s AND interval = %s;
-                    """, (
-                        float(row['rsi_14']), float(row['macd']), float(row['macd_signal']),
-                        float(row['ema_20']), float(row['ema_50']), float(row['ema_100']),
-                        id_symbol, int(row['id_candle']), interval
-                    ))
-                else:
-                    # Nouvelle candle on insère
-                    cur.execute("""
-                        INSERT INTO features_candles (
-                            id_symbol, id_candle, interval, timestamp_candle,
-                            rsi_14, macd, macd_signal, ema_20, ema_50, ema_100
-                        ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s);
-                    """, (
-                        id_symbol, int(row['id_candle']), interval, row['open_time'],
-                        float(row['rsi_14']), float(row['macd']), float(row['macd_signal']),
-                        float(row['ema_20']), float(row['ema_50']), float(row['ema_100'])
-                    ))
-                    inserted += 1
+            # Upsert batch : ON CONFLICT s'appuie sur la contrainte UNIQUE(id_symbol, id_candle, interval)
+            cur.executemany("""
+                INSERT INTO features_candles (
+                    id_symbol, id_candle, interval, timestamp_candle,
+                    rsi_14, macd, macd_signal, ema_20, ema_50, ema_100
+                ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                ON CONFLICT (id_symbol, id_candle, interval)
+                DO UPDATE SET
+                    rsi_14       = EXCLUDED.rsi_14,
+                    macd         = EXCLUDED.macd,
+                    macd_signal  = EXCLUDED.macd_signal,
+                    ema_20       = EXCLUDED.ema_20,
+                    ema_50       = EXCLUDED.ema_50,
+                    ema_100      = EXCLUDED.ema_100;
+            """, records)
 
         pg_conn.commit()
-        logger.info(f"{inserted} nouvelles lignes insérées dans features_candles.")
-        return inserted
+        logger.info(f"{len(records)} lignes insérées/mises à jour dans features_candles (batch upsert).")
+        return len(records)
 
     except Exception as e:
         logger.error(f"Erreur lors de l'insertion dans features_candles: {e}")
