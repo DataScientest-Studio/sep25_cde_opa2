@@ -38,7 +38,7 @@ def get_candles(pg_conn, id_symbol, interval):
 
         df = pd.DataFrame(rows, columns=['id_candle', 'open_time', 'open', 'high', 'low', 'close', 'volume'])
 
-        # la librairie ta a besoin de floats pour calculer les indicateurs, alors on convertit les colonnes concernées 
+        # pandas-ta a besoin de floats pour calculer les indicateurs
         df[['open', 'high', 'low', 'close', 'volume']] = df[['open', 'high', 'low', 'close', 'volume']].astype(float)
         logger.info(f"{len(df)} candles chargées depuis PostgreSQL.")
         return df
@@ -50,18 +50,21 @@ def get_candles(pg_conn, id_symbol, interval):
 
 def compute_indicators(df):
     # RSI sur 14 périodes — mesure si le marché est suracheté ou survendu
-    df['rsi_14'] = ta.rsi(df['close'], length=14)
+    df['rsi_14'] = ta.rsi(close=df['close'], length=14)
 
-    # MACD — retourne None si pas assez de données, on gère ce cas
-    macd = ta.macd(df['close'])
-    df['macd'] = macd['MACD_12_26_9'] if macd is not None else None
+    # MACD — mesure la convergence/divergence de deux moyennes mobiles
+    # retourne None si pas assez de données, on gère ce cas
+    df_macd = ta.macd(close=df['close'], fast=12, slow=26, signal=9)
+    df['macd']        = df_macd['MACD_12_26_9']  if df_macd is not None else None
+    df['macd_signal'] = df_macd['MACDs_12_26_9'] if df_macd is not None else None
 
     # EMA 20, 50, 100 — moyennes mobiles exponentielles sur différentes périodes
-    df['ema_20']  = ta.ema(df['close'], length=20)
-    df['ema_50']  = ta.ema(df['close'], length=50)
-    df['ema_100'] = ta.ema(df['close'], length=100)
+    # Plus la période est longue, plus la tendance est lissée
+    df['ema_20']  = ta.ema(close=df['close'], length=20)
+    df['ema_50']  = ta.ema(close=df['close'], length=50)
+    df['ema_100'] = ta.ema(close=df['close'], length=100)
 
-    logger.info("Indicateurs calculés : RSI(14), MACD, EMA(20/50/100).")
+    logger.info("Indicateurs calculés : RSI(14), MACD, MACD Signal, EMA(20/50/100).")
     return df
 
 
@@ -92,7 +95,8 @@ def load_features(pg_conn, df, id_symbol, interval):
                     # La ligne existe déjà, on met juste à jour les valeurs
                     cur.execute("""
                         UPDATE features_candles
-                        SET rsi_14 = %s, macd = %s, macd_signal = %s, ema_20 = %s, ema_50 = %s, ema_100 = %s
+                        SET rsi_14 = %s, macd = %s, macd_signal = %s,
+                            ema_20 = %s, ema_50 = %s, ema_100 = %s
                         WHERE id_symbol = %s AND id_candle = %s AND interval = %s;
                     """, (
                         float(row['rsi_14']), float(row['macd']), float(row['macd_signal']),
@@ -100,7 +104,7 @@ def load_features(pg_conn, df, id_symbol, interval):
                         id_symbol, int(row['id_candle']), interval
                     ))
                 else:
-                    # Nouvelle candle on insère
+                    # Nouvelle candle, on insère
                     cur.execute("""
                         INSERT INTO features_candles (
                             id_symbol, id_candle, interval, timestamp_candle,
