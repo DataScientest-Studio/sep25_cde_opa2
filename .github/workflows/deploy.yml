@@ -1,0 +1,82 @@
+name: Build and Push Cryptobot Images
+
+# Build automatique lors d'un push sur les branches concernées.
+on:
+  push:
+    branches: [ "master" ]
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    # Connexion au dockerhub via un compte dédié au projet
+    - name: Log in to Docker Hub
+      uses: docker/login-action@v3
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+    # Creation d'un requirement commun pour l'image python de base
+    - name: Combine all requirements for Production
+      run: |
+        mkdir -p requirements
+        touch requirements/prod.txt
+        echo "-r db.txt" >> requirements/prod.txt
+        echo "-r api.txt" >> requirements/prod.txt
+        echo "-r binance.txt" >> requirements/prod.txt
+        echo "-r features.txt" >> requirements/prod.txt
+        echo "-r models.txt" >> requirements/prod.txt
+        echo "✅ Fichier requirements/prod.txt créé avec succès !"
+
+    # Build et Push de l'image Python commune à plusieurs containers :
+    # mongo-init, postgres-init, data-api, data-collector, data-transformer, data-get-historic
+    - name: Build and push Python Base Image
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        file: docker/python/Dockerfile
+        push: true
+        build-args: |
+          REQUIREMENTS_FILE=requirements/prod.txt
+        tags: ${{ secrets.DOCKERHUB_USERNAME }}/cryptobot-python-base:latest
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+
+    # Build et Push de l'image du Scraper
+    - name: Build and push Scraper
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        file: docker/scraper/Dockerfile
+        push: true
+        tags: ${{ secrets.DOCKERHUB_USERNAME }}/cryptobot-scraper:latest
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+
+    # Build et Push de l'image d'Analyse de Sentiment
+    - name: Build and push Sentiment Scraper
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        file: docker/scraper-feature-sentiment/Dockerfile
+        push: true
+        tags: ${{ secrets.DOCKERHUB_USERNAME }}/cryptobot-sentiment:latest
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+
+    # Build et Push de l'image de l'application Streamlit
+    - name: Build and push Streamlit
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        file: docker/streamlit/Dockerfile
+        push: true
+        tags: ${{ secrets.DOCKERHUB_USERNAME }}/cryptobot-streamlit:latest
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
