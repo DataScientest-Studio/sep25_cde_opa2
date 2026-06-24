@@ -35,7 +35,7 @@ jobs:
         echo "✅ Fichier requirements/prod.txt créé avec succès !"
 
     # Build et Push de l'image Python commune à plusieurs containers :
-    # mongo-init, postgres-init, data-api, data-collector, data-transformer, data-get-historic
+    # mongo-init, postgres-init, data-api, data-collector, data-transformer, data-get-historic, ...
     - name: Build and push Python Base Image
       uses: docker/build-push-action@v5
       with:

@@ -7,10 +7,10 @@
 # Usage : bash src/features/labels/compute_labels.sh
 #
 # Les paramètres horizon et threshold sont choisis en tentant d'être cohérents avec chaque intervalle :
-#   1d  → fenêtre de 1-2 semaines, seuil 2-3%
-#   1h  → fenêtre de 12-24h,       seuil 1-2%
-#   5m  → fenêtre de 1-2h,         seuil 0.3-0.5%
-#   1m  → fenêtre de 30-60 min,    seuil 0.1-0.3%
+#   1d  → fenêtre de 4 jours     seuil 2%
+#   1h  → fenêtre de 12-24h,     seuil 1-2%
+#   5m  → fenêtre de 1-2h,       seuil 0.3-0.5%
+#   1m  → fenêtre de 30-60 min,  seuil 0.1-0.3%
 #
 # Chaque combinaison génère une version indépendante en base (table `labels`).
 
@@ -18,16 +18,25 @@ echo "Début du calcul des labels..."
 
 SYMBOLS=("BTCUSDT" "ETHUSDT")
 
-# --- 1d : décisions sur 1 à 2 semaines de trading ---
-for SYMBOL in "${SYMBOLS[@]}"; do
-    for HORIZON in 5 10; do
-        for THRESHOLD in 0.02 0.03; do
-            echo "Calcul labels : $SYMBOL | interval=1d | horizon=$HORIZON j | seuil=$THRESHOLD ..."
-            python -m src.features.labels.compute_labels \
-                --symbol $SYMBOL --interval 1d \
-                --horizon $HORIZON --threshold $THRESHOLD || true
-        done
-    done
+# --- 1d : décisions sur 4 jours de trading ---
+# --- choix réalisés après lecture de la matrice de corrélation entre le sentiment et l'évolution du prix du symbol
+CONFIGS=("BTCUSDT:0.02" "ETHUSDT:0.02")
+HORIZON="4"
+for CONFIG in "${CONFIGS[@]}"; do
+    # On sépare le symbole et le seuil
+    SYMBOL="${CONFIG%%:*}"
+    THRESHOLD="${CONFIG#*:}"
+
+    echo "========================================================"
+    echo "Calcul labels : $SYMBOL | 1d | Horizon: $HORIZON j | Seuil: $THRESHOLD"
+    echo "========================================================"
+    
+    python -m src.features.labels.compute_labels \
+        --symbol "$SYMBOL" \
+        --interval "1d" \
+        --horizon "$HORIZON" \
+        --threshold "$THRESHOLD" || true
+
 done
 
 # --- 1h : décisions sur 12 à 24 heures (référence principale) ---

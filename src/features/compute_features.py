@@ -65,7 +65,7 @@ def get_candles(pg_conn, id_symbol, interval, limit=None):
         return pd.DataFrame()
 
 
-def compute_indicators(df):
+def compute_indicators(df, interval):
     # RSI sur 14 périodes — mesure si le marché est suracheté ou survendu
     df['rsi_14'] = ta.rsi(close=df['close'], length=14)
 
@@ -77,8 +77,15 @@ def compute_indicators(df):
     # EMA 20, 50, 100 — moyennes mobiles exponentielles sur différentes périodes
     # Plus la période est longue plus la tendance est lissée
     df['ema_20']  = ta.ema(close=df['close'], length=20)
-    df['ema_50']  = ta.ema(close=df['close'], length=50)
-    df['ema_100'] = ta.ema(close=df['close'], length=100)    
+    
+    # Sur un interval 1d on ne prend pas les ema_50 et ema_100.
+    # Trop peu de données actuellement.
+    if interval == "1d":
+        df['ema_50'] = None
+        df['ema_100'] = None
+    else:
+        df['ema_50']  = ta.ema(close=df['close'], length=50)
+        df['ema_100'] = ta.ema(close=df['close'], length=100)    
 
     logger.info("Indicateurs calculés : RSI(14), MACD, EMA(20/50/100).")
     return df
@@ -87,7 +94,12 @@ def compute_indicators(df):
 def load_features(pg_conn, df, id_symbol, interval):
     # On ignore les premières lignes où les indicateurs sont NaN
     # EMA(100) a besoin de 100 candles avant de pouvoir calculer quelque chose
-    df_valid = df.dropna(subset=['rsi_14', 'macd', 'macd_signal', 'ema_20', 'ema_50', 'ema_100'])
+    subset_cols = ['rsi_14', 'macd', 'macd_signal', 'ema_20']
+    if interval != "1d":
+        subset_cols.append('ema_50')
+        subset_cols.append('ema_100')
+        
+    df_valid = df.dropna(subset=subset_cols)
 
     if df_valid.empty:
         logger.info("Pas assez de données pour calculer les indicateurs (trop peu de candles).")
@@ -99,7 +111,9 @@ def load_features(pg_conn, df, id_symbol, interval):
             (
                 id_symbol, int(row['id_candle']), interval, row['open_time'],
                 float(row['rsi_14']), float(row['macd']), float(row['macd_signal']),
-                float(row['ema_20']), float(row['ema_50']), float(row['ema_100']),
+                float(row['ema_20']),
+                float(row['ema_50']) if pd.notna(row['ema_50']) else None,
+                float(row['ema_100']) if pd.notna(row['ema_100']) else None,
             )
             for _, row in df_valid.iterrows()
         ]
@@ -145,7 +159,7 @@ def compute_and_load_features(symbol, interval, limit=None):
         if df.empty:
             return
 
-        df = compute_indicators(df)
+        df = compute_indicators(df, interval)
         load_features(pg_conn, df, id_symbol, interval)
 
     except Exception as e:

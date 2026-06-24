@@ -34,14 +34,11 @@ def aggregate_and_compute_sentiment(base_asset: str, pg_client: PGClient):
                 params.append(start_fetch_date)
             query += " ORDER BY published_at ASC"
             
-            # df_articles = pd.read_sql(query, pg_client.conn, params=params)
             with pg_client.conn.cursor(row_factory=psycopg.rows.dict_row) as cur:
                 cur.execute(query, params)
                 rows = cur.fetchall()
 
             df_articles = pd.DataFrame(rows)            
-
-            print(df_articles.head())
 
             if df_articles.empty:
                 logger.warning(f"[{base_asset}] Aucun nouvel article trouvé.")
@@ -82,8 +79,6 @@ def aggregate_and_compute_sentiment(base_asset: str, pg_client: PGClient):
         logger.info(f"[{base_asset}] Synchro batch terminée ({len(df_daily)} jours mis à jour).")
 
     except Exception as e:
-        # Si ça plante ici, le rollback automatique du bloc transaction a déjà eu lieu.
-        # La connexion globale reste saine pour le symbole suivant !
         logger.error(f"Erreur lors du traitement de {base_asset}: {str(e)}")
 
 def main():
@@ -93,9 +88,7 @@ def main():
         pg_client=PGClient()
 
         # Recupération du mapping symbol -> names et aliases
-        # symbols_and_names=get_cryptos_symbols_and_names()
         top_cryptos = ['BTC', 'ETH', 'SOL', 'XRP', 'ADA', 'DOGE', 'DOT', 'LINK', 'USDT', 'USDC']
-        # symbols = [sn['symbol'] for sn in symbols_and_names]
         
         logger.info(f"Début de la synchronisation de groupe pour : {top_cryptos}")
 
