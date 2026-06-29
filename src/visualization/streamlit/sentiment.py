@@ -10,7 +10,6 @@ import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
 from src.common.api import get_api_base_url
-from src.common.connectors import MongoConnector
 from src.common.custom_logger import logger
 
 # Configuration de la page

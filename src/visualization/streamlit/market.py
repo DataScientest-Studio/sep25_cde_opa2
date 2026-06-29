@@ -261,12 +261,12 @@ def main():
     
     # Test de connexion API si sélectionnée
     if data_source == "API PostgreSQL":
-        api_url = get_api_base_url()
+        api_base_url = get_api_base_url()
         with st.sidebar.expander("ℹ️ Info API", expanded=False):
-            st.write(f"**URL API:** {api_url}")
+            st.write(f"**URL API:** {api_base_url}")
             if st.button("Tester la connexion API"):
                 try:
-                    response = requests.get(f"{api_url}/health", timeout=5)
+                    response = requests.get(f"{api_base_url}/health", timeout=5)
                     if response.status_code == 200:
                         st.success("✅ API disponible")
                     else:

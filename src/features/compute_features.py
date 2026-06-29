@@ -158,30 +158,34 @@ def compute_and_load_features(symbol, interval, limit=None):
 if __name__ == "__main__":
     # Exemple : python -m src.features.compute_features --symbol BTCUSDT --interval 1m
     parser = argparse.ArgumentParser(description="Calcul des indicateurs techniques depuis les candles PostgreSQL.")
-    parser.add_argument("--symbol",   type=str,          default="BTCUSDT", help="Symbol à traiter (ex: BTCUSDT, ETHUSDT)")
-    parser.add_argument("--interval", type=str,          default="1m",      help="Intervalle des candles (ex: 1m, 5m, 1h)")
-    parser.add_argument("--limit",    type=int,          default=None,      help="Limite le nombre de candles chargées (ex: 500 pour tester)")
+    parser.add_argument("--symbol",   type=str, default="BTCUSDT", help="Symbol à traiter (ex: BTCUSDT, ETHUSDT)")
+    parser.add_argument("--interval", type=str, default="1m",      help="Intervalle des candles (ex: 1m, 5m, 1h)")
+    parser.add_argument("--limit",    type=int, default=None,       help="Limite le nombre de candles chargées (ex: 500 pour tester)")
+    parser.add_argument("--loop",     action="store_true",          help="Exécuter en boucle toutes les 60 secondes (mode production)")
     args = parser.parse_args()
 
-    delay_seconds = 60
-    logger.info(f"Démarrage du calcul des indicateurs techniques pour {args.symbol} ({args.interval})...")
-    logger.info(f"Exécution toutes les {delay_seconds} secondes.")
-
-    try:
-        while True:
-            logger.info("Début du calcul des features...")
-            start_time = time.time()
-
-            compute_and_load_features(symbol=args.symbol, interval=args.interval, limit=args.limit)
-
-            duration = round(time.time() - start_time, 2)
-            logger.info(f"Calcul terminé en {duration} secondes.")
-            logger.info(f"Attente de {delay_seconds} secondes...")
-            time.sleep(delay_seconds)
-
-    except KeyboardInterrupt:
-        logger.info("Arrêt demandé par l'utilisateur.")
-    except Exception as e:
-        logger.error(f"Erreur inattendue dans la boucle principale: {e}")
-    finally:
-        logger.info("Processus de calcul des features arrêté.")
+    if args.loop:
+        delay_seconds = 60
+        logger.info(f"Démarrage du calcul des indicateurs techniques pour {args.symbol} ({args.interval})...")
+        logger.info(f"Exécution toutes les {delay_seconds} secondes.")
+        try:
+            while True:
+                logger.info("Début du calcul des features...")
+                start_time = time.time()
+                compute_and_load_features(symbol=args.symbol, interval=args.interval, limit=args.limit)
+                duration = round(time.time() - start_time, 2)
+                logger.info(f"Calcul terminé en {duration} secondes.")
+                logger.info(f"Attente de {delay_seconds} secondes...")
+                time.sleep(delay_seconds)
+        except KeyboardInterrupt:
+            logger.info("Arrêt demandé par l'utilisateur.")
+        except Exception as e:
+            logger.error(f"Erreur inattendue dans la boucle principale: {e}")
+        finally:
+            logger.info("Processus de calcul des features arrêté.")
+    else:
+        logger.info(f"Calcul des indicateurs techniques pour {args.symbol} ({args.interval})...")
+        start_time = time.time()
+        compute_and_load_features(symbol=args.symbol, interval=args.interval, limit=args.limit)
+        duration = round(time.time() - start_time, 2)
+        logger.info(f"Calcul terminé en {duration} secondes.")
