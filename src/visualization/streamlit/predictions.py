@@ -256,6 +256,42 @@ def render_latest_prediction(symbol: str, interval: str, horizon: int, threshold
         "Le label peut manquer sur les candles les plus récentes (horizon futur non encore observé)."
     )
 
+def add_cumulative_performance(df: pd.DataFrame) -> pd.DataFrame:
+    """Calcule la performance cumulée (stratégie vs Buy&Hold)."""
+    df = df.copy().sort_values("timestamp")
+    
+    # Rendement de l'actif
+    df['daily_return'] = df['close'].pct_change()
+    
+    # Rendement de ta stratégie
+    # Si le modèle prédit -1 (Vente), on multiplie le rendement par -1 (Short)
+    # Si le modèle prédit 0 (Hold), on multiplie par 0 (Cash)
+    df['strategy_return'] = df['predicted_up_down'].shift(1) * df['daily_return']
+    
+    # Cumul des performances
+    df['cum_perf'] = (1 + df['strategy_return']).cumprod() - 1
+    df['market_perf'] = (1 + df['daily_return']).cumprod() - 1
+    
+    return df.fillna(0)
+
+def calculate_model_accuracy(df: pd.DataFrame):
+    """
+    Calcule le taux de réussite (Hit Rate) du modèle.
+    On ignore les prédictions 'HOLD' (0) pour ne mesurer que la qualité des signaux d'action.
+    """
+    # On ne garde que les lignes où le modèle a donné un signal (BUY ou SELL)
+    # et où le label réel est connu (donc pas de NaN)
+    df_signals = df[df['predicted_up_down'] != 0].dropna(subset=['label_up_down'])
+    
+    if df_signals.empty:
+        return 0.0, 0
+    
+    # Succès = quand la prédiction est égale au label réel
+    matches = (df_signals['predicted_up_down'] == df_signals['label_up_down']).sum()
+    total_signals = len(df_signals)
+    
+    hit_rate = matches / total_signals
+    return hit_rate, total_signals
 
 @st.fragment(run_every="30s")
 def render_predictions_history(symbol: str, interval: str, horizon: int, threshold: float, max_points: int):
@@ -264,6 +300,16 @@ def render_predictions_history(symbol: str, interval: str, horizon: int, thresho
     if df.empty:
         st.warning("Aucune donnée historique disponible pour ces paramètres.")
         return
+    
+    # Calcul de la performance et fiabilité
+    df = add_cumulative_performance(df)
+    hit_rate, n_signals = calculate_model_accuracy(df)  
+
+    st.subheader("Performance & Fiabilité")
+    c1, c2, c3 = st.columns(3)
+    c1.metric("Stratégie", f"{df['cum_perf'].iloc[-1]:.2%}")
+    c2.metric("Marché (Buy & Hold)", f"{df['market_perf'].iloc[-1]:.2%}")
+    c3.metric("Taux de réussite (Hit Rate)", f"{hit_rate:.1%}", help=f"Basé sur {n_signals} signaux")
 
     st.info(
         f"Symbole : **{symbol}** | Intervalle : **{interval}** | "

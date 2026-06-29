@@ -163,7 +163,7 @@ services:
       context: ${BUILD_CONTEXT_DEV:-.}
       dockerfile: docker/scraper-feature-sentiment/Dockerfile
     container_name: scraper-feature-sentiment
-    command: sh -c "python -m src.features.scraping.sentiment && sleep infinity"
+    command: sh -c "bash src/features/scraping/entrypoint.sh && sleep infinity"
     volumes:
       - ./data/external:/app/data/external    
     env_file:
@@ -403,6 +403,31 @@ services:
       features-compute-labels:
         condition: service_started
     restart: unless-stopped
+
+  # Service pour prédire avec les modèles entraînés intégrant la notion de sentiment
+  models-predict-sentiment:
+    image: ${DOCKER_REGISTRY}${IMG_MODELS_PREDICT_SENTIMENT}
+    build:
+      context: ${BUILD_CONTEXT_DEV:-.}
+      dockerfile: docker/python/Dockerfile
+      args:
+        REQUIREMENTS_FILE: requirements/models.txt
+    container_name: models-predict-sentiment
+    command: sh -c "bash src/models/predict_sentiment_model.sh && sleep infinity"
+    env_file:
+      - .env
+    environment:
+      ENV: docker
+    depends_on:
+      postgres:
+        condition: service_healthy
+      postgres-init:
+        condition: service_completed_successfully
+      features-compute-features:
+        condition: service_started
+      features-compute-labels:
+        condition: service_started
+    restart: unless-stopped    
 
 volumes:
   mongo_data:

@@ -202,8 +202,7 @@ def main():
 
         | Intervalle | Horizon | Fenêtre réelle | Seuil θ |
         |---|---|---|---|
-        | 1d | 5 candles | 5 jours | 2%, 3% |
-        | 1d | 10 candles | 10 jours | 2%, 3% |
+        | 1d | 4 candles  | 4 jours | 2% |
         | 1h | 12 candles | 12 heures | 1%, 2% |
         | 1h | 24 candles | 1 journée | 1%, 2% |
         | 5m | 12 candles | 1 heure | 0.3%, 0.5% |

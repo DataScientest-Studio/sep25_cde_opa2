@@ -259,3 +259,41 @@ with psycopg.connect(**CRYPTOBOT_CONN_INFO) as conn:
             """)
             
             logger.info("Table 'features_scraping_sentiment' créée avec succès.")
+
+        # Vérification de l'existence de la table features_sentiment_daily
+        cur.execute("""
+            SELECT table_name FROM information_schema.tables 
+            WHERE table_schema = 'public' AND table_name = 'features_sentiment_daily';
+        """)
+
+        table_exists = cur.fetchone()
+
+        if table_exists:
+            logger.warning("La table features_sentiment_daily existe déjà.")
+        else:
+            cur.execute("""
+                CREATE TABLE IF NOT EXISTS features_sentiment_daily (
+                    id SERIAL PRIMARY KEY,
+                    base_asset VARCHAR(10) NOT NULL,
+                    date_dg DATE NOT NULL, -- 'dg'
+                    sentiment_score NUMERIC(5, 4),
+                    sentiment_smooth NUMERIC(5, 4),
+                    sentiment_weighted NUMERIC(10, 4),
+                    sentiment_weighted_smooth NUMERIC(10, 4),
+                    articles_volume INT,
+                    CONSTRAINT unique_asset_date UNIQUE (base_asset, date_dg)
+                );
+            """)
+            
+            # Créer un index combiné sur le base asset et la date  pour optimiser les requêtes temporelles
+            cur.execute("""
+                CREATE INDEX idx_features_sentiment_daily_asset_date ON features_sentiment_daily(base_asset, date_dg);
+            """)
+            
+            # Accorder les permissions sur la nouvelle table au user bot
+            cur.execute(f"""
+                GRANT SELECT, INSERT, UPDATE, DELETE ON features_sentiment_daily TO {DB_BOT_USER};
+                GRANT USAGE, SELECT ON SEQUENCE features_sentiment_daily_id_seq TO {DB_BOT_USER};
+            """)
+            
+            logger.info("Table 'features_sentiment_daily' créée avec succès.")

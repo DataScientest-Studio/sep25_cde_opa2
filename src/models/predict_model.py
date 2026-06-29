@@ -13,14 +13,11 @@ Génère des prédictions à partir d'un modèle entraîné et les stocke en bas
 import argparse
 import pickle
 import time
-from pathlib import Path
 
-import numpy as np
 import pandas as pd
 
 from src.common.connectors import PostgreSQLConnector
 from src.common.custom_logger import logger
-from src.config import PROJECT_ROOT
 from src.models.train_model import (
     CANDLE_COLS,
     FEATURE_COLS,

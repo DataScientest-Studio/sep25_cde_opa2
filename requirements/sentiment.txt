@@ -1,4 +1,5 @@
 # Dépendances pour le service d'analyse de sentiment (Transformers + TextBlob + PyTorch)
+pandas==3.0.2
 psycopg==3.3.2
 psycopg-binary==3.3.2
 pymongo==4.16.0
