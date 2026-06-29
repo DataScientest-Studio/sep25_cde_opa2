@@ -13,14 +13,11 @@ Génère des prédictions à partir d'un modèle entraîné et les stocke en bas
 import argparse
 import pickle
 import time
-from pathlib import Path
 
-import numpy as np
 import pandas as pd
 
 from src.common.connectors import PostgreSQLConnector
 from src.common.custom_logger import logger
-from src.config import PROJECT_ROOT
 from src.models.train_model import (
     CANDLE_COLS,
     FEATURE_COLS,
@@ -130,8 +127,6 @@ def run(
 ) -> pd.DataFrame:
     """
     Génère des prédictions et les stocke en base.
-
-    Retourne le DataFrame des prédictions (open_time, predicted_value, predicted_label).
     """
     bundle = load_model(symbol, interval, horizon, threshold)
     model = bundle["model"]
@@ -142,7 +137,8 @@ def run(
     try:
         id_symbol = get_symbol_id(pg.conn, symbol)
         if id_symbol is None:
-            return pd.DataFrame()
+            logger.error(f"Symbole introuvable en base : {symbol}")
+            return
 
         df, feature_cols = build_prediction_dataset(pg.conn, id_symbol, interval, n_candles)
 
@@ -204,13 +200,10 @@ if __name__ == "__main__":
         finally:
             logger.info("Processus de prédiction arrêté.")
     else:
-        result = run(
+        run(
             symbol=args.symbol,
             interval=args.interval,
             horizon=args.horizon,
             threshold=args.threshold,
             n_candles=args.n_candles,
         )
-
-        if not result.empty:
-            print(result.to_string(index=False))

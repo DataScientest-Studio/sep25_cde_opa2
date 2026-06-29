@@ -51,10 +51,24 @@ def get_candles(pg_conn, id_symbol, interval, horizon, threshold):
         return pd.DataFrame()
 
 
-def compute_labels(df, horizon, threshold):
-    # Calcul du rendement futur à horizon fixe : r(t) = (close(t+N) - close(t)) / close(t)
-    # Les N dernières lignes n'ont pas de future close → leur label restera NaN et sera ignoré
-    df['label_return'] = (df['close'].shift(-horizon) - df['close']) / df['close']
+def compute_labels(df, horizon, threshold, interval):
+    # Vérification que open_time est bien au format datetime
+    df['open_time'] = pd.to_datetime(df['open_time'])
+    
+    # Conservation l'ordre d'origine mais on utilise un index temporel pour le shift
+    df_temp = df.set_index('open_time')
+    
+    # Détermination de la fréquence pour le shift temporel
+    # 'D' pour days (1d), 'h' for hours (1h), 'min' pour minutes (1m)
+    freq_map = {"1d": "D", "1h": "h", "1m": "min"}
+    freq = freq_map.get(interval, "D")
+
+    # Shift temporel : cherche le prix EXACTEMENT X jours/heures plus tard
+    # Décalage de l'index vers le passé pour aligner le futur avec le présent
+    future_close = df_temp['close'].shift(-horizon, freq=freq)
+    
+    # Réalignement des données dans notre DataFrame d'origine
+    df['label_return'] = (df['open_time'].map(future_close) - df['close']) / df['close']
 
     # Discrétisation en 3 classes : +1 (BUY), -1 (SELL), 0 (HOLD)
     df['label_up_down'] = 0
@@ -67,14 +81,14 @@ def compute_labels(df, horizon, threshold):
     # Distribution des classes
     counts = df_valid['label_up_down'].value_counts().sort_index()
     total = len(df_valid)
-    if(total > 0) :
+    if total > 0:
         logger.info(
             f"Labels calculés (horizon={horizon}, seuil={threshold*100:.1f}%) — "
             f"SELL(-1): {counts.get(-1, 0)} ({counts.get(-1, 0)/total*100:.1f}%), "
             f"HOLD(0): {counts.get(0, 0)} ({counts.get(0, 0)/total*100:.1f}%), "
             f"BUY(+1): {counts.get(1, 0)} ({counts.get(1, 0)/total*100:.1f}%)"
         )
-    else :
+    else:
         logger.info(f"Aucun label à calculer.")
 
     return df_valid
@@ -133,7 +147,7 @@ def compute_and_load_labels(symbol, interval, horizon, threshold):
             logger.info("Aucune nouvelle candle à labelliser.")
             return
 
-        df = compute_labels(df, horizon=horizon, threshold=threshold)
+        df = compute_labels(df, horizon=horizon, threshold=threshold, interval=interval)
         load_labels(pg_conn, df, id_symbol, interval, horizon, threshold)
 
     except Exception as e:

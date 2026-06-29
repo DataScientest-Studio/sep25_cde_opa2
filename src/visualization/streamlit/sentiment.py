@@ -1,7 +1,6 @@
 from datetime import datetime, date, timedelta
 
 import pandas as pd
-from pymongo.errors import PyMongoError
 import requests
 import streamlit as st
 
@@ -10,7 +9,6 @@ import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
 from src.common.api import get_api_base_url
-from src.common.connectors import MongoConnector
 from src.common.custom_logger import logger
 
 # Configuration de la page
@@ -64,8 +62,8 @@ def get_symbols():
         st.session_state.loading_data = False
 
 @st.cache_data(ttl=1)  
-def load_sentiments(start_date=None, end_date=None, limit=None, base_asset=None):
-    """Récupère les données de sentiments"""
+def load_sentiments_daily(start_date=None, end_date=None, limit=None, base_asset=None):
+    """Récupère les données de sentiments pré-calculées quotidiennement depuis l'API PostgreSQL"""
     st.session_state.loading_data = True
 
     try:
@@ -74,21 +72,15 @@ def load_sentiments(start_date=None, end_date=None, limit=None, base_asset=None)
         # Construction des paramètres de requête
         params = {"limit": limit, "base_asset": base_asset}
 
-        # Ajout des filtres de date si fournis
+        # Ajout des filtres de date (Format YYYY-MM-DD attendu par l'API daily)
         if start_date:
-            if isinstance(start_date, datetime):
-                params["start_date"] = start_date.strftime("%Y-%m-%dT%H:%M:%S")
-            else:
-                params["start_date"] = str(start_date)
+            params["start_date"] = str(start_date)
 
         if end_date:
-            if isinstance(end_date, datetime):
-                params["end_date"] = end_date.strftime("%Y-%m-%dT%H:%M:%S")
-            else:
-                params["end_date"] = str(end_date)
+            params["end_date"] = str(end_date)
 
-        # Appel à l'API
-        response = requests.get(f"{api_base_url}/scraping/sentiment", params=params, timeout=30)
+        # Appel à la route /scraping/sentiment/daily
+        response = requests.get(f"{api_base_url}/scraping/sentiment/daily", params=params, timeout=30)
 
         if response.status_code != 200:
             st.error(f"Erreur API (status {response.status_code}): {response.text}")
@@ -98,23 +90,17 @@ def load_sentiments(start_date=None, end_date=None, limit=None, base_asset=None)
         data = response.json()
 
         if not data:
-            logger.warning("Aucune donnée reçue de l'API.")
+            logger.warning("Aucune donnée reçue de l'API daily.")
             return pd.DataFrame()
 
         # Conversion en DataFrame
         df = pd.DataFrame(data)
 
-        # Conversion des colonnes de dates
-        if 'published_at' in df.columns:
-            df['published_at'] = pd.to_datetime(df['published_at'])
-        if 'created_at' in df.columns:
-            df['created_at'] = pd.to_datetime(df['created_at'])
+        # Conversion de la colonne de date provenant de la table fsd
+        if 'date_dg' in df.columns:
+            df['date_dg'] = pd.to_datetime(df['date_dg'])
 
-        # Mapping sur les sentiments
-        sentiment_map = {'positive': 1, 'neutral': 0, 'negative': -1}
-        df['sentiment_score'] = df['crypto_sentiment'].map(sentiment_map)
-
-        logger.info(f"Récupération de {len(df)} sentiments via l'API")
+        logger.info(f"Récupération de {len(df)} lignes d'agrégations quotidiennes via l'API")
         return df
         
     except requests.exceptions.RequestException as e:
@@ -130,10 +116,7 @@ def load_sentiments(start_date=None, end_date=None, limit=None, base_asset=None)
 
 @st.cache_data(ttl=1)  
 def load_candles(base_asset=None, interval="1d", start_date=None, end_date=None, limit=1000):
-    """
-        Récupère les candles.
-        Dans le cadre du projet, les candles avec interval de 24h sont recupérées.
-    """
+    """Récupère les candles (Données de marché)."""
     st.session_state.loading_data = True
 
     try:
@@ -203,75 +186,62 @@ def load_candles(base_asset=None, interval="1d", start_date=None, end_date=None,
         st.session_state.loading_data = False        
 
 def showArticlesByDay(df: pd.DataFrame):
-    # Aggrégation et comptage le nombre d'articles par date et par crypto
-    df_volume_articles = df.groupby(['date', 'base_asset']).size().reset_index(name='article_count')
-
-    # Graphique en barres empilées
+    """Affiche le volume d'articles quotidien"""
     fig = px.bar(
-        df_volume_articles, 
-        x='date', 
-        y='article_count', 
+        df, 
+        x='date_dg', 
+        y='articles_volume', 
         color='base_asset',
         title="Volume d'articles par jour",
-        labels={'article_count': 'Nombre d\'articles', 'date': 'Date', 'base_asset': 'Crypto'},
+        labels={'articles_volume': 'Nombre d\'articles', 'date_dg': 'Date', 'base_asset': 'Crypto'},
     )
 
     st.subheader("Volume d'articles par jour")
     st.plotly_chart(fig)
 
-def showMeanScoreByDay(df: pd.DataFrame) -> pd.DataFrame:
-    # Agrégation et calcul de la moyenne du score par jour
-    daily_sentiment = df.groupby(['base_asset', 'date'])['sentiment_score'].mean().reset_index()
-
+def showMeanScoreByDay(df: pd.DataFrame):
+    """Affiche le sentiment moyen quotidien"""
     fig = px.line(
-        daily_sentiment, 
-        x='date', 
+        df, 
+        x='date_dg', 
         y='sentiment_score', 
         color='base_asset',
         title="Évolution quotidienne du sentiment par Crypto",
-        labels={'score': 'Sentiment moyen (-1 à 1)', 'date': 'Date'},
+        labels={'sentiment_score': 'Sentiment moyen (-1 à 1)', 'date_dg': 'Date'},
         markers=True
     )
     
-    # Ajout d'une ligne horizontale à 0 pour repérer la neutralité
     fig.add_hline(y=0, line_dash="dash", line_color="gray")
 
     st.subheader("Analyse Tendancielle")
     st.plotly_chart(fig) 
 
-    return daily_sentiment
-
 def showScoreVsPrice(symbol: str, df_sentiments: pd.DataFrame, df_klines: pd.DataFrame):
+    """Superpose la courbe du sentiment lissé 3J avec le cours de clôture"""
     if df_klines.empty:
         return False
 
-    # Convertion en objet datetime de la date.
-    df_sentiments['date_dt'] = pd.to_datetime(df_sentiments['date'])
+    # Fusion des dataframes sur la date commune
+    merged_df = pd.merge(df_sentiments, df_klines, left_on='date_dg', right_on='open_time', how='inner')
 
-    # Merge des dataframes sentiments, et klines
-    merged_df = pd.merge(df_sentiments, df_klines, left_on='date_dt', right_on='open_time', how='inner')
-
-    # Calcul de la moyenne mobile sur 3 jours pour lisser le sentiment
-    merged_df['sentiment_smooth'] = merged_df['sentiment_score'].rolling(window=3, min_periods=1).mean()
-
-    # Création de la figure avec deux axes Y
+    # Création de la figure double axe Y
     fig = make_subplots(specs=[[{"secondary_y": True}]])
 
-    # Ajout de la courbe de Sentiment (Axe Y gauche)
+    # Utilisation directe du sentiment lissé pré-calculé en BDD
     fig.add_trace(
         go.Scatter(
-            x=merged_df['date_dt'], 
+            x=merged_df['date_dg'], 
             y=merged_df['sentiment_smooth'], 
-            name="Sentiment",
+            name="Sentiment (Lissé 3J)",
             line=dict(color='royalblue', width=2)
         ),
         secondary_y=False,
     )
 
-    # Ajout de la courbe du Prix Close (Axe Y droit)
+    # Ajout du Prix Close (Axe Y droit)
     fig.add_trace(
         go.Scatter(
-            x=merged_df['date_dt'], 
+            x=merged_df['date_dg'], 
             y=merged_df['close'], 
             name=f"Prix {symbol}USDT",
             line=dict(color='firebrick', width=2)
@@ -279,18 +249,69 @@ def showScoreVsPrice(symbol: str, df_sentiments: pd.DataFrame, df_klines: pd.Dat
         secondary_y=True,
     )
 
-    # Mise en page
     fig.update_layout(
         title_text=f"{symbol}USDT",
         hovermode="x unified"
     )
 
-    # Noms des axes
     fig.update_yaxes(title_text="Score Sentiment (-1 à 1)", secondary_y=False)
     fig.update_yaxes(title_text="Prix", secondary_y=True)
 
     st.subheader("Corrélation sentiment journalier et prix")
-    st.plotly_chart(fig)          
+    st.plotly_chart(fig)
+
+def showCorrelationMatrix(symbol: str, df_sentiments: pd.DataFrame, df_klines: pd.DataFrame):
+    """Calcule et affiche la matrice de corrélation prédictive des rendements futurs"""
+    if df_klines.empty:
+        return False
+
+    # Fusion des dataframes
+    merged_df = pd.merge(df_sentiments, df_klines, left_on='date_dg', right_on='open_time', how='inner')
+
+    # Tri temporel strict avant calcul des rendements
+    merged_df = merged_df.sort_values('date_dg').reset_index(drop=True)
+
+    # Rendement du jour J (% de variation du prix de clôture)
+    merged_df['return_J'] = merged_df['close'].pct_change()
+
+    # Génération automatique des rendements futurs de J+1 à J+7 via shift
+    for i in range(1, 8):
+        merged_df[f'return_J+{i}'] = merged_df['return_J'].shift(-i)
+
+    # Définition propre des axes de la matrice de corrélation
+    columns_for_predictive_return_vol_corr = [
+        'sentiment_score',
+        'sentiment_smooth',
+        'sentiment_weighted',
+        'sentiment_weighted_smooth',
+        'return_J',
+        'return_J+1',
+        'return_J+2',
+        'return_J+3',
+        'return_J+4',
+        'return_J+5',
+        'return_J+6',
+        'return_J+7'
+    ]  
+
+    # Sécurité pour éviter toute KeyError
+    columns_return_vol_to_use = [col for col in columns_for_predictive_return_vol_corr if col in merged_df.columns]
+
+    # Calcul de la matrice
+    predictive_returns_vol_corr = merged_df[columns_return_vol_to_use].corr()
+
+    # Création de la Heatmap Plotly
+    fig_predictive_return_vol = px.imshow(
+        predictive_returns_vol_corr,
+        text_auto=".2f",
+        aspect="auto",
+        color_continuous_scale="RdBu_r",
+        range_color=[-1, 1],
+        title=f"Matrice de Corrélation Prédictive (Sentiment pré-calculé vs Rendements Futurs) pour {symbol}USDT"
+    )    
+
+    st.subheader("Analyse Prédictive du Sentiment")
+    st.plotly_chart(fig_predictive_return_vol, use_container_width=True)
     
 
 def main():
@@ -298,15 +319,16 @@ def main():
 
     with st.spinner("Chargement des données..."):
         try:
-            df_symbols=get_symbols()
+            df_symbols = get_symbols()
         except Exception as e:
             st.error(f"Erreur lors du chargement: {e}")
             df_symbols = pd.DataFrame()
       
     if df_symbols.empty:
         st.warning(f"Aucuns symbols trouvés ou erreur de connexion.")
+        return
     
-    symbols=df_symbols['base_asset'].unique()
+    symbols = df_symbols['base_asset'].unique()
     selected_symbols = st.sidebar.multiselect(
         "Sélectionner les cryptos à comparer",
         options=symbols,
@@ -328,10 +350,11 @@ def main():
         with st.spinner("Chargement des données..."):
             try:
                 start_date, end_date = dates
-                df_sentiments = load_sentiments(start_date, end_date, base_asset=selected_symbols)
-                df_klines_by_symbol=dict()
+                # Chargement via l'API pré-calculée daily
+                df_sentiments = load_sentiments_daily(start_date, end_date, base_asset=selected_symbols)
+                df_klines_by_symbol = dict()
                 for symbol in selected_symbols:
-                    df_klines_by_symbol[symbol]= load_candles(base_asset=symbol, interval="1d", start_date=start_date, end_date=end_date)
+                    df_klines_by_symbol[symbol] = load_candles(base_asset=symbol, interval="1d", start_date=start_date, end_date=end_date)
 
             except Exception as e:
                 st.error(f"Erreur lors du chargement: {e}")
@@ -341,22 +364,21 @@ def main():
             st.warning(f"Aucunes données de sentiments trouvées ou erreur de connexion.")
 
         else: 
-            # Convertion de la date en objet datetime, conservation de la date, mais pas de l'heure.
-            df_sentiments['date'] = pd.to_datetime(df_sentiments['published_at']).dt.date
-
-            # Affichage d'un graphique montrant le volume d'articles par jour.
+            # Graphique 1 : Volume d'articles
             showArticlesByDay(df=df_sentiments)
 
-            # Affichage d'un graphique montrant la moyenne du score de sentiment par jour
-            daily_sentiment = showMeanScoreByDay(df=df_sentiments)
+            # Graphique 2 : Tendance du score moyen
+            showMeanScoreByDay(df=df_sentiments)
 
-            # Affichage d'un graphique superposant la tendance du score de sentiment vs le prix de la crypto
-            # Ce graphique ne s'affiche que si la crypto possède des données de type klines.
-            daily_sentiment.set_index('base_asset', inplace=True)
-            for symbol, df_klines in df_klines_by_symbol.items():
-                symbol_daily_sentiment = daily_sentiment.loc[symbol]
-                showScoreVsPrice(symbol=symbol, df_sentiments=symbol_daily_sentiment, df_klines=df_klines)
-
+            # Boucle d'affichage pour les graphiques individuels par crypto (Prix vs Sentiment et Matrice)
+            for symbol in selected_symbols:
+                df_klines = df_klines_by_symbol.get(symbol, pd.DataFrame())
+                # Extraction des lignes correspondantes à la crypto courante (sans modifier le DataFrame d'origine)
+                symbol_daily_sentiment = df_sentiments[df_sentiments['base_asset'] == symbol]
+                
+                if not symbol_daily_sentiment.empty:
+                    showScoreVsPrice(symbol=symbol, df_sentiments=symbol_daily_sentiment, df_klines=df_klines)
+                    showCorrelationMatrix(symbol=symbol, df_sentiments=symbol_daily_sentiment, df_klines=df_klines)
 
     else:
         st.warning("Sélectionnez au moins une crypto et une date de début et de fin de période afin de générer les graphiques.")

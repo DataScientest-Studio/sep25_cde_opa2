@@ -1,9 +1,10 @@
 import pandas as pd
 import plotly.graph_objects as go
+import requests
 import streamlit as st
 from plotly.subplots import make_subplots
 
-from src.common.connectors import PostgreSQLConnector
+from src.common.api import get_api_base_url
 from src.common.custom_logger import logger
 
 st.set_page_config(
@@ -20,32 +21,15 @@ CLASS_META = {
 }
 
 
-@st.cache_resource
-def get_pg_connection():
-    try:
-        return PostgreSQLConnector().connect()
-    except SystemExit:
-        st.error("Erreur de connexion PostgreSQL")
-        return None
-
-
 @st.cache_data(ttl=60)
 def get_available_symbols() -> list[str]:
     try:
-        connector = get_pg_connection()
-        if connector is None:
+        api_base_url = get_api_base_url()
+        response = requests.get(f"{api_base_url}/predictions/symbols", timeout=10)
+        if response.status_code != 200:
+            logger.error(f"Erreur API /predictions/symbols (status {response.status_code}): {response.text}")
             return []
-
-        with connector.conn.cursor() as cur:
-            cur.execute(
-                """
-                SELECT DISTINCT s.symbol
-                FROM predictions p
-                JOIN symbols s ON s.id = p.id_symbol
-                ORDER BY s.symbol;
-                """
-            )
-            return [row[0] for row in cur.fetchall()]
+        return response.json()
     except Exception as e:
         logger.error(f"Erreur get_available_symbols: {e}")
         return []
@@ -54,22 +38,16 @@ def get_available_symbols() -> list[str]:
 @st.cache_data(ttl=60)
 def get_available_intervals(symbol: str) -> list[str]:
     try:
-        connector = get_pg_connection()
-        if connector is None:
+        api_base_url = get_api_base_url()
+        response = requests.get(
+            f"{api_base_url}/predictions/intervals",
+            params={"symbol": symbol},
+            timeout=10,
+        )
+        if response.status_code != 200:
+            logger.error(f"Erreur API /predictions/intervals (status {response.status_code}): {response.text}")
             return []
-
-        with connector.conn.cursor() as cur:
-            cur.execute(
-                """
-                SELECT DISTINCT p.interval
-                FROM predictions p
-                JOIN symbols s ON s.id = p.id_symbol
-                WHERE s.symbol = %s
-                ORDER BY p.interval;
-                """,
-                (symbol,),
-            )
-            return [row[0] for row in cur.fetchall()]
+        return response.json()
     except Exception as e:
         logger.error(f"Erreur get_available_intervals: {e}")
         return []
@@ -79,23 +57,17 @@ def get_available_intervals(symbol: str) -> list[str]:
 def get_available_versions(symbol: str, interval: str) -> list[tuple[int, float]]:
     """Version de modele/labels disponible, representee par (horizon, threshold)."""
     try:
-        connector = get_pg_connection()
-        if connector is None:
+        api_base_url = get_api_base_url()
+        response = requests.get(
+            f"{api_base_url}/predictions/versions",
+            params={"symbol": symbol, "interval": interval},
+            timeout=10,
+        )
+        if response.status_code != 200:
+            logger.error(f"Erreur API /predictions/versions (status {response.status_code}): {response.text}")
             return []
-
-        with connector.conn.cursor() as cur:
-            cur.execute(
-                """
-                SELECT DISTINCT p.horizon, p.threshold
-                FROM predictions p
-                JOIN symbols s ON s.id = p.id_symbol
-                WHERE s.symbol = %s
-                  AND p.interval = %s
-                ORDER BY p.horizon, p.threshold;
-                """,
-                (symbol, interval),
-            )
-            return [(int(row[0]), float(row[1])) for row in cur.fetchall()]
+        data = response.json()
+        return [(int(item["horizon"]), float(item["threshold"])) for item in data]
     except Exception as e:
         logger.error(f"Erreur get_available_versions: {e}")
         return []
@@ -110,49 +82,27 @@ def load_predictions_history(
     limit: int = 1000,
 ) -> pd.DataFrame:
     try:
-        connector = get_pg_connection()
-        if connector is None:
-            return pd.DataFrame()
-
-        with connector.conn.cursor() as cur:
-            cur.execute(
-                """
-                SELECT
-                    p.timestamp,
-                    p.predicted_up_down,
-                    p.created_at,
-                    c.close,
-                    l.label_up_down
-                FROM predictions p
-                JOIN symbols s ON s.id = p.id_symbol
-                LEFT JOIN candles c
-                    ON c.id_symbol = p.id_symbol
-                    AND c.interval = p.interval
-                    AND c.open_time = p.timestamp
-                LEFT JOIN labels l
-                    ON l.id_symbol = p.id_symbol
-                    AND l.interval = p.interval
-                    AND l.horizon = p.horizon
-                    AND l.threshold = p.threshold
-                    AND l.timestamp = p.timestamp
-                WHERE s.symbol = %s
-                  AND p.interval = %s
-                  AND p.horizon = %s
-                  AND p.threshold = %s
-                ORDER BY p.timestamp DESC
-                LIMIT %s;
-                """,
-                (symbol, interval, horizon, threshold, limit),
-            )
-            rows = cur.fetchall()
-
-        if not rows:
-            return pd.DataFrame()
-
-        df = pd.DataFrame(
-            rows,
-            columns=["timestamp", "predicted_up_down", "created_at", "close", "label_up_down"],
+        api_base_url = get_api_base_url()
+        response = requests.get(
+            f"{api_base_url}/predictions",
+            params={
+                "symbol": symbol,
+                "interval": interval,
+                "horizon": horizon,
+                "threshold": threshold,
+                "limit": limit,
+            },
+            timeout=30,
         )
+        if response.status_code != 200:
+            st.error(f"Erreur API /predictions (status {response.status_code}): {response.text}")
+            return pd.DataFrame()
+
+        data = response.json()
+        if not data:
+            return pd.DataFrame()
+
+        df = pd.DataFrame(data)
         df["timestamp"] = pd.to_datetime(df["timestamp"])
         df["created_at"] = pd.to_datetime(df["created_at"])
         df["close"] = pd.to_numeric(df["close"], errors="coerce")
@@ -160,6 +110,11 @@ def load_predictions_history(
         df["label_up_down"] = pd.to_numeric(df["label_up_down"], errors="coerce").astype("Int64")
 
         return df.sort_values("timestamp").reset_index(drop=True)
+
+    except requests.exceptions.RequestException as e:
+        st.error(f"Erreur de connexion à l'API: {e}")
+        logger.error(f"Erreur load_predictions_history (connexion): {e}")
+        return pd.DataFrame()
     except Exception as e:
         logger.error(f"Erreur load_predictions_history: {e}")
         st.error(f"Erreur lors du chargement des prédictions: {e}")
@@ -301,6 +256,42 @@ def render_latest_prediction(symbol: str, interval: str, horizon: int, threshold
         "Le label peut manquer sur les candles les plus récentes (horizon futur non encore observé)."
     )
 
+def add_cumulative_performance(df: pd.DataFrame) -> pd.DataFrame:
+    """Calcule la performance cumulée (stratégie vs Buy&Hold)."""
+    df = df.copy().sort_values("timestamp")
+    
+    # Rendement de l'actif
+    df['daily_return'] = df['close'].pct_change()
+    
+    # Rendement de ta stratégie
+    # Si le modèle prédit -1 (Vente), on multiplie le rendement par -1 (Short)
+    # Si le modèle prédit 0 (Hold), on multiplie par 0 (Cash)
+    df['strategy_return'] = df['predicted_up_down'].shift(1) * df['daily_return']
+    
+    # Cumul des performances
+    df['cum_perf'] = (1 + df['strategy_return']).cumprod() - 1
+    df['market_perf'] = (1 + df['daily_return']).cumprod() - 1
+    
+    return df.fillna(0)
+
+def calculate_model_accuracy(df: pd.DataFrame):
+    """
+    Calcule le taux de réussite (Hit Rate) du modèle.
+    On ignore les prédictions 'HOLD' (0) pour ne mesurer que la qualité des signaux d'action.
+    """
+    # On ne garde que les lignes où le modèle a donné un signal (BUY ou SELL)
+    # et où le label réel est connu (donc pas de NaN)
+    df_signals = df[df['predicted_up_down'] != 0].dropna(subset=['label_up_down'])
+    
+    if df_signals.empty:
+        return 0.0, 0
+    
+    # Succès = quand la prédiction est égale au label réel
+    matches = (df_signals['predicted_up_down'] == df_signals['label_up_down']).sum()
+    total_signals = len(df_signals)
+    
+    hit_rate = matches / total_signals
+    return hit_rate, total_signals
 
 @st.fragment(run_every="30s")
 def render_predictions_history(symbol: str, interval: str, horizon: int, threshold: float, max_points: int):
@@ -309,6 +300,16 @@ def render_predictions_history(symbol: str, interval: str, horizon: int, thresho
     if df.empty:
         st.warning("Aucune donnée historique disponible pour ces paramètres.")
         return
+    
+    # Calcul de la performance et fiabilité
+    df = add_cumulative_performance(df)
+    hit_rate, n_signals = calculate_model_accuracy(df)  
+
+    st.subheader("Performance & Fiabilité")
+    c1, c2, c3 = st.columns(3)
+    c1.metric("Stratégie", f"{df['cum_perf'].iloc[-1]:.2%}")
+    c2.metric("Marché (Buy & Hold)", f"{df['market_perf'].iloc[-1]:.2%}")
+    c3.metric("Taux de réussite (Hit Rate)", f"{hit_rate:.1%}", help=f"Basé sur {n_signals} signaux")
 
     st.info(
         f"Symbole : **{symbol}** | Intervalle : **{interval}** | "

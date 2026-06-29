@@ -1,12 +1,13 @@
 from datetime import datetime, timedelta
 
 import pandas as pd
+import requests
 import streamlit as st
 import plotly.graph_objects as go
 import plotly.express as px
 from plotly.subplots import make_subplots
 
-from src.common.connectors import PostgreSQLConnector
+from src.common.api import get_api_base_url
 from src.common.custom_logger import logger
 
 # Configuration de la page
@@ -21,32 +22,21 @@ LABEL_COLORS = {-1: "#ff4444", 0: "#aaaaaa", 1: "#00ff88"}
 LABEL_NAMES  = {-1: "SELL (-1)", 0: "HOLD (0)", 1: "BUY (+1)"}
 
 
-@st.cache_resource
-def get_pg_connection():
-    try:
-        return PostgreSQLConnector().connect()
-    except SystemExit:
-        st.error("Erreur de connexion PostgreSQL")
-        return None
-
-
 @st.cache_data(ttl=60)
 def get_available_params(symbol: str, interval: str):
-    """Retourne les combinaisons (horizon, threshold) disponibles en base pour ce symbol/interval."""
+    """Retourne les combinaisons (horizon, threshold) disponibles via l'API pour ce symbol/interval."""
     try:
-        connector = get_pg_connection()
-        if connector is None:
+        api_base_url = get_api_base_url()
+        response = requests.get(
+            f"{api_base_url}/labels/params",
+            params={"symbol": symbol, "interval": interval},
+            timeout=10,
+        )
+        if response.status_code != 200:
+            logger.error(f"Erreur API /labels/params (status {response.status_code}): {response.text}")
             return []
-        conn = connector.conn
-        with conn.cursor() as cur:
-            cur.execute("""
-                SELECT DISTINCT l.horizon, l.threshold
-                FROM labels l
-                JOIN symbols s ON s.id = l.id_symbol
-                WHERE s.symbol = %s AND l.interval = %s
-                ORDER BY l.horizon, l.threshold;
-            """, (symbol, interval))
-            return cur.fetchall()  # liste de tuples (horizon, threshold)
+        data = response.json()
+        return [(item["horizon"], item["threshold"]) for item in data]
     except Exception as e:
         logger.error(f"Erreur get_available_params: {e}")
         return []
@@ -55,53 +45,42 @@ def get_available_params(symbol: str, interval: str):
 @st.cache_data(ttl=60)
 def load_labels(symbol: str, interval: str, horizon: int, threshold: float, start_date=None, end_date=None, limit: int = 2000):
     try:
-        connector = get_pg_connection()
-        if connector is None:
-            return pd.DataFrame()
-
-        conn = connector.conn
-
-        query = """
-            SELECT l.timestamp, l.label_up_down, l.label_return,
-                   c.close
-            FROM labels l
-            JOIN symbols s ON s.id = l.id_symbol
-            LEFT JOIN candles c ON c.id_symbol = l.id_symbol
-                AND c.open_time = l.timestamp
-                AND c.interval = l.interval
-            WHERE s.symbol = %s AND l.interval = %s
-              AND l.horizon = %s AND l.threshold = %s
-        """
-        params = [symbol, interval, horizon, threshold]
-
+        api_base_url = get_api_base_url()
+        params = {
+            "symbol": symbol,
+            "interval": interval,
+            "horizon": horizon,
+            "threshold": threshold,
+            "limit": limit,
+        }
         if start_date:
-            query += " AND l.timestamp >= %s"
-            params.append(start_date)
+            params["start_date"] = start_date.strftime("%Y-%m-%d %H:%M:%S") if isinstance(start_date, datetime) else str(start_date)
         if end_date:
-            query += " AND l.timestamp <= %s"
-            params.append(end_date)
+            params["end_date"] = end_date.strftime("%Y-%m-%d %H:%M:%S") if isinstance(end_date, datetime) else str(end_date)
 
-        query += " ORDER BY l.timestamp DESC LIMIT %s"
-        params.append(limit)
-
-        with conn.cursor() as cur:
-            cur.execute(query, params)
-            rows = cur.fetchall()
-
-        if not rows:
+        response = requests.get(f"{api_base_url}/labels", params=params, timeout=30)
+        if response.status_code != 200:
+            st.error(f"Erreur API /labels (status {response.status_code}): {response.text}")
             return pd.DataFrame()
 
-        df = pd.DataFrame(rows, columns=["timestamp", "label_up_down", "label_return", "close"])
-        df["timestamp"]    = pd.to_datetime(df["timestamp"])
+        data = response.json()
+        if not data:
+            return pd.DataFrame()
+
+        df = pd.DataFrame(data)
+        df["timestamp"] = pd.to_datetime(df["timestamp"])
         df["label_return"] = df["label_return"].astype(float)
         df["label_up_down"] = df["label_up_down"].astype(int)
-        if "close" in df.columns:
-            df["close"] = pd.to_numeric(df["close"], errors="coerce")
+        df["close"] = pd.to_numeric(df["close"], errors="coerce")
 
         df = df.sort_values("timestamp").reset_index(drop=True)
         logger.info(f"{len(df)} labels chargés pour {symbol}")
         return df
 
+    except requests.exceptions.RequestException as e:
+        st.error(f"Erreur de connexion à l'API: {e}")
+        logger.error(f"Erreur load_labels (connexion): {e}")
+        return pd.DataFrame()
     except Exception as e:
         st.error(f"Erreur lors du chargement des labels: {e}")
         logger.error(f"Erreur load_labels: {e}")
@@ -223,8 +202,7 @@ def main():
 
         | Intervalle | Horizon | Fenêtre réelle | Seuil θ |
         |---|---|---|---|
-        | 1d | 5 candles | 5 jours | 2%, 3% |
-        | 1d | 10 candles | 10 jours | 2%, 3% |
+        | 1d | 4 candles  | 4 jours | 2% |
         | 1h | 12 candles | 12 heures | 1%, 2% |
         | 1h | 24 candles | 1 journée | 1%, 2% |
         | 5m | 12 candles | 1 heure | 0.3%, 0.5% |
