@@ -7,7 +7,12 @@ Il collecte des données depuis Binance et Investing.com, stocke les données br
 
 L'objectif principal est de fournir un environnement reproductible permettant d'ingérer, enrichir, transformer, analyser et visualiser des données crypto dans le cadre d'un cas d'usage de machine learning et d'analyse de sentiment.
 
-==============================
+Contributeurs
+-------------------------------
+Ludovic Lacorne
+Ilyass Moulif
+Alexandre Ninassi
+
 
 Composants principaux du projet
 -------------------------------
