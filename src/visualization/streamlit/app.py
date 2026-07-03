@@ -17,7 +17,7 @@ slide_webscraping     = st.Page("slides/webscraping.py",     title="4. Webscrapi
 slide_architecture    = st.Page("slides/architecture.py",    title="5. Architecture du projet", icon="🏗️")
 slide_dashboard       = st.Page("slides/dashboard.py",       title="6. Dashboard",              icon="📊")
 slide_ml              = st.Page("slides/machine_learning.py",title="7. Machine learning",       icon="🤖")
-slide_tests           = st.Page("slides/tests_ci.py",        title="8. Tests unitaires et CI",  icon="✅")
+slide_tests           = st.Page("slides/tests_ci.py",        title="8. Qualité logicielle",  icon="✅")
 slide_limites         = st.Page("slides/limites.py",         title="9. Limites et améliorations",icon="⚠️")
 slide_conclusion      = st.Page("slides/conclusion.py",      title="10. Conclusion",            icon="🏁")
 

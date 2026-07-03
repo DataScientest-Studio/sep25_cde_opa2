@@ -1,4 +1,8 @@
-import streamlit as st
+from src.visualization.streamlit.slides._common import apply_slide_style, slide_header, bullets, show_image
 
-st.title("6. Dashboard")
-st.write("TODO")
+apply_slide_style()
+slide_header(
+    "6. Dashboard",
+    "Subtitle // Accrochhe",
+    "Petite phrase introductive"
+)

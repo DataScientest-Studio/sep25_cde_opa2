@@ -1,4 +1,19 @@
 import streamlit as st
+from src.visualization.streamlit.slides._common import apply_slide_style, slide_header, bullets, show_image
 
-st.title("5. Architecture du projet")
-st.write("TODO")
+apply_slide_style()
+slide_header(
+    "5. Architecture",
+    "Une architecture modulaire et conteneurisée",
+    "Le projet sépare ingestion, stockage, transformation, API, dashboard et planification."
+)
+
+left, right = st.columns([0.9, 1.35], gap="large")
+with left:
+    bullets([
+        "<strong>Docker Compose</strong><br/>Les services techniques sont isolés et reproductibles.",
+        "<strong>MongoDB & PostgreSQL</strong><br/>MongoDB conserve les données brutes alors que PostgreSQL conserve les données structurées pour l'entrainement, la prédiction, et la visualisation.",
+        "<strong>FastAPI & Streamlit</strong><br/>L’API expose les données et Streamlit rend le projet lisible et démontrable au travers de différents dashboard."
+    ])
+with right:
+    show_image("services_docker.png", "Organisation des principaux services applicatifs.")
