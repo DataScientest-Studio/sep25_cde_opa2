@@ -11,8 +11,8 @@ slide_header(
 left, right = st.columns([0.95, 1.25], gap="large")
 with left:
     bullets([
-        "<strong>Un marché bruité</strong><br/>Les prix évoluent vite, avec une forte sensibilité aux annonces et au sentiment collectif.",
-        "<strong>Des signaux hétérogènes</strong><br/>Candles, articles, sentiments et labels doivent être réunis dans un même pipeline.",
+        "<strong>Un marché sans interruption</strong><br/>Le marché crypto tourne 24h/24 et 7j/7, impossible à surveiller en continu par un humain.",
+        "<strong>Une volatilité extrême</strong><br/>Les prix peuvent varier de plusieurs pourcents en quelques minutes, rendant toute réaction manuelle trop lente.",
         "<strong>L'enjeu du Data Engineering</strong><br/>Construire un socle fiable, rejouable et exploitable avant toute approche prédictive."
     ])
 with right:
