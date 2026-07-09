@@ -16,4 +16,4 @@ with left:
         "<strong>L'enjeu du Data Engineering</strong><br/>Construire un socle fiable, rejouable et exploitable avant toute approche prédictive."
     ])
 with right:
-    show_image("flux_donnees.png", "Du signal brut vers des indicateurs exploitables.")
+    show_image("flux_donnees.jpg", "Du signal brut vers des indicateurs exploitables.")

@@ -16,4 +16,4 @@ with left:
         "<strong>Idempotence</strong><br/>Les champs <code>first_seen</code>, <code>last_seen</code> et <code>content_scraped</code> rendent le pipeline rejouable."
     ])
 with right:
-    show_image("sequence_scraping.png", "Séquence de scraping et d’enrichissement Investing.com.")
+    show_image("sequence_scraping.jpg", "Séquence de scraping et d’enrichissement d'articles.")
