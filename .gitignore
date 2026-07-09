@@ -95,3 +95,6 @@ docker/pgadmin/servers.json
 
 # Mypy cache
 .mypy_cache/
+
+# Markdown
+md/

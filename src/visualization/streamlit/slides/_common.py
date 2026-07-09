@@ -213,6 +213,12 @@ def apply_slide_style():
             .slide-image-toggle:checked ~ .slide-modal {
                 display: flex;
             }
+            .color-box {
+                width: 18px;
+                height: 18px;
+                border-radius: 2px;
+                display: inline-block;
+            }
             @media (max-width: 900px) {
                 h1 {font-size: 1.9rem !important;}
                 .metric-row {grid-template-columns: 1fr;}
