@@ -16,4 +16,4 @@ with left:
         "<strong>FastAPI & Streamlit</strong><br/>L’API expose les données et Streamlit rend le projet lisible et démontrable au travers de différents dashboard."
     ])
 with right:
-    show_image("services_docker.png", "Organisation des principaux services applicatifs.")
+    show_image("services_docker.jpg", "Organisation des principaux services applicatifs.")

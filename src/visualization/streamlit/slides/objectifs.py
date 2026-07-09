@@ -27,4 +27,4 @@ with left:
         "<strong>Exploitation</strong><br/>Rendre ces données actionnables en les exposant via FastAPI et en les visualisant dans un dashboard Streamlit interactif."
     ])
 with right:
-    show_image("architecture_globale.png", "Vue d'ensemble du projet et de ses composants.")
+    show_image("architecture_globale.jpg", "Vue d'ensemble du projet et de ses composants.")
