@@ -43,9 +43,9 @@ if ENV == 'docker':
 
 # API DOCKER MONITORING
 API_DOCKER_MONITORING_PORT=os.getenv('API_DOCKER_MONITORING_PORT', '8010')  # Port par défaut: 8010
-API_DOCKER_MONITORIN_HOST='localhost'
+API_DOCKER_MONITORING_HOST='localhost'
 if ENV == 'docker':
-    API_DOCKER_MONITORIN_HOST=os.getenv('API_DOCKER_MONITORIN_HOST', 'monitoring-docker-exporter')
+    API_DOCKER_MONITORING_HOST=os.getenv('API_DOCKER_MONITORING_HOST', 'monitoring-docker-exporter')
 
 # Grafana
 GRAFANA_PORT=os.getenv('GRAFANA_PORT', '3000')  # Port par défaut: 3000
