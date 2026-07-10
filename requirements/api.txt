@@ -7,3 +7,5 @@ psycopg-binary==3.3.2
 pymongo==4.16.0
 python-dotenv==1.2.1
 requests==2.32.5
+prometheus-fastapi-instrumentator==8.0.2
+docker==7.1.0
