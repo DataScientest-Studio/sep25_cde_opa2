@@ -60,6 +60,12 @@ target/
 # Docker
 docker/pgadmin/servers.json
 
+# Airflow
+airflow/logs/*
+!airflow/logs/.gitkeep
+airflow/config/*
+!airflow/config/.gitkeep
+
 # DotEnv configuration
 .env
 .env.prod.b
