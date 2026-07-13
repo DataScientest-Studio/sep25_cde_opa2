@@ -8,3 +8,4 @@ RUN pip install --no-cache-dir -r requirements/scraper.txt
 RUN python -m playwright install --with-deps chromium
 
 COPY src/ src/
+COPY data/external/ data/external/
