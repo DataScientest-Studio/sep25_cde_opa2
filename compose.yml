@@ -429,11 +429,38 @@ services:
         condition: service_started
     restart: unless-stopped    
 
+  # Airflow — orchestration de l'entraînement du modèle (test)
+  # Mode "standalone" : SQLite + un seul utilisateur admin généré automatiquement
+  airflow:
+    build:
+      context: .
+      dockerfile: docker/airflow/Dockerfile
+    container_name: airflow
+    command: airflow standalone
+    env_file:
+      - .env
+    environment:
+      ENV: docker
+      AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+      PYTHONPATH: /opt/airflow
+    ports:
+      - "8090:8080"   # webserver Airflow (8080 est déjà pris par pgadmin)
+    volumes:
+      - ./dags:/opt/airflow/dags
+      - airflow_data:/opt/airflow
+    depends_on:
+      postgres:
+        condition: service_healthy
+      postgres-init:
+        condition: service_completed_successfully
+    restart: unless-stopped
+
 volumes:
   mongo_data:
   postgresql_data:
   pgadmin_data:
   streamlit_data:
+  airflow_data:
   
 # Pour le montage des volumes locaux, on propose d'utiliser le chemin sur l'hôte : ~/DATAS/datascientest/projet/ (ou autre)
 # Dans lequel il faut créer les dossiers pour les données de MongoDB, PostgreSQL et pgAdmin, comme suit :
