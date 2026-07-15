@@ -101,3 +101,6 @@ airflow/config/*
 
 # Mypy cache
 .mypy_cache/
+
+# Markdown
+md/
