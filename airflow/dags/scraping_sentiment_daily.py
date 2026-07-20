@@ -50,8 +50,7 @@ PROJECT_ENV["ENV"] = "docker"
 
 default_args = {
     "owner": "cryptobot",
-    "retries": 2,
-    "retry_delay": timedelta(minutes=10),
+    "retries": 0,
 }
 
 
