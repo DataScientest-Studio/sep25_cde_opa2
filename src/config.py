@@ -41,6 +41,18 @@ API_HOST='localhost'
 if ENV == 'docker':
     API_HOST=os.getenv('API_HOST', 'data-api')
 
+# API DOCKER MONITORING
+API_DOCKER_MONITORING_PORT=os.getenv('API_DOCKER_MONITORING_PORT', '8010')  # Port par défaut: 8010
+API_DOCKER_MONITORING_HOST='localhost'
+if ENV == 'docker':
+    API_DOCKER_MONITORING_HOST=os.getenv('API_DOCKER_MONITORING_HOST', 'monitoring-docker-exporter')
+
+# Grafana
+GRAFANA_PORT=os.getenv('GRAFANA_PORT', '3000')  # Port par défaut: 3000
+GRAFANA_HOST='localhost'
+if ENV == 'docker':
+    GRAFANA_HOST=os.getenv('GRAFANA_HOST', 'monitoring-grafana')
+
 # Scraper
 SCRAPER_INDEX_LIMIT=os.getenv('SCRAPER_INDEX_LIMIT', 2)
 SCRAPER_ENRICH_LIMIT=os.getenv('SCRAPER_ENRICH_LIMIT', 50)
