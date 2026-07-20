@@ -7,6 +7,7 @@ sentiment_page  = st.Page("sentiment.py",   title="Sentiment",   icon="📊")
 labels_page     = st.Page("labels.py",      title="Labels",      icon="🏷️")
 predictions_page= st.Page("predictions.py", title="Prédictions", icon="🎲")
 api_page        = st.Page("api.py",         title="API",         icon="🔌")
+dockerhub_page        = st.Page("dockerhub.py", title="Dockerhub",  icon="🐳")
 
 # Présentation
 # Le choix des parties et de leur ordre est arbitraire, c'est à discuter
@@ -22,7 +23,7 @@ slide_limites         = st.Page("slides/limites.py",         title="9. Limites e
 slide_conclusion      = st.Page("slides/conclusion.py",      title="10. Conclusion",            icon="🏁")
 
 pg = st.navigation({
-    "Démonstration": [home_page, klines_page, sentiment_page, labels_page, predictions_page, api_page],
+    "Démonstration": [home_page, klines_page, sentiment_page, labels_page, predictions_page, api_page, dockerhub_page],
     "Présentation": [
         slide_problematique, slide_objectifs, slide_binance, slide_webscraping,
         slide_architecture, slide_ml, slide_dashboard, slide_tests,
