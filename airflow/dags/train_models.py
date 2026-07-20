@@ -41,14 +41,11 @@ DOCKER_URL = PROJECT_ENV.get("AIRFLOW_DOCKER_URL", "unix://var/run/docker.sock")
 DOCKER_NETWORK = PROJECT_ENV.get("DOCKER_NETWORK", "sep25_cde_opa2_default")
 DOCKER_REGISTRY = PROJECT_ENV.get("DOCKER_REGISTRY", "")
 
-IMG_SCRAPER = PROJECT_ENV.get("IMG_SCRAPER")
-IMG_SCRAPER_SENTIMENT = PROJECT_ENV.get("IMG_SCRAPER_SENTIMENT")
-IMG_MODELS_PREDICT_SENTIMENT = PROJECT_ENV.get("IMG_MODELS_PREDICT_SENTIMENT")
+IMG_MODELS_TRAIN = PROJECT_ENV.get("IMG_MODELS_TRAIN")
+IMG_MODELS_TRAIN_SENTIMENT = PROJECT_ENV.get("IMG_MODELS_TRAIN_SENTIMENT")
 
-SCRAPER_IMAGE = f"{DOCKER_REGISTRY}{IMG_SCRAPER}"
-SCRAPER_SENTIMENT_IMAGE = f"{DOCKER_REGISTRY}{IMG_SCRAPER_SENTIMENT}"
-SCRAPER_PREDICT_IMAGE = f"{DOCKER_REGISTRY}{IMG_MODELS_PREDICT_SENTIMENT}"
-
+TRAIN_IMAGE = f"{DOCKER_REGISTRY}{IMG_MODELS_TRAIN}"
+TRAIN_SENTIMENT_IMAGE = f"{DOCKER_REGISTRY}{IMG_MODELS_TRAIN_SENTIMENT}"
 
 default_args = {
     "owner": "cryptobot",
@@ -78,59 +75,28 @@ def docker_task(
 
 
 with DAG(
-    dag_id="scraping_sentiment_daily",
+    dag_id="train_models",
     description=(
-        "Pipeline quotidien de scraping crypto : indexation des articles, "
-        "enrichissement, détection des symboles, features sentiment, "
-        "entraînement et prédiction."
+        "Pipeline hebdomadaire d'entrainement de models liés aux données marché et de sentiments"
     ),
     default_args=default_args,
-    start_date=pendulum.datetime(2026, 7, 13, tz=LOCAL_TZ),
-    schedule="0 8 * * *",
+    start_date=pendulum.datetime(2026, 7, 20, tz=LOCAL_TZ),
+    schedule="0 8 * * 1",
     catchup=False,
     max_active_runs=1,
-    tags=["cryptobot", "scraping", "sentiment"],
+    tags=["cryptobot", "train", "market", "sentiment"],
 ) as dag:
 
-    index_articles = docker_task(
-        task_id="index_articles",
-        image=SCRAPER_IMAGE,
-        command="python -m src.data.scraping.index_articles",
+    train_market_model = docker_task(
+        task_id="train_market_model",
+        image=TRAIN_IMAGE,
+        command="bash src/models/train_model.sh",
         timeout=60 * 60,
     )
 
-    enrich_articles = docker_task(
-        task_id="enrich_articles",
-        image=SCRAPER_IMAGE,
-        command="python -m src.data.scraping.enrich_articles",
-        timeout=2 * 60 * 60,
-    )
-
-    detect_symbols = docker_task(
-        task_id="detect_symbols",
-        image=SCRAPER_IMAGE,
-        command="python -m src.data.scraping.detect_symbols",
+    train_sentiment_model = docker_task(
+        task_id="train_sentiment_model",
+        image=TRAIN_SENTIMENT_IMAGE,
+        command="bash src/models/train_sentiment_model.sh",
         timeout=60 * 60,
-    )
-
-    compute_sentiment_features = docker_task(
-        task_id="compute_sentiment_features",
-        image=SCRAPER_SENTIMENT_IMAGE,
-        command="bash src/features/scraping/entrypoint.sh",
-        timeout=2 * 60 * 60,
-    )
-
-    predict_sentiment = docker_task(
-        task_id="predict_sentiment",
-        image=SCRAPER_PREDICT_IMAGE,
-        command="bash src/models/predict_sentiment_model.sh",
-        timeout=60 * 60,
-    )
-
-    (
-        index_articles
-        >> enrich_articles
-        >> detect_symbols
-        >> compute_sentiment_features
-        >> predict_sentiment
     )

@@ -535,6 +535,53 @@ services:
         condition: service_started
     restart: unless-stopped
 
+  # Service pour entrainer avec le modele basé sur les features markets
+  models-train:
+    image: ${DOCKER_REGISTRY}${IMG_MODELS_TRAIN}
+    build:
+      context: ${BUILD_CONTEXT_DEV:-.}
+      dockerfile: docker/python/Dockerfile
+      args:
+        REQUIREMENTS_FILE: requirements/models.txt
+    env_file:
+      - .env
+    environment:
+      ENV: docker
+    profiles:
+      - manual
+    depends_on:
+      postgres:
+        condition: service_healthy
+      postgres-init:
+        condition: service_completed_successfully   
+      features-compute-features:
+        condition: service_started
+      features-compute-labels:
+        condition: service_started
+
+  models-sentiment-train:
+    image: ${DOCKER_REGISTRY}${IMG_MODELS_TRAIN_SENTIMENT}
+    build:
+      context: ${BUILD_CONTEXT_DEV:-.}
+      dockerfile: docker/python/Dockerfile
+      args:
+        REQUIREMENTS_FILE: requirements/models.txt
+    env_file:
+      - .env
+    environment:
+      ENV: docker
+    profiles:
+      - manual
+    depends_on:
+      postgres:
+        condition: service_healthy
+      postgres-init:
+        condition: service_completed_successfully   
+      features-compute-features:
+        condition: service_started
+      features-compute-labels:
+        condition: service_started
+
   # Service pour prédire avec les modèles entraînés
   models-predict:
     image: ${DOCKER_REGISTRY}${IMG_MODELS_PREDICT}
