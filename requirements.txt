@@ -12,7 +12,9 @@ python_binance==1.0.35
 
 # API (FastAPI)
 fastapi==0.135.1
+prometheus-fastapi-instrumentator==8.0.2
 uvicorn==0.42.0
+docker==7.1.0
 
 # Traitement de données
 pandas==3.0.2

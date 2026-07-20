@@ -201,6 +201,8 @@ services:
         condition: service_completed_successfully
       data-api:
         condition: service_healthy
+      monitoring-grafana:
+        condition: service_started
     restart: unless-stopped
     volumes:
       # Optionnel : pour le développement, monter le code source en temps réel
@@ -429,12 +431,115 @@ services:
         condition: service_started
     restart: unless-stopped    
 
+  # ---------------------------------------------------------------------------
+  # Stack de monitoring : Prometheus, Grafana, Alertmanager, cAdvisor, node-exporter
+  # ---------------------------------------------------------------------------
+
+  # Prometheus // collecte et stockage des métriques
+  monitoring-prometheus:
+    image: prom/prometheus:v2.36.2
+    container_name: monitoring-prometheus
+    volumes:
+      - ./monitoring/prometheus/:/etc/prometheus/
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+    ports:
+      - "9090:9090"
+    depends_on:
+      - monitoring-docker-exporter
+      - monitoring-node-exporter
+      - monitoring-alertmanager
+    restart: unless-stopped
+
+  # Grafana // visualisation des métriques (dashboards)
+  monitoring-grafana:
+    image: grafana/grafana:13.1.0
+    container_name: monitoring-grafana
+    user: "472"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/provisioning/:/etc/grafana/provisioning/
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: ${GF_SECURITY_ADMIN_PASSWORD}
+    env_file:
+      - ./monitoring/grafana/config.monitoring
+    ports:
+      - "${GRAFANA_PORT:-3000}:3000"
+    depends_on:
+      - monitoring-prometheus
+    restart: unless-stopped
+
+  # node-exporter // métriques système de l'hôte (CPU, mémoire, disque, réseau)
+  # Problème avec config WSL2 et système de fichiers 9p : pas de données dispos
+  monitoring-node-exporter:
+    image: quay.io/prometheus/node-exporter:v1.11.1
+    container_name: monitoring-node-exporter
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.sysfs=/host/sys'
+      - '--path.rootfs=/rootfs'
+      - '--no-collector.netstat'
+      - '--no-collector.softnet'
+      - --collector.filesystem.ignored-mount-points
+      - "^/(sys|proc|dev|host|etc|rootfs/var/lib/docker/containers|rootfs/var/lib/docker/overlay2|rootfs/run/docker/netns|rootfs/var/lib/docker/aufs)($$|/)"
+    ports:
+      - "9100:9100"
+    restart: unless-stopped
+
+  monitoring-docker-exporter:
+    image: ${DOCKER_REGISTRY}${IMG_API_DOCKER_MONITORING}
+    build:
+      context: ${BUILD_CONTEXT_DEV:-.}
+      dockerfile: docker/python/Dockerfile
+      args:
+        REQUIREMENTS_FILE: requirements/api.txt
+    container_name: monitoring-docker-exporter
+    command: python -m src.monitoring.docker-metadata-exporter.run
+    env_file:
+      - .env
+    environment:
+      ENV: docker
+    ports:
+      - "${API_DOCKER_MONITORING_PORT:-8010}:${API_DOCKER_MONITORING_PORT:-8010}"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:${API_DOCKER_MONITORING_PORT:-8010}/health', timeout=5).raise_for_status()"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
+
+  # Alertmanager // gestion et routage des alertes émises par Prometheus
+  monitoring-alertmanager:
+    image: prom/alertmanager:v0.33.1
+    container_name: monitoring-alertmanager
+    ports:
+      - "9093:9093"
+    volumes:
+      - ./monitoring/alertmanager/:/etc/alertmanager/
+    command:
+      - '--config.file=/etc/alertmanager/config.yml'
+      - '--storage.path=/alertmanager'
+    restart: unless-stopped
+
 volumes:
   mongo_data:
   postgresql_data:
   pgadmin_data:
   streamlit_data:
-  
+  prometheus_data:
+  grafana_data:
+
 # Pour le montage des volumes locaux, on propose d'utiliser le chemin sur l'hôte : ~/DATAS/datascientest/projet/ (ou autre)
 # Dans lequel il faut créer les dossiers pour les données de MongoDB, PostgreSQL et pgAdmin, comme suit :
 # ~/DATAS/datascientest/projet/
