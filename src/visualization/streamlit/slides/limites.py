@@ -10,7 +10,7 @@ slide_header(
 
 bullets([
     "<strong>Données marchés</strong><br/>Récolter un historique plus conséquent afin d'avoir une qualité prédictive accrue.",
-    "<strong>Scraping</strong><br/>Prévoir du monitoring et  des alertes en cas de changement de structure HTML. Scraper de nouvelles sources.",
-    "<strong>Orchestration</strong><br/>Remplacer progressivement les scripts planifiés par un orchestrateur type Airflow.",
+    "<strong>Scraping</strong><br/>Prévoir du monitoring et des alertes en cas de changement de structure HTML. Scraper de nouvelles sources via scrapping d'api.",
+    "<strong>Orchestration</strong><br/>Continuer le remplacement progressif des scripts planifiés via Ofelia par Airflow.",
     "<strong>Modèles</strong><br/>Ajouter du backtesting, comparaison de modèles et métriques métier."
 ])
