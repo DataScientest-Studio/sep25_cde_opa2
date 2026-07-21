@@ -2,10 +2,14 @@ FROM mcr.microsoft.com/playwright/python:v1.58.0-noble
 
 WORKDIR /app
 
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends xvfb \
+    && rm -rf /var/lib/apt/lists/*
+
 COPY requirements/scraper.txt requirements/scraper.txt
 
 RUN pip install --no-cache-dir -r requirements/scraper.txt
-RUN python -m playwright install --with-deps chromium
+RUN python -m playwright install --with-deps chromium chrome
 
 COPY src/ src/
 COPY data/external/ data/external/

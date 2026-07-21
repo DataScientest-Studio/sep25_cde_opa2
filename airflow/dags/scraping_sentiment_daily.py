@@ -95,14 +95,22 @@ with DAG(
     index_articles = docker_task(
         task_id="index_articles",
         image=SCRAPER_IMAGE,
-        command="python -m src.data.scraping.index_articles",
+        command=(
+            "sh -c 'xvfb-run -a "
+            "--server-args=\"-screen 0 1366x900x24\" "
+            "python -u -m src.data.scraping.index_articles'"
+        ),        
         timeout=60 * 60,
     )
 
     enrich_articles = docker_task(
         task_id="enrich_articles",
         image=SCRAPER_IMAGE,
-        command="python -m src.data.scraping.enrich_articles",
+        command=(
+            "sh -c 'xvfb-run -a "
+            "--server-args=\"-screen 0 1366x900x24\" "
+            "python -u -m src.data.scraping.enrich_articles'"
+        ),          
         timeout=2 * 60 * 60,
     )
 
