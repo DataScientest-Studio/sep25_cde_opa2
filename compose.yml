@@ -129,47 +129,202 @@ services:
     ports:
       - "8080:80"
     restart: unless-stopped
+
+
+  # CONFIGURATION AIRFLOW
+  # Airflow base de donnée dédiée
+  airflow-postgres:
+    image: postgres:17
+    container_name: airflow-postgres
+    environment:
+      POSTGRES_USER: ${AIRFLOW_DB_USER}
+      POSTGRES_PASSWORD: ${AIRFLOW_DB_PASSWORD}
+      POSTGRES_DB: ${AIRFLOW_DB_NAME}
+    volumes:
+      - ~/DATAS/datascientest/projet/airflow_postgresql_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      retries: 5
+      start_period: 5s
+    restart: unless-stopped
+
+  # Airflow initialisation
+  airflow-init:
+    image: ${DOCKER_REGISTRY}cryptobot-airflow:latest
+    build:
+      context: ${BUILD_CONTEXT_DEV:-.}
+      dockerfile: docker/airflow/Dockerfile
+    container_name: airflow-init
+    depends_on:
+      airflow-postgres:
+        condition: service_healthy
+    env_file:
+      - .env
+    environment:
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://${AIRFLOW_DB_USER}:${AIRFLOW_DB_PASSWORD}@airflow-postgres:5432/${AIRFLOW_DB_NAME}
+      AIRFLOW__CORE__FERNET_KEY: ""
+      AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: "true"
+      AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+      AIRFLOW__CORE__EXECUTION_API_SERVER_URL: "http://airflow-apiserver:8080/execution/"
+      AIRFLOW__CORE__AUTH_MANAGER: airflow.api_fastapi.auth.managers.simple.simple_auth_manager.SimpleAuthManager
+      AIRFLOW__CORE__SIMPLE_AUTH_MANAGER_USERS: "${AIRFLOW_ADMIN_USER}:admin"
+      AIRFLOW__CORE__SIMPLE_AUTH_MANAGER_PASSWORDS_FILE: /opt/airflow/config/simple_auth_manager_passwords.json.generated      
+      AIRFLOW__SCHEDULER__ENABLE_HEALTH_CHECK: "true"
+      AIRFLOW_PROJECT_ENV_FILE: /opt/airflow/project.env
+      AIRFLOW__API_AUTH__JWT_SECRET: ${AIRFLOW__API_AUTH__JWT_SECRET}
+    user: "${AIRFLOW_UID:-50000}:0"
+    volumes:
+      - ./airflow/dags:/opt/airflow/dags
+      - ./airflow/logs:/opt/airflow/logs
+      - ./airflow/plugins:/opt/airflow/plugins
+      - ./airflow/config:/opt/airflow/config
+      - ./.env:/opt/airflow/project.env:ro
+    command: bash -c "airflow db migrate"
+    restart: "no"
+
+  # Airflow web interface / API server
+  airflow-apiserver:
+    image: ${DOCKER_REGISTRY}cryptobot-airflow:latest
+    container_name: airflow-apiserver
+    depends_on:
+      airflow-init:
+        condition: service_completed_successfully
+    env_file:
+      - .env        
+    environment:
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://${AIRFLOW_DB_USER}:${AIRFLOW_DB_PASSWORD}@airflow-postgres:5432/${AIRFLOW_DB_NAME}
+      AIRFLOW__CORE__FERNET_KEY: ""
+      AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: "true"
+      AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+      AIRFLOW__SCHEDULER__ENABLE_HEALTH_CHECK: "true"
+      AIRFLOW__CORE__EXECUTION_API_SERVER_URL: "http://airflow-apiserver:8080/execution/"
+      AIRFLOW__CORE__AUTH_MANAGER: airflow.api_fastapi.auth.managers.simple.simple_auth_manager.SimpleAuthManager
+      AIRFLOW__CORE__SIMPLE_AUTH_MANAGER_USERS: "${AIRFLOW_ADMIN_USER}:admin"
+      AIRFLOW__CORE__SIMPLE_AUTH_MANAGER_PASSWORDS_FILE: /opt/airflow/config/simple_auth_manager_passwords.json.generated 
+      AIRFLOW_PROJECT_ENV_FILE: /opt/airflow/project.env
+      AIRFLOW__API_AUTH__JWT_SECRET: ${AIRFLOW__API_AUTH__JWT_SECRET} 
+    user: "${AIRFLOW_UID:-50000}:0"
+    volumes:
+      - ./airflow/dags:/opt/airflow/dags
+      - ./airflow/logs:/opt/airflow/logs
+      - ./airflow/plugins:/opt/airflow/plugins
+      - ./airflow/config:/opt/airflow/config
+      - ./.env:/opt/airflow/project.env:ro
+    ports:
+      - "8082:8080"
+    command: api-server
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "http://localhost:8080/api/v2/monitor/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
+
+  # Airflow scheduler
+  airflow-scheduler:
+    image: ${DOCKER_REGISTRY}cryptobot-airflow:latest
+    container_name: airflow-scheduler
+    depends_on:
+      airflow-init:
+        condition: service_completed_successfully
+    env_file:
+      - .env             
+    environment:
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://${AIRFLOW_DB_USER}:${AIRFLOW_DB_PASSWORD}@airflow-postgres:5432/${AIRFLOW_DB_NAME}
+      AIRFLOW__CORE__FERNET_KEY: ""
+      AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: "true"
+      AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+      AIRFLOW__SCHEDULER__ENABLE_HEALTH_CHECK: "true"
+      AIRFLOW__CORE__EXECUTION_API_SERVER_URL: "http://airflow-apiserver:8080/execution/"
+      AIRFLOW__CORE__AUTH_MANAGER: airflow.api_fastapi.auth.managers.simple.simple_auth_manager.SimpleAuthManager
+      AIRFLOW__CORE__SIMPLE_AUTH_MANAGER_USERS: "${AIRFLOW_ADMIN_USER}:admin"
+      AIRFLOW__CORE__SIMPLE_AUTH_MANAGER_PASSWORDS_FILE: /opt/airflow/config/simple_auth_manager_passwords.json.generated
+      AIRFLOW_PROJECT_ENV_FILE: /opt/airflow/project.env
+      AIRFLOW__API_AUTH__JWT_SECRET: ${AIRFLOW__API_AUTH__JWT_SECRET}   
+    group_add:
+      - "${DOCKER_GID}"    
+    user: "${AIRFLOW_UID:-50000}:0"
+    volumes:
+      - ./airflow/dags:/opt/airflow/dags
+      - ./airflow/logs:/opt/airflow/logs
+      - ./airflow/plugins:/opt/airflow/plugins
+      - ./airflow/config:/opt/airflow/config
+      # Fichier .env transmis ensuite aux conteneurs lancés par DockerOperator
+      - ./.env:/opt/airflow/project.env:ro
+      # Nécessaire pour que DockerOperator puisse lancer des conteneurs Docker
+      - /var/run/docker.sock:/var/run/docker.sock
+    command: scheduler
+    restart: unless-stopped
+
+  # Airflow DAG processor
+  airflow-dag-processor:
+    image: ${DOCKER_REGISTRY}cryptobot-airflow:latest
+    container_name: airflow-dag-processor
+    depends_on:
+      airflow-init:
+        condition: service_completed_successfully
+    env_file:
+      - .env         
+    environment:
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://${AIRFLOW_DB_USER}:${AIRFLOW_DB_PASSWORD}@airflow-postgres:5432/${AIRFLOW_DB_NAME}
+      AIRFLOW__CORE__FERNET_KEY: ""
+      AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: "true"
+      AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+      AIRFLOW__CORE__EXECUTION_API_SERVER_URL: "http://airflow-apiserver:8080/execution/"
+      AIRFLOW__CORE__AUTH_MANAGER: airflow.api_fastapi.auth.managers.simple.simple_auth_manager.SimpleAuthManager
+      AIRFLOW__CORE__SIMPLE_AUTH_MANAGER_USERS: "${AIRFLOW_ADMIN_USER}:admin"
+      AIRFLOW__CORE__SIMPLE_AUTH_MANAGER_PASSWORDS_FILE: /opt/airflow/config/simple_auth_manager_passwords.json.generated 
+      AIRFLOW_PROJECT_ENV_FILE: /opt/airflow/project.env
+      AIRFLOW__API_AUTH__JWT_SECRET: ${AIRFLOW__API_AUTH__JWT_SECRET}  
+    user: "${AIRFLOW_UID:-50000}:0"
+    volumes:
+      - ./airflow/dags:/opt/airflow/dags
+      - ./airflow/logs:/opt/airflow/logs
+      - ./airflow/plugins:/opt/airflow/plugins
+      - ./airflow/config:/opt/airflow/config
+      - ./.env:/opt/airflow/project.env:ro
+    command: dag-processor
+    restart: unless-stopped  
   
   # Scraper containers
   # Service pour scraper les news
-  # Le scraping est lancé dès l'execution du script, puis il se met en pause jusqu'a être rappelé par le scheduler ofelia
   scraper:
-    image: ${DOCKER_REGISTRY}cryptobot-scraper:latest
+    image: ${DOCKER_REGISTRY}${IMG_SCRAPER}
     build:
       context: ${BUILD_CONTEXT_DEV:-.}
       dockerfile: docker/scraper/Dockerfile
-    container_name: scraper
-    command: sh -c "python -m src.data.scraping.main && sleep infinity"
-    volumes:
-      - ./data/external:/app/data/external
     env_file:
       - .env
     environment:
       ENV: docker
+    profiles:
+      - manual
     depends_on:
       mongo:
         condition: service_started
       mongo-init:
         condition: service_completed_successfully
-    restart: unless-stopped
 
   # Service pour l'analyse de sentiment des articles
   # Analyse de la source provenant de mongoDB
   # Résultats stockés dans postgreSQL
-  # L'analyse est lancée dès l'execution du script, puis elle se met en pause jusqu'a être rappelée par le scheduler ofelia
   scraper-feature-sentiment:
-    image: ${DOCKER_REGISTRY}cryptobot-sentiment:latest
+    image: ${DOCKER_REGISTRY}${IMG_SCRAPER_SENTIMENT}
     build:
       context: ${BUILD_CONTEXT_DEV:-.}
       dockerfile: docker/scraper-feature-sentiment/Dockerfile
-    container_name: scraper-feature-sentiment
-    command: sh -c "bash src/features/scraping/entrypoint.sh && sleep infinity"
-    volumes:
-      - ./data/external:/app/data/external    
     env_file:
       - .env
     environment:
       ENV: docker
+    profiles:
+      - manual
     depends_on:
       mongo:
         condition: service_started
@@ -179,7 +334,6 @@ services:
         condition: service_healthy
       postgres-init:
         condition: service_completed_successfully
-    restart: unless-stopped
 
   # Streamlit application
   streamlit:
@@ -381,6 +535,53 @@ services:
         condition: service_started
     restart: unless-stopped
 
+  # Service pour entrainer avec le modele basé sur les features markets
+  models-train:
+    image: ${DOCKER_REGISTRY}${IMG_MODELS_TRAIN}
+    build:
+      context: ${BUILD_CONTEXT_DEV:-.}
+      dockerfile: docker/python/Dockerfile
+      args:
+        REQUIREMENTS_FILE: requirements/models.txt
+    env_file:
+      - .env
+    environment:
+      ENV: docker
+    profiles:
+      - manual
+    depends_on:
+      postgres:
+        condition: service_healthy
+      postgres-init:
+        condition: service_completed_successfully   
+      features-compute-features:
+        condition: service_started
+      features-compute-labels:
+        condition: service_started
+
+  models-sentiment-train:
+    image: ${DOCKER_REGISTRY}${IMG_MODELS_TRAIN_SENTIMENT}
+    build:
+      context: ${BUILD_CONTEXT_DEV:-.}
+      dockerfile: docker/python/Dockerfile
+      args:
+        REQUIREMENTS_FILE: requirements/models.txt
+    env_file:
+      - .env
+    environment:
+      ENV: docker
+    profiles:
+      - manual
+    depends_on:
+      postgres:
+        condition: service_healthy
+      postgres-init:
+        condition: service_completed_successfully   
+      features-compute-features:
+        condition: service_started
+      features-compute-labels:
+        condition: service_started
+
   # Service pour prédire avec les modèles entraînés
   models-predict:
     image: ${DOCKER_REGISTRY}${IMG_MODELS_PREDICT}
@@ -415,11 +616,12 @@ services:
       args:
         REQUIREMENTS_FILE: requirements/models.txt
     container_name: models-predict-sentiment
-    command: sh -c "bash src/models/predict_sentiment_model.sh && sleep infinity"
     env_file:
       - .env
     environment:
       ENV: docker
+    profiles:
+      -  manual
     depends_on:
       postgres:
         condition: service_healthy
@@ -429,7 +631,6 @@ services:
         condition: service_started
       features-compute-labels:
         condition: service_started
-    restart: unless-stopped    
 
   # ---------------------------------------------------------------------------
   # Stack de monitoring : Prometheus, Grafana, Alertmanager, cAdvisor, node-exporter
@@ -537,6 +738,7 @@ volumes:
   postgresql_data:
   pgadmin_data:
   streamlit_data:
+  airflow_postgresql_data:
   prometheus_data:
   grafana_data:
 
