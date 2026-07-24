@@ -12,3 +12,4 @@ RUN python -c "from transformers import pipeline; \
     pipeline('text-classification', model='j-hartmann/emotion-english-distilroberta-base')"
 
 COPY src/ src/
+COPY data/external/ data/external/

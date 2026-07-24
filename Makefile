@@ -50,6 +50,16 @@ pull:
 rebuild:
 	docker compose build --no-cache
 	
+AIRFLOW_TASK_SERVICES = scraper scraper-feature-sentiment models-predict-sentiment
+
+.PHONY: build_airflow_tasks
+build_airflow_tasks:
+	docker compose --profile manual build $(AIRFLOW_TASK_SERVICES)
+
+.PHONY: rebuild_airflow_tasks
+rebuild_airflow_tasks:
+	docker compose --profile manual build --no-cache $(AIRFLOW_TASK_SERVICES)
+
 ## Streamlit
 .PHONY: rebuild_streamlit_image
 rebuild_streamlit_image:

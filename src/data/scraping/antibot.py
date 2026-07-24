@@ -1,8 +1,10 @@
+from pathlib import Path
 import time
 import random
 from playwright.sync_api import sync_playwright, Browser, Page, BrowserContext, Playwright
 from src.common.custom_logger import logger
 from src.config import ENV
+import os
 
 def human_sleep(sleep: int, msg: str):
     logger.info(f'{msg}: {sleep}')
@@ -23,36 +25,63 @@ def close_signup_modal(page: Page):
         human_sleep(sleep=random.uniform(0.5, 1.5), msg="Attente humaine après fermeture de la popup singup")
 
 def init_playwright() -> tuple[Playwright, Browser, BrowserContext]:
-    headless = True if ENV == "docker" else False  
+    # Lancement de chrome en mode headless False, et avec un profil.
+    # Seul moyen de passer la detection cloudflare
+    # Pas optimal, mais laissé ici dans l'intérêt du projet.
+    # Nécessite l'installation de chrome + xvfb
+    # headless = True if ENV == "docker" else False
+    headless = False
+
+    profile_dir = Path(f"/tmp/playwright-profile-{os.getpid()}").resolve()
 
     p = sync_playwright().start()
-    
-    browser = p.chromium.launch(
-        headless=headless,
-        args=[
-            "--disable-blink-features=AutomationControlled",
-            "--disable-features=IsolateOrigins,site-per-process",
-            "--disable-dev-shm-usage",
-            "--no-sandbox",
-            "--disable-setuid-sandbox",
-            "--no-proxy-server"
-        ]
-    )
 
-    context = browser.new_context(
-        user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-                   "AppleWebKit/537.36 (KHTML, like Gecko) "
-                   "Chrome/120.0.0.0 Safari/537.36",
-        viewport={
-            "width": random.randint(1200, 1920),
-            "height": random.randint(800, 1080)
-        },
-        java_script_enabled=True,
-        color_scheme="light",
+    context = p.chromium.launch_persistent_context(
+        user_data_dir=str(profile_dir),
+        channel="chrome",
+        headless=headless,
         locale="fr-FR",
         timezone_id="Europe/Paris",
-        storage_state=None
+        color_scheme="light",
+        java_script_enabled=True,
+        viewport={
+            "width": 1366,
+            "height": 900,
+        },
+        args=[
+            "--start-maximized",
+        ],
     )
+
+    browser = context.browser
+    
+    # browser = p.chromium.launch(
+    #     headless=headless,
+    #     args=[
+    #         # "--disable-blink-features=AutomationControlled",
+    #         # "--disable-features=IsolateOrigins,site-per-process",
+    #         "--disable-dev-shm-usage",
+    #         "--no-sandbox",
+    #         "--disable-setuid-sandbox"
+    #         # "--no-proxy-server"
+    #     ],
+    #     channel="chrome"
+    # )
+
+    # context = browser.new_context(
+    #     user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+    #                "AppleWebKit/537.36 (KHTML, like Gecko) "
+    #                "Chrome/120.0.0.0 Safari/537.36",
+    #     viewport={
+    #         "width": random.randint(1200, 1920),
+    #         "height": random.randint(800, 1080)
+    #     },
+    #     java_script_enabled=True,
+    #     color_scheme="light",
+    #     locale="fr-FR",
+    #     timezone_id="Europe/Paris",
+    #     storage_state=None
+    # )
 
     return p, browser, context
 

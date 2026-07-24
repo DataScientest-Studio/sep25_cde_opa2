@@ -95,6 +95,12 @@ Les noms d'images peuvent rester des images locales au projet, par exemple :
 
 Pour démarrer l'environnement de développement :
 
+    make build_airflow_tasks
+
+Cette commande build les conteneurs nécéssaires au scraping, executés via airflow.
+    
+Puis :
+
     make dev
 
 Cette commande :
@@ -110,6 +116,7 @@ Commandes utiles en développement :
     make down                           <- Arrête la stack Docker Compose.
     make up                             <- Démarre la stack Docker Compose.
     make rebuild                        <- Reconstruit toutes les images Docker sans cache.
+    make rebuild_airflow_tasks          <- Reconstruit toutes les images Docker nécéssaires à airflow, sans cache.
     make rebuild_streamlit_image        <- Reconstruit uniquement l'image Streamlit.
 
 Commandes manuelles utiles :
@@ -124,6 +131,7 @@ Commandes manuelles utiles :
 
 Services accessibles localement :
 
+    ├── AirFlow        <- http://localhost:8082
     ├── Streamlit      <- http://localhost:8501
     ├── FastAPI        <- http://localhost:8000/docs
     ├── Mongo Express  <- http://localhost:8081

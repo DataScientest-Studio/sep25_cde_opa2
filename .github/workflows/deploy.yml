@@ -48,6 +48,17 @@ jobs:
         cache-from: type=gha
         cache-to: type=gha,mode=max
 
+    # Build et Push de l'image Airflow
+    - name: Build and push Airflow
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        file: docker/airflow/Dockerfile
+        push: true
+        tags: ${{ secrets.DOCKERHUB_USERNAME }}/cryptobot-airflow:latest
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+
     # Build et Push de l'image du Scraper
     - name: Build and push Scraper
       uses: docker/build-push-action@v5
