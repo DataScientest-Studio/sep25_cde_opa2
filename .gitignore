@@ -60,6 +60,15 @@ target/
 # Docker
 docker/pgadmin/servers.json
 
+# Playwright
+.playwright
+
+# Airflow
+airflow/logs/*
+!airflow/logs/.gitkeep
+airflow/config/*
+!airflow/config/.gitkeep
+
 # DotEnv configuration
 .env
 .env.prod.b
@@ -95,3 +104,6 @@ docker/pgadmin/servers.json
 
 # Mypy cache
 .mypy_cache/
+
+# Markdown
+md/

@@ -2,6 +2,8 @@ from typing import List
 
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.responses import JSONResponse
+from prometheus_fastapi_instrumentator import Instrumentator
+
 from datetime import datetime
 from psycopg.rows import dict_row
 
@@ -20,6 +22,8 @@ app = FastAPI(
     description="API pour récupérer les données depuis PostgreSQL",
     version="1.0.0"
 )
+
+Instrumentator().instrument(app).expose(app)
 
 app.include_router(market_router)
 app.include_router(scraping_router)

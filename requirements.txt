@@ -12,7 +12,9 @@ python_binance==1.0.35
 
 # API (FastAPI)
 fastapi==0.135.1
+prometheus-fastapi-instrumentator==8.0.2
 uvicorn==0.42.0
+docker==7.1.0
 
 # Traitement de données
 pandas==3.0.2
@@ -33,3 +35,6 @@ torch==2.11.0
 streamlit==1.56.0
 plotly==6.7.0
 requests==2.32.5
+
+# Airflow
+apache-airflow-providers-docker==4.5.7

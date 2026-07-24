@@ -51,6 +51,19 @@ else
     echo "Dossier $PG_FOLDER créé!"
 fi
 
+# Create airflow postgresql data folder
+PG_FOLDER="$PROJECT_FOLDER/airflow_postgresql_data"
+if [ -d $PG_FOLDER ]; then
+    echo "Le dossier $PG_FOLDER existe!"
+else
+    mkdir -p $PG_FOLDER
+    # Permissions needed only by Linux
+    if [[ "$OSTYPE" != "darwin"* ]]; then
+        sudo chown -R 999:999 $PG_FOLDER
+    fi    
+    echo "Dossier $PG_FOLDER créé!"
+fi
+
 # Create pgadmin data folder
 PGADMIN_FOLDER="$PROJECT_FOLDER/pgadmin_data"
 if [ -d $PGADMIN_FOLDER ]; then
