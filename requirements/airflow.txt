@@ -1,1 +1,1 @@
-apache-airflow-providers-docker
+apache-airflow-providers-docker==4.5.7
