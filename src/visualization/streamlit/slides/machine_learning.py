@@ -3,7 +3,7 @@ from src.visualization.streamlit.slides._common import apply_slide_style, slide_
 
 apply_slide_style()
 slide_header(
-    "7. Machine learning",
+    "6. Machine learning",
     "Prédire la prochaine direction du marché",
     "Un modèle de classification supervisée transforme les indicateurs techniques en signaux de trading."
 )

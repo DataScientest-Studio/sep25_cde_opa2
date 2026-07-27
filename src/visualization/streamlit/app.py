@@ -25,8 +25,9 @@ slide_limites         = st.Page("slides/limites.py",         title="9. Limites e
 slide_conclusion      = st.Page("slides/conclusion.py",      title="10. Conclusion",            icon="🏁")
 
 pg = st.navigation({
-    "Démonstration": [home_page, klines_page, sentiment_page, labels_page, predictions_page, api_page, airflow_page, grafana_page, dockerhub_page],
-    "Présentation": [
+    "🚀 Démonstration": [home_page, klines_page, sentiment_page, labels_page, predictions_page],
+    "🛠️ Infrastructure": [api_page, airflow_page, grafana_page, dockerhub_page],
+    "🎓 Présentation": [
         slide_problematique, slide_objectifs, slide_binance, slide_webscraping,
         slide_architecture, slide_ml, slide_dashboard, slide_tests,
         slide_limites, slide_conclusion,
