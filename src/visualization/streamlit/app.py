@@ -13,6 +13,7 @@ dockerhub_page  = st.Page("dockerhub.py", title="Dockerhub",  icon="🐳")
 
 # Présentation
 # Le choix des parties et de leur ordre est arbitraire, c'est à discuter
+slide_projet          = st.Page("slides/projet.py",          title="-  Projet",                 icon="💼")
 slide_problematique   = st.Page("slides/problematique.py",   title="1. Problématique",          icon="❓")
 slide_objectifs       = st.Page("slides/objectifs.py",       title="2. Objectifs",              icon="🎯")
 slide_binance         = st.Page("slides/binance.py",         title="3. Binance",                icon="🪙")
@@ -28,6 +29,7 @@ pg = st.navigation({
     "🚀 Démonstration": [home_page, klines_page, sentiment_page, labels_page, predictions_page],
     "🛠️ Infrastructure": [api_page, airflow_page, grafana_page, dockerhub_page],
     "🎓 Présentation": [
+        slide_projet,
         slide_problematique, slide_objectifs, slide_binance, slide_webscraping,
         slide_architecture, slide_ml, slide_dashboard, slide_tests,
         slide_limites, slide_conclusion,

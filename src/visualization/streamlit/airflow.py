@@ -1,9 +1,12 @@
 import streamlit as st
 import streamlit.components.v1 as components
 import requests
+from pathlib import Path
+
 
 URL = f"http://localhost:8082"
 DOCKER_URL = f"http://airflow-apiserver:8080"
+ASSETS_DIR = Path(__file__).parent / "assets" / "slides"
 
 st.set_page_config(
     page_title="Orchestration Airflow",
@@ -42,6 +45,9 @@ def main():
     with col_url:
         st.info(f"URL de base : **{URL}**")
 
+    st.subheader(f"Captures Airflow")
+    st.image(ASSETS_DIR / "DAGs.png", caption="Capture Airflow 1", use_container_width=True)
+    st.image(ASSETS_DIR / "DAG1.png", caption="Capture Airflow 2", use_container_width=True)
 
 if __name__ == "__main__":
     main()
