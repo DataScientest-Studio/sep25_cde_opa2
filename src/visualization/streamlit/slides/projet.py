@@ -17,4 +17,4 @@ with left:
         "<strong>Date de soutenance :</strong><br/>4 août 2026"
         ])
 with right:
-    show_image("cryptobot.jpg", "")
+    show_image("cryptobot.jpg")
