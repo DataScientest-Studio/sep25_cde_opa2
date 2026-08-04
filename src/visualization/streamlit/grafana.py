@@ -4,7 +4,7 @@ import requests
 
 from src.config import GRAFANA_HOST, GRAFANA_PORT
 
-BROWSER_GRAFANA_URL = f"http://localhost:{GRAFANA_PORT}"
+BROWSER_GRAFANA_URL = f"http://localhost:{GRAFANA_PORT}/dashboards"
 SERVER_GRAFANA_URL = f"http://{GRAFANA_HOST}:{GRAFANA_PORT}"
 
 st.set_page_config(

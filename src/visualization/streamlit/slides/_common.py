@@ -249,7 +249,7 @@ def _safe_image_id(filename: str) -> str:
     return f"slide-img-{stem}"
 
 
-def show_image(filename: str, caption: str | None = None):
+def show_image(filename: str, caption: str | None = " "):
     """Affiche une image compacte cliquable avec ouverture en popup CSS.
 
     Le clic sur l'image ouvre une vue agrandie. La fermeture se fait via

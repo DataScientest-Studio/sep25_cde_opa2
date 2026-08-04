@@ -25,6 +25,9 @@ Composants principaux du projet
     ├── Analyse de sentiment         <- Extraction du sentiment à partir des articles collectés.
     ├── Machine learning             <- Scripts d'entraînement et de prédiction.
     ├── FastAPI                      <- API exposant les données traitées et les prédictions.
+    ├── Airflow                      <- Orchestration du scraping et de l'entrainement des models.
+    ├── Ofélia                       <- Déclenchement de la collecte binance, du calcul des features et des prédictions.
+    ├── Prometheus/Grafana          <- Monitoring des services docker, infra, et apis.
     └── Streamlit                    <- Dashboard et interface de présentation du projet.
 
 Prérequis
@@ -54,6 +57,7 @@ Puis compléter les valeurs dans ces fichiers :
     ├── BINANCE_API_SECRET
     ├── DOCKER_REGISTRY
     ├── BUILD_CONTEXT_DEV
+    ├── Variables AIRFLOW_*
     └── Variables IMG_*
 
 La configuration des serveurs pgAdmin doit également être créée à partir du fichier d'exemple :
@@ -135,6 +139,8 @@ Services accessibles localement :
     ├── Streamlit      <- http://localhost:8501
     ├── FastAPI        <- http://localhost:8000/docs
     ├── Mongo Express  <- http://localhost:8081
+    ├── Airflow        <- http://localhost:8082
+    ├── Grafana        <- http://localhost:3000
     └── pgAdmin        <- http://localhost:8080
 
 Lancer le projet en environnement de production
@@ -196,30 +202,37 @@ La persistance des données en production utilise les mêmes dossiers locaux qu'
     ~/DATAS/datascientest/projet/mongo_data
     ~/DATAS/datascientest/projet/postgresql_data
     ~/DATAS/datascientest/projet/pgadmin_data
+    ~/DATAS/datascientest/projet/airflow_postgresql_data
 
-Sous Linux, il peut être nécessaire d'ajuster les droits sur les dossiers PostgreSQL et pgAdmin :
+Sous Linux, il peut être nécessaire d'ajuster les droits sur les dossiers PostgreSQL et pgAdmin.
+Ces opérations sont réalisées lors du make init via le fichier init.sh :
 
     sudo chown -R 999:999 ~/DATAS/datascientest/projet/postgresql_data
+    sudo chown -R 999:999 ~/DATAS/datascientest/projet/airflow_postgresql_data
     sudo chown -R 5050:5050 ~/DATAS/datascientest/projet/pgadmin_data
 
 Planification des traitements
 -----------------------------
 
-Le projet utilise Ofelia comme planificateur de jobs Docker.
-La configuration est définie dans le fichier `scheduler.ini`.
+Le projet utilise Airflow et Ofelia comme planificateur de jobs Docker.
 
-Les traitements planifiés comprennent :
+La configuration d'Ofelia est définie dans le fichier `scheduler.ini`.
 
+Les traitements planifiés avec Ofélia comprennent :
+    ├── Transformation des données de marché MongoDB vers PostgreSQL
+    ├── Calcul des features
+    ├── Calcul des labels
+    └── Exécution des scripts de prédiction de marché
+
+Le conteneur `scheduler` dispose d'un accès au socket Docker afin d'exécuter les commandes dans les conteneurs applicatifs.
+
+Les traitements planifiés avec Airflow comprennent :
     ├── Indexation des articles scrapés
     ├── Enrichissement des articles collectés
     ├── Détection des symboles crypto dans les articles
     ├── Exécution de l'analyse de sentiment
-    ├── Transformation des données de marché MongoDB vers PostgreSQL
-    ├── Calcul des features
-    ├── Calcul des labels
-    └── Exécution des scripts de prédiction
-
-Le conteneur `scheduler` dispose d'un accès au socket Docker afin d'exécuter les commandes dans les conteneurs applicatifs.
+    ├── Exécution des scripts de prédiction intégrant les sentiments
+    └── Exécution des scripts d'entrainement
 
 Organisation du projet
 ----------------------
@@ -227,6 +240,14 @@ Organisation du projet
     ├── LICENSE
     ├── README.md          <- Fichier README principal pour les développeurs utilisant ce projet.
     ├── .env.sample        <- À copier en .env.dev et .env.prod, contient les variables d'environnement du projet.
+    │
+    ├── airflow
+    │   ├── config         <- config airflow
+    │   │   └── simple_auth_manager_passwords.json.generated.json    <- simple login / mdp generé par airflow (ne pas utiliser sur une vrai prod)
+    │   ├── dags           <- Déclaration des dags
+    │   ├── logs           <- Logs
+    │   └── plugins        <- Eventuels plugins supplémentaires
+    │
     ├── data
     │   ├── external       <- Données issues de sources tierces.
     │   │   └── mapping_cryptos_symbol_name.json    <- Mapping entre symboles et noms de cryptomonnaies.
@@ -235,6 +256,7 @@ Organisation du projet
     │   └── raw            <- Données brutes originales et immuables.
     │
     ├── docker             <- Configuration Docker.
+    │   ├── airflow        <- Contient le Dockerfile du conteneur airflow
     │   ├── pgadmin        <- Contient le fichier servers.json pour configurer les serveurs.
     │   │   └── .servers.sample    <- À renommer en servers.json et à compléter avec les valeurs de l'environnement actif.
     │   │

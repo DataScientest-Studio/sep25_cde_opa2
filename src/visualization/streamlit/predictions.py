@@ -305,11 +305,11 @@ def render_predictions_history(symbol: str, interval: str, horizon: int, thresho
     df = add_cumulative_performance(df)
     hit_rate, n_signals = calculate_model_accuracy(df)  
 
-    st.subheader("Performance & Fiabilité")
-    c1, c2, c3 = st.columns(3)
-    c1.metric("Stratégie", f"{df['cum_perf'].iloc[-1]:.2%}")
-    c2.metric("Marché (Buy & Hold)", f"{df['market_perf'].iloc[-1]:.2%}")
-    c3.metric("Taux de réussite (Hit Rate)", f"{hit_rate:.1%}", help=f"Basé sur {n_signals} signaux")
+    # st.subheader("Performance & Fiabilité")
+    # c1, c2, c3 = st.columns(3)
+    # c1.metric("Stratégie", f"{df['cum_perf'].iloc[-1]:.2%}")
+    # c2.metric("Marché (Buy & Hold)", f"{df['market_perf'].iloc[-1]:.2%}")
+    # c3.metric("Taux de réussite (Hit Rate)", f"{hit_rate:.1%}", help=f"Basé sur {n_signals} signaux")
 
     st.info(
         f"Symbole : **{symbol}** | Intervalle : **{interval}** | "
@@ -363,7 +363,7 @@ def main():
         "Nombre max de prédictions",
         min_value=100,
         max_value=5000,
-        value=1000,
+        value=200,
         step=100,
     )
 

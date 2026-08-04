@@ -3,7 +3,7 @@ from src.visualization.streamlit.slides._common import apply_slide_style, slide_
 
 apply_slide_style()
 slide_header(
-    "6. Dashboard",
+    "7. Dashboard",
     "Explorer le pipeline de bout en bout",
     "Une application Streamlit multi-pages pour visualiser données de marché, sentiments, labels et prédictions du modèle ML."
 )
