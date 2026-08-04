@@ -26,3 +26,5 @@ with left:
         "<strong>WebSocket</strong><br/>Flux temps réel qui pousse chaque nouvelle bougie dès sa clôture, pour une collecte en continu.",
         "<strong>API REST</strong><br/>Requêtes ponctuelles pour récupérer l'historique et initialiser la base avec plusieurs mois de données."
     ])
+with right:
+    show_image("binance.jpg", "Sources binance.")

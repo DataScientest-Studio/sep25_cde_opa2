@@ -3,7 +3,7 @@ from src.visualization.streamlit.slides._common import apply_slide_style, slide_
 
 apply_slide_style()
 slide_header(
-    "7. Machine learning",
+    "6. Machine learning",
     "Prédire la prochaine direction du marché",
     "Un modèle de classification supervisée transforme les indicateurs techniques en signaux de trading."
 )
@@ -44,8 +44,8 @@ with left:
             "<ul>"
                 "<li>OHLCV brutes : <code>open, high, low, close, volume</code></li>"
                 "<li>RSI (14) — surachat / survente</li>"
-                "<li>MACD + Signal MACD — tendance et accélération</li>"
                 "<li>EMA (20 / 50 / 100) — moyennes mobiles multi-horizon</li>"
+                "<li>MACD + Signal MACD — tendance et accélération</li>"
             "</ul>"
         "</li>"
         "<li>Sentiments (score, smooth, weighted, weighted_smooth)</li>"
